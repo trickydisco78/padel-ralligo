@@ -1,0 +1,25 @@
+{
+  "name": "padel-ralligo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "start": "pnpm --filter mobile start",
+    "test:rls": "node --env-file=supabase/tests/.env.local supabase/tests/rls.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.23.1",
+    "prettier": "3.9.6",
+    "supabase": "^2.122.0",
+    "turbo": "^2.11.10",
+    "typescript": "~6.0.3"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24"
+  }
+}
