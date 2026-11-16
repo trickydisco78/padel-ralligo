@@ -50,3 +50,18 @@ describe('secureStorage', () => {
     expect(mockStore.size).toBe(2);
   });
 });
+
+describe('secureStorage off native', () => {
+  it('does not touch SecureStore on web', async () => {
+    jest.resetModules();
+    jest.doMock('react-native', () => ({ Platform: { OS: 'web' } }));
+    const SecureStore = require('expo-secure-store');
+    const { secureStorage: webStorage } = require('../secure-storage');
+
+    expect(await webStorage.getItem('sb-auth')).toBeNull();
+    await webStorage.setItem('sb-auth', 'x');
+    await webStorage.removeItem('sb-auth');
+    expect(SecureStore.getItemAsync).not.toHaveBeenCalled();
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+});

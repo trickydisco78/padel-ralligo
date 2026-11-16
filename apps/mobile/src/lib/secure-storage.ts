@@ -1,4 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+
+// SecureStore only exists on iOS and Android. Expo Router also loads this module in Node while it
+// exports the app (server render, platform "web"), where there is no saved session to read or write.
+const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
 // A Supabase session can be larger than SecureStore's per-value limit, so values are split into chunks.
 const CHUNK_SIZE = 1800;
@@ -8,6 +13,7 @@ const chunkKey = (key: string, index: number) => `${key}.${index}`;
 
 export const secureStorage = {
   async getItem(key: string): Promise<string | null> {
+    if (!isNative) return null;
     const count = await SecureStore.getItemAsync(countKey(key));
     if (count === null) return null;
 
@@ -21,6 +27,7 @@ export const secureStorage = {
   },
 
   async setItem(key: string, value: string): Promise<void> {
+    if (!isNative) return;
     await secureStorage.removeItem(key);
 
     const chunks = value.match(new RegExp(`.{1,${CHUNK_SIZE}}`, 'gs')) ?? [''];
@@ -31,6 +38,7 @@ export const secureStorage = {
   },
 
   async removeItem(key: string): Promise<void> {
+    if (!isNative) return;
     const count = await SecureStore.getItemAsync(countKey(key));
     if (count === null) return;
 
