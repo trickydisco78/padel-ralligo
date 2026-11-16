@@ -4,7 +4,7 @@ export type SupabaseConfig = { url: string; anonKey: string };
 export function readSupabaseConfig(url: string | undefined, anonKey: string | undefined): SupabaseConfig {
   const missing: string[] = [];
   if (!url) missing.push('EXPO_PUBLIC_SUPABASE_URL');
-  if (!anonKey) missing.push('EXPO_PUBLIC_SUPABASE_ANON_KEY');
+  if (!anonKey) missing.push('EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
 
   if (missing.length > 0) {
     throw new Error(
@@ -13,7 +13,7 @@ export function readSupabaseConfig(url: string | undefined, anonKey: string | un
   }
 
   if (anonKey!.startsWith('sb_secret_')) {
-    throw new Error('EXPO_PUBLIC_SUPABASE_ANON_KEY holds a secret key. Use the publishable key only.');
+    throw new Error('EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY holds a secret key. Use the publishable key only.');
   }
 
   return { url: url!, anonKey: anonKey! };

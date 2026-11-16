@@ -16,7 +16,7 @@ describe('readSupabaseConfig', () => {
 
   it('names both when both are absent', () => {
     expect(() => readSupabaseConfig('', undefined)).toThrow(
-      /EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY/,
+      /EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY/,
     );
   });
 

@@ -7,7 +7,7 @@ import { readSupabaseConfig } from '@/lib/supabase-config';
 // Expo only inlines EXPO_PUBLIC_ variables that are read with this exact literal form.
 const config = readSupabaseConfig(
   process.env.EXPO_PUBLIC_SUPABASE_URL,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
 );
 
 export const supabase = createClient<Database>(config.url, config.anonKey, {
