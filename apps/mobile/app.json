@@ -8,6 +8,7 @@
     "scheme": "padel-ralligo",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.trickydisco78.padelralligo",
       "icon": "./assets/expo.icon"
     },
     "android": {
