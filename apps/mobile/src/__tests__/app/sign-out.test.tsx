@@ -3,6 +3,7 @@ import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-li
 import { Text } from 'react-native';
 
 import ProfileScreen from '@/app/(tabs)/profile';
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { fakeSession, mockState, resetMockSupabase, supabase } from '@padel/supabase/testing';
 
@@ -10,9 +11,9 @@ jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing')
 
 const routes = {
   _layout: () => (
-    <SessionProvider>
+    <QueryTestProvider><SessionProvider>
       <Stack screenOptions={{ headerShown: false }} />
-    </SessionProvider>
+    </SessionProvider></QueryTestProvider>
   ),
   index: () => <Text>Home screen</Text>,
   profile: ProfileScreen,

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 
 import ProfileScreen from '@/app/(tabs)/profile';
 import ProfileSetupScreen from '@/app/profile-setup';
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
@@ -13,7 +14,7 @@ beforeEach(() => {
   mockState.session = fakeSession();
 });
 
-const withSession = (ui: React.ReactElement) => <SessionProvider>{ui}</SessionProvider>;
+const withSession = (ui: React.ReactElement) => <QueryTestProvider><SessionProvider>{ui}</SessionProvider></QueryTestProvider>;
 
 async function pressSave(name = 'Save and continue') {
   await fireEvent.press(screen.getByRole('button', { name }));

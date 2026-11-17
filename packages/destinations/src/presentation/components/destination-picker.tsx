@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { ThemedText, Colors, Radius, Spacing } from '@padel/ui';
-import { useDestinations } from '@/data/use-destinations';
+import { useDestinations } from '../hooks/use-destinations';
 
 type Props = {
   value: string | null;

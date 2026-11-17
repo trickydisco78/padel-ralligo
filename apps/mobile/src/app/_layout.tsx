@@ -7,6 +7,8 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { DefaultTheme, ThemeProvider } from 'expo-router';
 
+import { QueryProvider } from '@padel/query';
+
 import { SessionProvider } from '@/auth/session';
 import { RootStack } from '@/components/root-stack';
 import { Colors } from '@padel/ui';
@@ -38,9 +40,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={theme}>
-      <SessionProvider>
-        <RootStack />
-      </SessionProvider>
+      <QueryProvider>
+        <SessionProvider>
+          <RootStack />
+        </SessionProvider>
+      </QueryProvider>
     </ThemeProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { ListingForm } from '@/components/listing-form';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
@@ -19,9 +20,9 @@ beforeEach(() => {
 const renderForm = (confirmed = true) => {
   mockState.session = fakeSession('user-1', confirmed);
   return render(
-    <SessionProvider>
+    <QueryTestProvider><SessionProvider>
       <ListingForm today={TODAY} />
-    </SessionProvider>,
+    </SessionProvider></QueryTestProvider>,
   );
 };
 

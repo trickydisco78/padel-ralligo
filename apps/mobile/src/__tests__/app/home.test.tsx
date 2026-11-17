@@ -4,6 +4,7 @@ import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-li
 import { Text } from 'react-native';
 
 import HomeScreen from '@/app/(tabs)/index';
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
@@ -47,9 +48,9 @@ const open = () =>
   renderRouter(
     {
       _layout: () => (
-        <SessionProvider>
+        <QueryTestProvider><SessionProvider>
           <Slot />
-        </SessionProvider>
+        </SessionProvider></QueryTestProvider>
       ),
       index: HomeScreen,
       discover: Discover,

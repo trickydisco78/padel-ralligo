@@ -7,6 +7,8 @@
     "@expo/ui": "~58.0.28",
     "@expo/vector-icons": "^15.1.1",
     "@padel/core": "workspace:*",
+    "@padel/destinations": "workspace:*",
+    "@padel/query": "workspace:*",
     "@padel/supabase": "workspace:*",
     "@padel/ui": "workspace:*",
     "expo": "~58.0.25",

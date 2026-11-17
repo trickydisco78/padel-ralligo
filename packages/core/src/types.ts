@@ -9,13 +9,6 @@ export type Sport = "padel";
 /** Calendar date as `YYYY-MM-DD`. */
 export type IsoDate = string;
 
-export type Destination = {
-  id: string;
-  name: string;
-  country: string;
-  tagline: string;
-};
-
 export type ListingStatus = "open" | "closed";
 
 export type Listing = {

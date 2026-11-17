@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { RootStack } from '@/components/root-stack';
 import { fakeSession, mockState, resetMockSupabase, supabase } from '@padel/supabase/testing';
@@ -10,9 +11,9 @@ jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing')
 
 function Layout() {
   return (
-    <SessionProvider>
+    <QueryTestProvider><SessionProvider>
       <RootStack />
-    </SessionProvider>
+    </SessionProvider></QueryTestProvider>
   );
 }
 
