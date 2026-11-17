@@ -1,0 +1,10 @@
+{
+  "name": "@padel/jest-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./node": "./node.cjs",
+    "./react-native": "./react-native.cjs",
+    "./style-stub": "./style-stub.cjs"
+  }
+}

@@ -7,10 +7,10 @@
 
 ## 2. Phase 1: Workspace foundations
 
-- [ ] 2.1 Standardise shared tsconfig presets (strict, `verbatimModuleSyntax`/type-only imports) and ESLint flat config across packages
-- [ ] 2.2 Add a shared Jest preset for React Native packages alongside the pure-TS setup
-- [ ] 2.3 Verify Metro resolves workspace packages and that only one `react`/`react-native` is installed; add `metro.config.js` changes only if needed
-- [ ] 2.4 Add boundary lint rules (layer direction, `ui` ↛ domains, no `@padel/*/src/**` deep imports) as warnings
+- [x] 2.1 Standardise shared tsconfig presets (strict, `verbatimModuleSyntax`/type-only imports) and ESLint flat config across packages
+- [x] 2.2 Add a shared Jest preset for React Native packages alongside the pure-TS setup
+- [x] 2.3 Verify Metro resolves workspace packages and that only one `react`/`react-native` is installed; add `metro.config.js` changes only if needed
+- [x] 2.4 Add boundary lint rules (layer direction, `ui` ↛ domains, no `@padel/*/src/**` deep imports) as warnings
 
 ## 3. Phase 2: Shared packages
 

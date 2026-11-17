@@ -1,5 +1,6 @@
 import expoConfig from "eslint-config-expo/flat.js";
 import eslintConfigPrettier from "eslint-config-prettier";
+import { boundaries } from "./boundaries.js";
 
 /**
  * A shared ESLint configuration for Expo / React Native apps.
@@ -9,6 +10,7 @@ import eslintConfigPrettier from "eslint-config-prettier";
 export const config = [
   ...expoConfig,
   eslintConfigPrettier,
+  ...boundaries,
   {
     ignores: ["dist/**", ".expo/**"],
   },
