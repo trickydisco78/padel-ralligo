@@ -1,5 +1,1 @@
-/** @type {import('jest').Config} */
-module.exports = {
-  testMatch: ["<rootDir>/src/**/*.test.ts"],
-  transform: { "^.+\\.ts$": "@swc/jest" },
-};
+module.exports = require('@padel/jest-config/node');

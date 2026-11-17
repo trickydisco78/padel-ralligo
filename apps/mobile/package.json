@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@padel/eslint-config": "workspace:*",
+    "@padel/jest-config": "workspace:*",
     "@padel/typescript-config": "workspace:*",
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "30.0.0",

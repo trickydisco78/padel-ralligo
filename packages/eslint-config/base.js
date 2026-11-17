@@ -1,11 +1,9 @@
-import babelParser from "@babel/eslint-parser";
-import { createRequire } from "node:module";
 import js from "@eslint/js";
+import tseslint from "typescript-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
 import turboPlugin from "eslint-plugin-turbo";
 import onlyWarn from "eslint-plugin-only-warn";
-
-const require = createRequire(import.meta.url);
+import { boundaries } from "./boundaries.js";
 
 /**
  * A shared ESLint configuration for the repository.
@@ -15,16 +13,9 @@ const require = createRequire(import.meta.url);
 export const config = [
   js.configs.recommended,
   eslintConfigPrettier,
+  ...boundaries,
+  ...tseslint.configs.recommended,
   {
-    languageOptions: {
-      parser: babelParser,
-      parserOptions: {
-        requireConfigFile: false,
-        babelOptions: {
-          presets: [require.resolve("@babel/preset-typescript")],
-        },
-      },
-    },
     plugins: {
       turbo: turboPlugin,
     },
@@ -38,6 +29,6 @@ export const config = [
     },
   },
   {
-    ignores: ["dist/**"],
+    ignores: ["dist/**", "**/*.cjs"],
   },
 ];
