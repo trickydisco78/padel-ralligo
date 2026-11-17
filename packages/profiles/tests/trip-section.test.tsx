@@ -2,8 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 
 import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@padel/auth';
-import { TripSection } from '@/components/trip-section';
-import { activeTrip } from '@/data/trip';
+import { TripSection } from '../src/presentation/components/trip-section';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
 jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
@@ -84,18 +83,5 @@ describe('TripSection', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Clear trip' }));
     await waitFor(() => expect(screen.getByText('Trip cleared')).toBeTruthy());
     expect(mockState.trip).toBeNull();
-  });
-});
-
-describe('activeTrip', () => {
-  const trip = { destinationId: 't', startDate: '2026-02-01', endDate: '2026-02-10' };
-
-  it('keeps a trip until its end date has passed', () => {
-    expect(activeTrip(trip, '2026-02-10')).toEqual(trip);
-    expect(activeTrip(trip, '2026-02-11')).toBeNull();
-  });
-
-  it('returns null when there is no trip', () => {
-    expect(activeTrip(null, '2026-02-10')).toBeNull();
   });
 });

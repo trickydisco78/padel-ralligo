@@ -1,16 +1,15 @@
 import { SKILL_TIERS, matchesFilters, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@padel/auth';
-import { Chip, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
-import { DateField } from '@/components/date-field';
+import { Chip, DateField, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { ListingCard } from '@/components/listing-card';
 import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
 import { useDestinations } from '@padel/destinations';
-import { activeTrip, fetchTrip } from '@/data/trip';
+import { activeTrip, useTrip } from '@padel/profiles';
 
 type Filters = {
   destinationId: string | null;
@@ -26,13 +25,14 @@ export default function DiscoverScreen() {
   const userId = user?.id;
   const { destinationId: destinationParam } = useLocalSearchParams<{ destinationId?: string }>();
   const { destinations } = useDestinations();
+  const { data: savedTrip } = useTrip(userId);
   const [listings, setListings] = useState<DiscoverListing[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   // Bumped when filters are replaced from outside, so the typed date fields pick up the new values.
   const [filterVersion, setFilterVersion] = useState(0);
-  const tripApplied = useRef(false);
+  const [tripHandled, setTripHandled] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -57,33 +57,22 @@ export default function DiscoverScreen() {
     setAppliedParam(destinationParam);
     setFilters({ ...NO_FILTERS, destinationId: destinationParam });
     setFilterVersion((v) => v + 1);
+    setTripHandled(true);
   }
-  useEffect(() => {
-    if (destinationParam) tripApplied.current = true;
-  }, [destinationParam]);
 
-  // Open pre-filtered to the saved trip, once, unless its end date has passed.
-  useEffect(() => {
-    if (!userId || tripApplied.current) return;
-    let cancelled = false;
-    fetchTrip(userId)
-      .then((trip) => {
-        const current = activeTrip(trip, toIsoDate(new Date()));
-        if (cancelled || !current || tripApplied.current) return;
-        tripApplied.current = true;
-        setFilters({
-          destinationId: current.destinationId,
-          startDate: current.startDate,
-          endDate: current.endDate,
-          level: null,
-        });
-        setFilterVersion((v) => v + 1);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  // Open pre-filtered to the saved trip, once, unless its end date has passed. Adjusted during
+  // render as soon as the trip has loaded.
+  const currentTrip = activeTrip(savedTrip ?? null, toIsoDate(new Date()));
+  if (!tripHandled && !destinationParam && currentTrip) {
+    setTripHandled(true);
+    setFilters({
+      destinationId: currentTrip.destinationId,
+      startDate: currentTrip.startDate,
+      endDate: currentTrip.endDate,
+      level: null,
+    });
+    setFilterVersion((v) => v + 1);
+  }
 
   async function refresh() {
     setRefreshing(true);

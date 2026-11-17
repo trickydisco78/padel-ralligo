@@ -1,54 +1,44 @@
-import { toIsoDate, validateTrip, type FieldErrors, type IsoDate } from '@padel/core';
-import { useEffect, useState } from 'react';
+import { toIsoDate, type FieldErrors, type IsoDate } from '@padel/core';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
-import { DateField } from '@/components/date-field';
 import { DestinationPicker } from '@padel/destinations';
-import { PrimaryButton, ThemedText, Spacing } from '@padel/ui';
-import { activeTrip, clearTrip, fetchTrip, saveTrip } from '@/data/trip';
+import { DateField, PrimaryButton, ThemedText, Spacing } from '@padel/ui';
+
+import { activeTrip, validateTrip, type Trip } from '../../domain/trip';
+import { useClearTrip, useSaveTrip, useTrip } from '../hooks/use-trip';
 
 export function TripSection({ today = toIsoDate(new Date()) }: { today?: IsoDate }) {
   const { user } = useSession();
   const userId = user?.id;
-  const [loaded, setLoaded] = useState(false);
-  const [destinationId, setDestinationId] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState<IsoDate | null>(null);
-  const [endDate, setEndDate] = useState<IsoDate | null>(null);
-  const [ended, setEnded] = useState(false);
+  const { data: trip, isPending } = useTrip(userId);
+
+  // Nothing to show until the saved trip has been looked up (or without a signed-in user).
+  if (!userId || isPending) return null;
+  return <TripForm key={userId} userId={userId} initialTrip={trip ?? null} today={today} />;
+}
+
+function TripForm({ userId, initialTrip, today }: { userId: string; initialTrip: Trip | null; today: IsoDate }) {
+  const saveTrip = useSaveTrip();
+  const clearTrip = useClearTrip();
+  const [destinationId, setDestinationId] = useState<string | null>(initialTrip?.destinationId ?? null);
+  const [startDate, setStartDate] = useState<IsoDate | null>(initialTrip?.startDate ?? null);
+  const [endDate, setEndDate] = useState<IsoDate | null>(initialTrip?.endDate ?? null);
+  const [ended, setEnded] = useState(initialTrip ? activeTrip(initialTrip, today) === null : false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-    fetchTrip(userId)
-      .then((trip) => {
-        if (cancelled) return;
-        if (trip) {
-          setDestinationId(trip.destinationId);
-          setStartDate(trip.startDate);
-          setEndDate(trip.endDate);
-          setEnded(activeTrip(trip, today) === null);
-        }
-        setLoaded(true);
-      })
-      .catch(() => !cancelled && setLoaded(true));
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, today]);
 
   async function save() {
     setMessage(null);
     const result = validateTrip({ destinationId, startDate, endDate });
-    if (!result.ok || !destinationId || !startDate || !endDate || !userId) {
+    if (!result.ok || !destinationId || !startDate || !endDate) {
       setErrors(result.ok ? {} : result.errors);
       return;
     }
     setErrors({});
     try {
-      await saveTrip(userId, { destinationId, startDate, endDate });
+      await saveTrip.mutateAsync({ userId, trip: { destinationId, startDate, endDate } });
       setEnded(endDate < today);
       setMessage('Trip saved');
     } catch {
@@ -57,9 +47,8 @@ export function TripSection({ today = toIsoDate(new Date()) }: { today?: IsoDate
   }
 
   async function clear() {
-    if (!userId) return;
     try {
-      await clearTrip(userId);
+      await clearTrip.mutateAsync(userId);
       setDestinationId(null);
       setStartDate(null);
       setEndDate(null);
@@ -70,8 +59,6 @@ export function TripSection({ today = toIsoDate(new Date()) }: { today?: IsoDate
       setErrors({ form: 'Could not clear your trip. Please try again.' });
     }
   }
-
-  if (!loaded) return null;
 
   return (
     <View style={{ gap: Spacing.three }}>

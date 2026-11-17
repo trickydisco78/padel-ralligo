@@ -12,6 +12,9 @@
     "check-types": "tsc --noEmit",
     "test": "jest"
   },
+  "dependencies": {
+    "@padel/core": "workspace:*"
+  },
   "peerDependencies": {
     "@expo/vector-icons": "*",
     "react": "*",

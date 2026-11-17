@@ -1,31 +1,17 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession, SignInPrompt } from '@padel/auth';
+import { ProfileForm, TripSection, useProfile } from '@padel/profiles';
 import { MyListings } from '@/components/my-listings';
 import { PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
-import { ProfileForm } from '@/components/profile-form';
-import { TripSection } from '@/components/trip-section';
-import { fetchProfile, type ProfileData } from '@/data/profile';
 
 export default function ProfileScreen() {
   const { status, user, signOut } = useSession();
   const router = useRouter();
-  const [profile, setProfile] = useState<ProfileData | null | undefined>(undefined);
   const userId = user?.id;
-
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-    fetchProfile(userId)
-      .then((data) => !cancelled && setProfile(data))
-      .catch(() => !cancelled && setProfile(null));
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  const { data: profile, isPending } = useProfile(userId);
 
   if (status === 'signedOut') return <SignInPrompt message="Sign in to view and edit your profile." />;
 
@@ -37,9 +23,7 @@ export default function ProfileScreen() {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four }}>
             <ThemedText type="title">Profile</ThemedText>
-            {profile !== undefined ? (
-              <ProfileForm key={userId} initial={profile} submitLabel="Save profile" />
-            ) : null}
+            {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel="Save profile" />}
             <TripSection />
             <MyListings />
             <PrimaryButton

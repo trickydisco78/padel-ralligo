@@ -1,23 +1,23 @@
-import { validateProfile, type FieldErrors, type SkillTier } from '@padel/core';
+import type { FieldErrors, SkillTier } from '@padel/core';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
-
-import { useRefreshProfileComplete } from '@/session/app-status';
 import { PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
-import { SkillTierPicker } from '@/components/skill-tier-picker';
-import { saveProfile, type ProfileData } from '@/data/profile';
+
+import { validateProfile, type Profile } from '../../domain/profile';
+import { useSaveProfile } from '../hooks/use-profile';
+import { SkillTierPicker } from './skill-tier-picker';
 
 type Props = {
-  initial?: ProfileData | null;
+  initial?: Profile | null;
   submitLabel: string;
   onSaved?: () => void;
 };
 
 export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
   const { user } = useSession();
-  const refreshProfile = useRefreshProfileComplete();
+  const saveProfile = useSaveProfile();
   const [displayName, setDisplayName] = useState(initial?.displayName ?? '');
   const [homeCity, setHomeCity] = useState(initial?.homeCity ?? '');
   const [bio, setBio] = useState(initial?.bio ?? '');
@@ -36,8 +36,7 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
     setErrors({});
     setSaving(true);
     try {
-      await saveProfile(user.id, { displayName, homeCity, bio, skillTier });
-      await refreshProfile();
+      await saveProfile.mutateAsync({ userId: user.id, input: { displayName, homeCity, bio, skillTier } });
       setSaved(true);
       onSaved?.();
     } catch {
