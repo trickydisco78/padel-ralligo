@@ -1,4 +1,4 @@
-import type { SkillTier } from '@repo/core';
+import type { SkillTier } from '@padel/core';
 
 import { supabase } from '@/lib/supabase';
 

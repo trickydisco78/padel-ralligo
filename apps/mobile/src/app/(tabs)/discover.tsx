@@ -1,4 +1,4 @@
-import { SKILL_TIERS, matchesFilters, toIsoDate, type IsoDate, type SkillTier } from '@repo/core';
+import { SKILL_TIERS, matchesFilters, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
@@ -8,6 +8,7 @@ import { useSession } from '@/auth/session';
 import { Chip } from '@/components/chip';
 import { DateField } from '@/components/date-field';
 import { ListingCard } from '@/components/listing-card';
+import { Logo } from '@/components/logo';
 import { PrimaryButton } from '@/components/primary-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -104,6 +105,7 @@ export default function DiscoverScreen() {
 
   const header = (
     <View style={{ gap: Spacing.three }}>
+      <Logo />
       <ThemedText type="title">Discover</ThemedText>
 
       <View style={{ gap: Spacing.one }}>

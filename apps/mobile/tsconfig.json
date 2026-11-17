@@ -1,5 +1,5 @@
 {
-  "extends": ["expo/tsconfig.base", "@repo/typescript-config/react-native.json"],
+  "extends": ["expo/tsconfig.base", "@padel/typescript-config/react-native.json"],
   "compilerOptions": {
     "types": ["expo/types", "jest"],
     "paths": {

@@ -1,4 +1,4 @@
-import { validateProfile, type FieldErrors, type SkillTier } from '@repo/core';
+import { validateProfile, type FieldErrors, type SkillTier } from '@padel/core';
 import { useState } from 'react';
 import { View } from 'react-native';
 

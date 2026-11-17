@@ -1,10 +1,10 @@
 import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
+import { Colors, Fonts, ThemeColor, Typeface } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?: 'default' | 'display' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
   themeColor?: ThemeColor;
 };
 
@@ -16,38 +16,48 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 
 const styles = StyleSheet.create({
   small: {
+    fontFamily: Typeface.medium,
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: 500,
   },
   smallBold: {
+    fontFamily: Typeface.bold,
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: 700,
   },
   default: {
+    fontFamily: Typeface.medium,
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: 500,
+  },
+  display: {
+    fontFamily: Typeface.extrabold,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.8,
   },
   title: {
-    fontSize: 48,
-    fontWeight: 600,
-    lineHeight: 52,
+    fontFamily: Typeface.extrabold,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.8,
   },
   subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
-    fontWeight: 600,
+    fontFamily: Typeface.bold,
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: -0.4,
   },
   link: {
+    fontFamily: Typeface.semibold,
     lineHeight: 30,
     fontSize: 14,
   },
   linkPrimary: {
+    fontFamily: Typeface.semibold,
     lineHeight: 30,
     fontSize: 14,
-    color: '#3c87f7',
+    color: Colors.light.primaryDark,
   },
   code: {
     fontFamily: Fonts.mono,

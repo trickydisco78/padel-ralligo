@@ -23,7 +23,7 @@ export function Chip({ label, selected = false, onPress }: Props) {
         paddingVertical: Spacing.one,
         paddingHorizontal: Spacing.three,
       }}>
-      <ThemedText type="small" themeColor={selected ? 'primary' : 'textSecondary'}>
+      <ThemedText type="smallBold" themeColor={selected ? 'primaryDark' : 'textSecondary'}>
         {label}
       </ThemedText>
     </Pressable>

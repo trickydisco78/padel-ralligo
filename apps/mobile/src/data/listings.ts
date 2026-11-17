@@ -1,4 +1,4 @@
-import type { IsoDate, LevelWanted } from '@repo/core';
+import type { IsoDate, LevelWanted } from '@padel/core';
 
 import { supabase } from '@/lib/supabase';
 

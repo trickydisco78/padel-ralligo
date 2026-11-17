@@ -12,7 +12,7 @@ A padel player finding app. pnpm + Turborepo monorepo.
 | `packages/typescript-config` | Shared `tsconfig` bases |
 | `packages/eslint-config` | Shared ESLint configs |
 
-A web app is planned; it will live in `apps/web` and can reuse `@repo/core`.
+A web app is planned; it will live in `apps/web` and can reuse `@padel/core`.
 
 Product background and design references are in [`docs/`](docs/): `product-vision.md`, `first-pass-prototype.md` and `design-reference.md`.
 

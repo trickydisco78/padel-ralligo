@@ -1,4 +1,4 @@
-import type { Destination } from '@repo/core';
+import type { Destination } from '@padel/core';
 
 import { supabase } from '@/lib/supabase';
 

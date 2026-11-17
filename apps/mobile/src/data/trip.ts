@@ -1,4 +1,4 @@
-import { isTripActive, type IsoDate, type Trip } from '@repo/core';
+import { isTripActive, type IsoDate, type Trip } from '@padel/core';
 
 import { supabase } from '@/lib/supabase';
 

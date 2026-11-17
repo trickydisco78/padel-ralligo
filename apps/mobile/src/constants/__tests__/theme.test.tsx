@@ -6,7 +6,7 @@ import { Colors, Radius } from '@/constants/theme';
 
 describe('theme tokens', () => {
   it('uses the green accent and rounded card and chip radii', () => {
-    expect(Colors.light.primary).toBe('#12A150');
+    expect(Colors.light.primary).toBe('#22DB6E');
     expect(Radius.card).toBe(20);
     expect(Radius.chip).toBeGreaterThanOrEqual(999);
   });
