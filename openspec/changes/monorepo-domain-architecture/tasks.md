@@ -14,10 +14,10 @@
 
 ## 3. Phase 2: Shared packages
 
-- [ ] 3.1 Create `@padel/supabase`: move `supabase.ts`, `secure-storage`, `supabase-config`, `database.types.ts` and their tests; expose via a single entry point
-- [ ] 3.2 Create `@padel/ui`: move tokens/theme, `global.css` and primitives (button, chip, card, text field, themed text/view, check row, logo) and their tests
-- [ ] 3.3 Update `apps/mobile` imports to the package entry points; confirm `ui` has no domain imports
-- [ ] 3.4 Run check-types, lint and tests; launch the app and compare screens before/after
+- [x] 3.1 Create `@padel/supabase`: move `supabase.ts`, `secure-storage`, `supabase-config`, `database.types.ts` and their tests; expose via a single entry point
+- [x] 3.2 Create `@padel/ui`: move tokens/theme, `global.css` and primitives (button, chip, card, text field, themed text/view, check row, logo) and their tests
+- [x] 3.3 Update `apps/mobile` imports to the package entry points; confirm `ui` has no domain imports
+- [x] 3.4 Run check-types, lint and tests; launch the app and compare screens before/after
 
 ## 4. Phase 3: Query and destinations (reference domain)
 

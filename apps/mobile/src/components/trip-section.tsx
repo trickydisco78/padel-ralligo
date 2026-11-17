@@ -5,9 +5,7 @@ import { View } from 'react-native';
 import { useSession } from '@/auth/session';
 import { DateField } from '@/components/date-field';
 import { DestinationPicker } from '@/components/destination-picker';
-import { PrimaryButton } from '@/components/primary-button';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { PrimaryButton, ThemedText, Spacing } from '@padel/ui';
 import { activeTrip, clearTrip, fetchTrip, saveTrip } from '@/data/trip';
 
 export function TripSection({ today = toIsoDate(new Date()) }: { today?: IsoDate }) {

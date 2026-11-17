@@ -1,6 +1,6 @@
 import type { Destination } from '@padel/core';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@padel/supabase';
 
 export type DestinationWithCount = Destination & { openListings: number };
 

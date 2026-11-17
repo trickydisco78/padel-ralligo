@@ -1,6 +1,6 @@
 import { isTripActive, type IsoDate, type Trip } from '@padel/core';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@padel/supabase';
 
 export async function fetchTrip(userId: string): Promise<Trip | null> {
   const { data, error } = await supabase

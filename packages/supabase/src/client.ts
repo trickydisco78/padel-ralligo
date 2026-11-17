@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-import type { Database } from '@/lib/database.types';
-import { secureStorage } from '@/lib/secure-storage';
-import { readSupabaseConfig } from '@/lib/supabase-config';
+import type { Database } from './database.types';
+import { secureStorage } from './secure-storage';
+import { readSupabaseConfig } from './supabase-config';
 
 // Expo only inlines EXPO_PUBLIC_ variables that are read with this exact literal form.
 const config = readSupabaseConfig(

@@ -4,13 +4,8 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CheckRow } from '@/components/check-row';
-import { PrimaryButton } from '@/components/primary-button';
-import { TextField } from '@/components/text-field';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { supabase } from '@/lib/supabase';
+import { CheckRow, PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { supabase } from '@padel/supabase';
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');

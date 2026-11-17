@@ -5,9 +5,9 @@ import { Text } from 'react-native';
 
 import HomeScreen from '@/app/(tabs)/index';
 import { SessionProvider } from '@/auth/session';
-import { fakeSession, mockState, resetMockSupabase } from '@/test/mock-supabase';
+import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 function daysFromNow(n: number) {
   const d = new Date();

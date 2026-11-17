@@ -1,9 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountActions } from '@/components/account-actions';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 /** Shown in place of an account feature when the visitor is signed out. */
 export function SignInPrompt({ message }: { message: string }) {

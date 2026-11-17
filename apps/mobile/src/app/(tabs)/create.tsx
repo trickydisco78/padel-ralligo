@@ -4,9 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSession } from '@/auth/session';
 import { ListingForm } from '@/components/listing-form';
 import { SignInPrompt } from '@/components/sign-in-prompt';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function CreateScreen() {
   const { status } = useSession();

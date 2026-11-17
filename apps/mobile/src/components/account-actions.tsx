@@ -1,9 +1,7 @@
 import { Link, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
-import { PrimaryButton } from '@/components/primary-button';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { PrimaryButton, ThemedText, Spacing } from '@padel/ui';
 
 /** Sign in and create-account actions, shown wherever a visitor needs an account. */
 export function AccountActions() {

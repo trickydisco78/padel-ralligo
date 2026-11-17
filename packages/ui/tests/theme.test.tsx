@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { Colors, Radius } from '@/constants/theme';
+import { ThemedText } from '../src/components/themed-text';
+import { Colors, Radius } from '../src/theme/tokens';
 
 describe('theme tokens', () => {
   it('uses the green accent and rounded card and chip radii', () => {

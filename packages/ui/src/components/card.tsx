@@ -1,6 +1,6 @@
 import { View, type ViewProps } from 'react-native';
 
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Radius, Spacing } from '../theme/tokens';
 
 export function Card({ style, ...rest }: ViewProps) {
   return (

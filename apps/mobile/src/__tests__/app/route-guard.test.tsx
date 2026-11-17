@@ -4,9 +4,9 @@ import { Text } from 'react-native';
 
 import { SessionProvider } from '@/auth/session';
 import { RootStack } from '@/components/root-stack';
-import { fakeSession, mockState, resetMockSupabase, supabase } from '@/test/mock-supabase';
+import { fakeSession, mockState, resetMockSupabase, supabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 function Layout() {
   return (

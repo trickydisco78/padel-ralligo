@@ -1,10 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import { Card } from '@/components/card';
-import { Chip } from '@/components/chip';
-import { PrimaryButton } from '@/components/primary-button';
-import { Colors } from '@/constants/theme';
+import { Card } from '../src/components/card';
+import { Chip } from '../src/components/chip';
+import { PrimaryButton } from '../src/components/primary-button';
+import { Colors } from '../src/theme/tokens';
 
 describe('Card', () => {
   it('renders its children', async () => {

@@ -2,12 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@/auth/session';
-import { Card } from '@/components/card';
-import { Chip } from '@/components/chip';
+import { Card, Chip, PrimaryButton, ThemedText, Spacing } from '@padel/ui';
 import { ListingForm } from '@/components/listing-form';
-import { PrimaryButton } from '@/components/primary-button';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
 import { closeListing, fetchMyListings, type MyListing } from '@/data/listings';
 import { formatRange } from '@/lib/format';
 

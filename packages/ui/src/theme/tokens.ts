@@ -2,7 +2,7 @@
  * Design tokens for the app: colours, spacing and radii.
  */
 
-import '@/global.css';
+import './global.css';
 
 import { Platform } from 'react-native';
 

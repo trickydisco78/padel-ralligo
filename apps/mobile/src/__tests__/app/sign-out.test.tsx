@@ -4,9 +4,9 @@ import { Text } from 'react-native';
 
 import ProfileScreen from '@/app/(tabs)/profile';
 import { SessionProvider } from '@/auth/session';
-import { fakeSession, mockState, resetMockSupabase, supabase } from '@/test/mock-supabase';
+import { fakeSession, mockState, resetMockSupabase, supabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 const routes = {
   _layout: () => (

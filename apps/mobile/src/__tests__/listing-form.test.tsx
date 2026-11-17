@@ -2,9 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 
 import { SessionProvider } from '@/auth/session';
 import { ListingForm } from '@/components/listing-form';
-import { fakeSession, mockState, resetMockSupabase } from '@/test/mock-supabase';
+import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 const dest = (id: string, name: string) => ({ id, name, country: 'Spain', tagline: '', open_listings: 0 });
 const TODAY = '2026-02-10';

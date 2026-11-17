@@ -1,7 +1,7 @@
 import { parseIsoDate, type IsoDate } from '@padel/core';
 import { useState } from 'react';
 
-import { TextField } from '@/components/text-field';
+import { TextField } from '@padel/ui';
 
 type Props = {
   label: string;

@@ -2,8 +2,7 @@ import { Stack } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 
 import { useSession } from '@/auth/session';
-import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
+import { ThemedView, Colors } from '@padel/ui';
 
 /**
  * Chooses which screens exist for the user's session and profile state. Visitors browse the tabs

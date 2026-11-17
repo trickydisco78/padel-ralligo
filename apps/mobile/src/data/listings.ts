@@ -1,6 +1,6 @@
 import type { IsoDate, LevelWanted } from '@padel/core';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@padel/supabase';
 
 export type NewListing = {
   destinationId: string;

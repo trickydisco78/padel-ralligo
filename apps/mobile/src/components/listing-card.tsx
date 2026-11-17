@@ -1,9 +1,6 @@
 import { View } from 'react-native';
 
-import { Card } from '@/components/card';
-import { Chip } from '@/components/chip';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Card, Chip, ThemedText, Spacing } from '@padel/ui';
 import type { DiscoverListing } from '@/data/discover';
 import { dateParts, formatRange } from '@/lib/format';
 

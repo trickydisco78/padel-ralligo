@@ -1,8 +1,8 @@
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session, User } from '@padel/supabase';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@padel/supabase';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'needsProfile' | 'ready';
 

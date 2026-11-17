@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { Colors, Spacing } from '@/constants/theme';
+import { ThemedText } from './themed-text';
+import { Colors, Spacing } from '../theme/tokens';
 
 type Props = {
   label: string;

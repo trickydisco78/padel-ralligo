@@ -3,9 +3,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 
 import { SessionProvider } from '@/auth/session';
 import { MyListings } from '@/components/my-listings';
-import { fakeSession, mockState, resetMockSupabase } from '@/test/mock-supabase';
+import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 function daysFromNow(n: number) {
   const d = new Date();
