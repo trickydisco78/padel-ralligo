@@ -4,12 +4,13 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint && turbo boundaries",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "start": "pnpm --filter mobile start",
-    "test:rls": "node --env-file=supabase/tests/.env.local supabase/tests/rls.mjs"
+    "test:rls": "node --env-file=supabase/tests/.env.local supabase/tests/rls.mjs",
+    "boundaries": "turbo boundaries"
   },
   "devDependencies": {
     "pg": "^8.23.1",
