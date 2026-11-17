@@ -25,9 +25,3 @@ export type Listing = {
   description: string;
   status: ListingStatus;
 };
-
-export type Trip = {
-  destinationId: string;
-  startDate: IsoDate;
-  endDate: IsoDate;
-};

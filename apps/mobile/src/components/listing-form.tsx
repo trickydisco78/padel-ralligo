@@ -13,8 +13,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
-import { Chip, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
-import { DateField } from '@/components/date-field';
+import { Chip, DateField, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { DestinationPicker } from '@padel/destinations';
 import { createListing, updateListing, type MyListing } from '@/data/listings';
 

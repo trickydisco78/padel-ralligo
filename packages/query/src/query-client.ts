@@ -9,6 +9,7 @@ export function createQueryClient(overrides: { gcTime?: number } = {}) {
   const config: QueryClientConfig = {
     defaultOptions: {
       queries: { retry: false, staleTime: 0, ...overrides },
+      mutations: { ...overrides },
     },
   };
   return new QueryClient(config);

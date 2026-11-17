@@ -29,7 +29,7 @@
 
 ## 5. Phase 4: Remaining domains
 
-- [ ] 5.1 Migrate `@padel/profiles` (model, validation, repository, hooks, `profile-form`, `skill-tier-picker`) with tests
+- [x] 5.1 Migrate `@padel/profiles` (model, validation, repository, hooks, `profile-form`, `skill-tier-picker`) with tests
 - [ ] 5.2 Migrate `@padel/listings` (model, filters, repository, hooks, `listing-form`, `listing-card`, `my-listings`, `trip-section`, discover/trip read models) with tests; add `application/` and DTOs only where logic warrants
 - [x] 5.3 Migrate `@padel/auth` first (session provider, sign-in/sign-up screens, `sign-in-prompt`, sign-up validation); the route guard stays in the app, combining the session with a profile-complete query
 - [ ] 5.4 Fold remaining `@padel/core` content into its owning domains and remove the package (or document why it remains)
