@@ -44,12 +44,12 @@ Dependencies: 1 before 2; 2 and 3 before 5; 4 before 5; 5 before 6. Groups 3 and
 
 ## 7. Supabase review and security tests
 
-- [ ] 7.1 Extend `supabase/tests/rls.mjs` (anon cannot read `profiles`, a signed-in user can read another profile): anon by-id read returns exactly the permitted columns; closed and past ids hidden; anon grants are exactly the two views; anon cannot write or execute `is_email_confirmed`; anon cannot read profiles, consents or trips; user A cannot read B's trip or consents; unverified user cannot insert; run `pnpm test:rls`
+- [x] 7.1 Extend `supabase/tests/rls.mjs` (anon cannot read `profiles`, a signed-in user can read another profile): anon by-id read returns exactly the permitted columns; closed and past ids hidden; anon grants are exactly the two views; anon cannot write or execute `is_email_confirmed`; anon cannot read profiles, consents or trips; user A cannot read B's trip or consents; unverified user cannot insert; run `pnpm test:rls`
 - [x] 7.2 Record the decided `profiles` boundary and public poster name and skill tier in `supabase/README.md`; drafts, if ever wanted, are a separate change with a migration; verify no migration is needed here
 
 ## 8. Validation
 
-- [ ] 8.1 Run `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:rls`; verify against the baseline from 1.1
+- [x] 8.1 Run `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:rls`; verify against the baseline from 1.1
 - [ ] 8.2 Manually verify on iOS and Android against the dev project: guest launch with no location prompt, details from Home and Discover, Join sheet then sign in returns to the match and needs a second tap, sign up with verification, profile setup then resume, dismiss, Android back at each step, screen reader announces the sheet, sign-out then another user signing in shows no earlier data
 
 ## Workflow follow-up
