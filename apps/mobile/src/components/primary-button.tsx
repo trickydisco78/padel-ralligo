@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -7,9 +8,12 @@ type Props = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  /** Shows a trailing arrow, as on the "Join" buttons. */
+  arrow?: boolean;
 };
 
-export function PrimaryButton({ title, onPress, disabled = false }: Props) {
+/** Bright green pill button with dark text. */
+export function PrimaryButton({ title, onPress, disabled = false, arrow = false }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -22,11 +26,15 @@ export function PrimaryButton({ title, onPress, disabled = false }: Props) {
         borderRadius: Radius.button,
         paddingVertical: Spacing.three,
         paddingHorizontal: Spacing.four,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        gap: Spacing.two,
       })}>
       <ThemedText type="smallBold" themeColor="onPrimary">
         {title}
       </ThemedText>
+      {arrow ? <Ionicons name="arrow-forward" size={16} color={Colors.light.onPrimary} /> : null}
     </Pressable>
   );
 }

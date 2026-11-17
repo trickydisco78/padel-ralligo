@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSession } from '@/auth/session';
 import { AccountActions } from '@/components/account-actions';
 import { Card } from '@/components/card';
+import { Logo } from '@/components/logo';
 import { ListingCard } from '@/components/listing-card';
 import { PrimaryButton } from '@/components/primary-button';
 import { ThemedText } from '@/components/themed-text';
@@ -65,6 +66,7 @@ export default function HomeScreen() {
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           contentContainerStyle={{ padding: Spacing.three, gap: Spacing.four }}>
+          <Logo />
           <View style={{ gap: Spacing.two }}>
             <ThemedText type="title">Find your next padel game</ThemedText>
             <ThemedText themeColor="textSecondary">

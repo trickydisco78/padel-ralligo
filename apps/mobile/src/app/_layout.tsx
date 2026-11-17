@@ -1,3 +1,10 @@
+import {
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { DefaultTheme, ThemeProvider } from 'expo-router';
 
 import { SessionProvider } from '@/auth/session';
@@ -20,6 +27,15 @@ const theme = {
 };
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
+  // Fall back to the system font if loading fails rather than blocking the app.
+  if (!fontsLoaded && !fontError) return null;
+
   return (
     <ThemeProvider value={theme}>
       <SessionProvider>

@@ -6,7 +6,7 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-/** Light theme only for v1. Values are estimated from docs/design-reference.md. */
+/** Light theme only for v1. Bright green accent, matching the Ralligo "Explore" mock. */
 export const Colors = {
   light: {
     text: '#0F1A14',
@@ -15,14 +15,25 @@ export const Colors = {
     backgroundElement: '#F7F8F7',
     backgroundSelected: '#E8EBE9',
     border: '#E8EBE9',
-    primary: '#12A150',
-    primaryTint: '#CFF5DC',
-    onPrimary: '#FFFFFF',
+    primary: '#22DB6E',
+    primaryDark: '#0E7A45',
+    primaryTint: '#C9F7DD',
+    onPrimary: '#04281A',
+    accentBook: '#12A37A',
     hero: '#0B2E22',
+    brand: '#0D1B2E',
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light;
+
+/** Plus Jakarta Sans: geometric, heavy headings like the Ralligo wordmark. Loaded in the root layout. */
+export const Typeface = {
+  medium: 'PlusJakartaSans_500Medium',
+  semibold: 'PlusJakartaSans_600SemiBold',
+  bold: 'PlusJakartaSans_700Bold',
+  extrabold: 'PlusJakartaSans_800ExtraBold',
+} as const;
 
 export const Fonts = Platform.select({
   ios: {
@@ -61,7 +72,7 @@ export const Spacing = {
 
 export const Radius = {
   card: 20,
-  button: 14,
+  button: 999,
   chip: 999,
 } as const;
 

@@ -59,6 +59,12 @@
         "projectId": "b5680dce-11db-4acb-9901-769eaaa95797"
       }
     },
-    "owner": "trickydiscos-team"
+    "owner": "trickydiscos-team",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b5680dce-11db-4acb-9901-769eaaa95797"
+    }
   }
 }
