@@ -1,9 +1,8 @@
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSession } from '@/auth/session';
+import { useSession, SignInPrompt } from '@padel/auth';
 import { ListingForm } from '@/components/listing-form';
-import { SignInPrompt } from '@/components/sign-in-prompt';
 import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function CreateScreen() {

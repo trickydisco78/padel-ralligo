@@ -3,11 +3,10 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSession } from '@/auth/session';
+import { useSession, SignInPrompt } from '@padel/auth';
 import { MyListings } from '@/components/my-listings';
 import { PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { ProfileForm } from '@/components/profile-form';
-import { SignInPrompt } from '@/components/sign-in-prompt';
 import { TripSection } from '@/components/trip-section';
 import { fetchProfile, type ProfileData } from '@/data/profile';
 

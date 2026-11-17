@@ -2,7 +2,7 @@ import { toIsoDate } from '@padel/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { QueryTestProvider } from '@padel/query/testing';
-import { SessionProvider } from '@/auth/session';
+import { SessionProvider } from '@padel/auth';
 import { MyListings } from '@/components/my-listings';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 

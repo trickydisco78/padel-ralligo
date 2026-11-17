@@ -1,0 +1,74 @@
+import { Link } from 'expo-router';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
+
+import { authService } from '../../composition';
+
+export function SignInScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit() {
+    setError(null);
+    setSubmitting(true);
+    const result = await authService.signIn(email, password);
+    setSubmitting(false);
+
+    if (result.ok) return; // the session provider moves the user on
+    setError(
+      result.reason === 'email_not_confirmed'
+        ? 'Please verify your email first. Check your inbox for the link.'
+        : 'Invalid email or password',
+    );
+  }
+
+  return (
+    <ThemedView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
+            <ThemedText type="title">Sign in</ThemedText>
+            <TextField
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+            />
+            <TextField
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="current-password"
+            />
+            {error ? (
+              <ThemedText type="small" style={{ color: '#C62828' }}>
+                {error}
+              </ThemedText>
+            ) : null}
+            <PrimaryButton title="Sign in" onPress={submit} disabled={submitting} />
+            <Link href="/sign-up">
+              <ThemedText type="link" themeColor="primary">
+                New here? Create an account
+              </ThemedText>
+            </Link>
+            <Link href="/">
+              <ThemedText type="link" themeColor="textSecondary">
+                Continue browsing
+              </ThemedText>
+            </Link>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}

@@ -2,8 +2,8 @@ import { Stack } from 'expo-router';
 import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
-import SignInScreen from '@/app/(auth)/sign-in';
-import SignUpScreen from '@/app/(auth)/sign-up';
+import { SignInScreen } from '../src/presentation/screens/sign-in-screen';
+import { SignUpScreen } from '../src/presentation/screens/sign-up-screen';
 import { supabase } from '@padel/supabase/testing';
 
 jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));

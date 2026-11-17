@@ -41,3 +41,14 @@ export async function saveProfile(userId: string, input: ProfileData & { skillTi
     .upsert({ profile_id: userId, sport: 'padel', skill_tier: input.skillTier });
   if (skillError) throw skillError;
 }
+
+/** A profile is complete once it exists and has a skill tier. */
+export async function isProfileComplete(userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, profile_sports(skill_tier)')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return !!data && data.profile_sports.length > 0;
+}

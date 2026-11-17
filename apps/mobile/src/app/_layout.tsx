@@ -9,7 +9,7 @@ import { DefaultTheme, ThemeProvider } from 'expo-router';
 
 import { QueryProvider } from '@padel/query';
 
-import { SessionProvider } from '@/auth/session';
+import { SessionProvider } from '@padel/auth';
 import { RootStack } from '@/components/root-stack';
 import { Colors } from '@padel/ui';
 

@@ -2,7 +2,9 @@ import { validateProfile, type FieldErrors, type SkillTier } from '@padel/core';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { useSession } from '@/auth/session';
+import { useSession } from '@padel/auth';
+
+import { useRefreshProfileComplete } from '@/session/app-status';
 import { PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { SkillTierPicker } from '@/components/skill-tier-picker';
 import { saveProfile, type ProfileData } from '@/data/profile';
@@ -14,7 +16,8 @@ type Props = {
 };
 
 export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
-  const { user, refreshProfile } = useSession();
+  const { user } = useSession();
+  const refreshProfile = useRefreshProfileComplete();
   const [displayName, setDisplayName] = useState(initial?.displayName ?? '');
   const [homeCity, setHomeCity] = useState(initial?.homeCity ?? '');
   const [bio, setBio] = useState(initial?.bio ?? '');

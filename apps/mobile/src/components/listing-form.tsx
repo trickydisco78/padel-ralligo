@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { useSession } from '@/auth/session';
+import { useSession } from '@padel/auth';
 import { Chip, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { DateField } from '@/components/date-field';
 import { DestinationPicker } from '@padel/destinations';
@@ -45,7 +45,7 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
   const [posting, setPosting] = useState(false);
   const [posted, setPosted] = useState(false);
 
-  if (!user?.email_confirmed_at) {
+  if (!user?.emailConfirmed) {
     return (
       <ThemedText>
         Verify your email address to post a listing. Check your inbox for the link we sent when you signed up.
