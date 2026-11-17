@@ -1,4 +1,4 @@
-import { SKILL_TIERS, matchesFilters, toIsoDate, type IsoDate, type SkillTier } from '@repo/core';
+import { SKILL_TIERS, matchesFilters, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';

@@ -1,4 +1,4 @@
-import type { IsoDate } from '@repo/core';
+import type { IsoDate } from '@padel/core';
 
 function utcDate(iso: IsoDate) {
   const [y, m, d] = iso.split('-').map(Number);

@@ -1,4 +1,4 @@
-import { SKILL_TIERS, type SkillTier } from '@repo/core';
+import { SKILL_TIERS, type SkillTier } from '@padel/core';
 import { View } from 'react-native';
 
 import { Chip } from '@/components/chip';

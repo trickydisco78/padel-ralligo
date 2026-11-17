@@ -8,7 +8,7 @@ import {
   type FieldErrors,
   type IsoDate,
   type LevelWanted,
-} from '@repo/core';
+} from '@padel/core';
 import { useState } from 'react';
 import { View } from 'react-native';
 

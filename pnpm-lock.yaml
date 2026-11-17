@@ -35,7 +35,7 @@ importers:
       '@expo/vector-icons':
         specifier: ^15.1.1
         version: 15.1.1(expo-font@58.0.12)(react-native@0.88.1(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0)
-      '@repo/core':
+      '@padel/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@supabase/supabase-js':
@@ -105,10 +105,10 @@ importers:
         specifier: ~0.21.4
         version: 0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
-      '@repo/eslint-config':
+      '@padel/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/typescript-config':
+      '@padel/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@testing-library/react-native':
@@ -138,10 +138,10 @@ importers:
 
   packages/core:
     devDependencies:
-      '@repo/eslint-config':
+      '@padel/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/typescript-config':
+      '@padel/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@swc/core':

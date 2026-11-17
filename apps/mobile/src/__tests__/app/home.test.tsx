@@ -1,4 +1,4 @@
-import { toIsoDate } from '@repo/core';
+import { toIsoDate } from '@padel/core';
 import { Slot, useLocalSearchParams } from 'expo-router';
 import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Text } from 'react-native';

@@ -1,4 +1,4 @@
-import { toIsoDate, validateTrip, type FieldErrors, type IsoDate } from '@repo/core';
+import { toIsoDate, validateTrip, type FieldErrors, type IsoDate } from '@padel/core';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 

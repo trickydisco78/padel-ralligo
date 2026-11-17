@@ -1,4 +1,4 @@
-import { toIsoDate } from '@repo/core';
+import { toIsoDate } from '@padel/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { SessionProvider } from '@/auth/session';

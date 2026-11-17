@@ -1,4 +1,4 @@
-import { validateSignUp, type FieldErrors } from '@repo/core';
+import { validateSignUp, type FieldErrors } from '@padel/core';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';

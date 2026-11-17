@@ -1,5 +1,5 @@
 {
-  "name": "@repo/core",
+  "name": "@padel/core",
   "version": "0.0.0",
   "private": true,
   "main": "src/index.ts",
@@ -10,8 +10,8 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@padel/eslint-config": "workspace:*",
+    "@padel/typescript-config": "workspace:*",
     "@swc/core": "^1.0.0",
     "@swc/jest": "^0.2.0",
     "@types/jest": "^30.0.0",
