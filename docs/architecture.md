@@ -80,6 +80,7 @@ Two tools, covering different things:
 - **ESLint** (`pnpm lint`) enforces what turbo does not: deep imports (`@padel/x/src/...`) and the layer rules
   inside a package.
 
+- CI (`.github/workflows/ci.yml`) runs `pnpm check-types`, `pnpm lint` (which includes `turbo boundaries`) and `pnpm test` on every pull request and on pushes to `main`. It needs no secrets. `pnpm test:rls` is not part of it, because it needs a dev database.
 - `pnpm lint` fails on boundary violations. `pnpm test` runs `packages/eslint-config/tests`, which check that the
   lint rules fire and that each package exposes only its intended entry points.
 - Supabase row-level security is tested separately with `pnpm test:rls` (needs a dev database).
