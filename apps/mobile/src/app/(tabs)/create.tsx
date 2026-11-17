@@ -2,7 +2,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession, SignInPrompt } from '@padel/auth';
-import { ListingForm } from '@/components/listing-form';
+import { ListingForm } from '@padel/listings';
 import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function CreateScreen() {

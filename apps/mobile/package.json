@@ -10,6 +10,7 @@
     "@padel/core": "workspace:*",
     "@tanstack/react-query": "^5.107.1",
     "@padel/destinations": "workspace:*",
+    "@padel/listings": "workspace:*",
     "@padel/profiles": "workspace:*",
     "@padel/query": "workspace:*",
     "@padel/supabase": "workspace:*",

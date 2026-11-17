@@ -1,0 +1,47 @@
+import type { TypedSupabaseClient } from '@padel/supabase';
+
+import type { ListingRepository } from '../domain/listing.repository';
+import { toDiscoverListing, toListingColumns, toMyListing } from './listing.mapper';
+
+export function createSupabaseListingRepository(client: TypedSupabaseClient): ListingRepository {
+  return {
+    async create(userId, listing) {
+      const { error } = await client.from('listings').insert({ poster_id: userId, ...toListingColumns(listing) });
+      if (error) throw error;
+    },
+
+    async update(id, listing) {
+      const { error } = await client.from('listings').update(toListingColumns(listing)).eq('id', id);
+      if (error) throw error;
+    },
+
+    async close(id) {
+      const { error } = await client.from('listings').update({ status: 'closed' }).eq('id', id);
+      if (error) throw error;
+    },
+
+    async listMine(userId) {
+      const { data, error } = await client
+        .from('listings')
+        .select(
+          'id, destination_id, start_date, end_date, start_time, venue, level_wanted, players_needed, description, status, destinations(name)',
+        )
+        .eq('poster_id', userId)
+        .order('start_date');
+      if (error) throw error;
+      return (data ?? []).map(toMyListing);
+    },
+
+    async listDiscoverable() {
+      // The view already hides closed and past listings.
+      const { data, error } = await client
+        .from('discover_listings')
+        .select(
+          'id, destination_id, destination_name, start_date, end_date, start_time, venue, level_wanted, players_needed, description, poster_name, poster_skill_tier',
+        )
+        .order('start_date');
+      if (error) throw error;
+      return (data ?? []).flatMap((row) => toDiscoverListing(row) ?? []);
+    },
+  };
+}

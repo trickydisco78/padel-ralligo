@@ -1,4 +1,4 @@
-import { SKILL_TIERS, matchesFilters, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
+import { SKILL_TIERS, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
@@ -6,8 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@padel/auth';
 import { Chip, DateField, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
-import { ListingCard } from '@/components/listing-card';
-import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
+import { ListingCard, matchesFilters, useDiscoverListings } from '@padel/listings';
 import { useDestinations } from '@padel/destinations';
 import { activeTrip, useTrip } from '@padel/profiles';
 
@@ -26,28 +25,18 @@ export default function DiscoverScreen() {
   const { destinationId: destinationParam } = useLocalSearchParams<{ destinationId?: string }>();
   const { destinations } = useDestinations();
   const { data: savedTrip } = useTrip(userId);
-  const [listings, setListings] = useState<DiscoverListing[] | null>(null);
-  const [failed, setFailed] = useState(false);
+  const { listings, failed, refetch: refetchListings } = useDiscoverListings();
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   // Bumped when filters are replaced from outside, so the typed date fields pick up the new values.
   const [filterVersion, setFilterVersion] = useState(0);
   const [tripHandled, setTripHandled] = useState(false);
 
-  const load = useCallback(async () => {
-    try {
-      setListings(await fetchDiscoverListings());
-      setFailed(false);
-    } catch {
-      setFailed(true);
-    }
-  }, []);
-
   // Reload whenever the tab gains focus, so a listing just posted shows up.
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load]),
+      refetchListings();
+    }, [refetchListings]),
   );
 
   // A destination chosen elsewhere (e.g. a Home shortcut) replaces the filters and wins over the
@@ -76,7 +65,7 @@ export default function DiscoverScreen() {
 
   async function refresh() {
     setRefreshing(true);
-    await load();
+    await refetchListings();
     setRefreshing(false);
   }
 

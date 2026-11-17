@@ -5,9 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession, AccountActions } from '@padel/auth';
 import { Card, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
-import { ListingCard } from '@/components/listing-card';
 import { useDestinations } from '@padel/destinations';
-import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
+import { ListingCard, useDiscoverListings } from '@padel/listings';
 
 const UPCOMING_GAMES = 5;
 
@@ -15,22 +14,15 @@ export default function HomeScreen() {
   const { status } = useSession();
   const router = useRouter();
   const { destinations, failed: destinationsFailed, refetch: refetchDestinations } = useDestinations();
-  const [listings, setListings] = useState<DiscoverListing[] | null>(null);
-  const [listingsFailed, setListingsFailed] = useState(false);
+  const { listings, failed: listingsFailed, refetch: refetchListings } = useDiscoverListings();
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     await Promise.all([
       refetchDestinations(),
-      fetchDiscoverListings().then(
-        (list) => {
-          setListings(list);
-          setListingsFailed(false);
-        },
-        () => setListingsFailed(true),
-      ),
+      refetchListings(),
     ]);
-  }, [refetchDestinations]);
+  }, [refetchDestinations, refetchListings]);
 
   // Reload whenever the tab gains focus, so counts and games stay current.
   useFocusEffect(

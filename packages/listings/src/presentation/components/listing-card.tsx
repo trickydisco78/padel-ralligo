@@ -1,8 +1,9 @@
 import { View } from 'react-native';
 
 import { Card, Chip, ThemedText, Spacing } from '@padel/ui';
-import type { DiscoverListing } from '@/data/discover';
-import { dateParts, formatRange } from '@/lib/format';
+
+import type { DiscoverListing } from '../../domain/listing';
+import { dateParts, formatRange } from '../format-date';
 
 export function ListingCard({ listing }: { listing: DiscoverListing }) {
   const from = dateParts(listing.startDate);
