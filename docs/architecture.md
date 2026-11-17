@@ -62,11 +62,23 @@ ui, supabase, query, core ──► (no other @padel package; ui may use core)
 1. Create `packages/<name>` with `package.json` (`main` and `exports` set to `src/index.ts`), `tsconfig.json`,
    `eslint.config.mjs` and `jest.config.cjs`, copied from a small existing domain such as `destinations`.
 2. Add `src/{domain,infrastructure,presentation}` as needed, plus `src/composition.ts` and `src/index.ts`.
-3. Add the package to `publicApi` in `packages/eslint-config/tests/package-exports.test.mjs`, and to
+3. Give it a `turbo.json` (`{ "extends": ["//"], "tags": ["domain-base" | "domain-feature"] }`) so `turbo boundaries` covers it. Add the package to `publicApi` in `packages/eslint-config/tests/package-exports.test.mjs`, and to
    `DOMAIN_PACKAGES` in `packages/eslint-config/boundaries.js` so `@padel/ui` cannot import it.
 4. Consume it from `apps/mobile` (a route re-export or a composed screen).
 
 ## Enforcement
+
+Two tools, covering different things:
+
+- **`turbo boundaries`** (package level; `pnpm boundaries`, also run by `pnpm lint`). It reports a package that
+  imports something it does not list in its `package.json`, and a file that imports from outside its package.
+  Packages are tagged in their own `turbo.json`, and the root `turbo.json` denies edges between tags:
+  `shared` (`ui`, `supabase`, `query`, `core`) may not depend on a domain; `domain-base` (`auth`, `destinations`)
+  may not depend on a `domain-feature`; `domain-feature` (`profiles`, `listings`) may not depend on another
+  `domain-feature`. It is experimental in Turborepo, and tags work on `package.json` dependencies, not on the
+  import graph, so one bad edge can produce several errors.
+- **ESLint** (`pnpm lint`) enforces what turbo does not: deep imports (`@padel/x/src/...`) and the layer rules
+  inside a package.
 
 - `pnpm lint` fails on boundary violations. `pnpm test` runs `packages/eslint-config/tests`, which check that the
   lint rules fire and that each package exposes only its intended entry points.

@@ -1,6 +1,13 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "boundaries": {
+    "tags": {
+      "shared": { "dependencies": { "deny": ["domain-base", "domain-feature"] } },
+      "domain-base": { "dependencies": { "deny": ["domain-feature"] } },
+      "domain-feature": { "dependencies": { "deny": ["domain-feature"] } }
+    }
+  },
   "tasks": {
     "build": {
       "dependsOn": [
