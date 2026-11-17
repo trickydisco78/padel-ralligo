@@ -1,6 +1,6 @@
 /**
- * Architecture boundary rules (warnings until promoted to errors in the final
- * migration phase). See openspec/changes/monorepo-domain-architecture.
+ * Architecture boundary rules, enforced as errors. See docs/architecture.md and
+ * openspec/changes/monorepo-domain-architecture.
  *
  * Flat-config globs resolve relative to the package being linted, so the layer
  * rules apply inside any domain package that uses `src/{domain,application,
@@ -9,7 +9,7 @@
  * deep-import ban.
  */
 
-const SEVERITY = "warn";
+const SEVERITY = "error";
 
 const DEEP_IMPORT = {
   group: ["@padel/*/src", "@padel/*/src/**", "@padel/*/*/src/**"],

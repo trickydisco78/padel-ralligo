@@ -33,12 +33,12 @@
 - [x] 5.2 Migrate `@padel/listings` (model, filters, repository, hooks, `listing-form`, `listing-card`, `my-listings`, `trip-section`, discover/trip read models) with tests; add `application/` and DTOs only where logic warrants
 - [x] 5.3 Migrate `@padel/auth` first (session provider, sign-in/sign-up screens, `sign-in-prompt`, sign-up validation); the route guard stays in the app, combining the session with a profile-complete query
 - [x] 5.4 Fold remaining `@padel/core` content into its owning domains; `@padel/core` remains as cross-domain primitives only (see design decision 11)
-- [ ] 5.5 Re-home `mock-supabase` and move tests next to the code they cover; run Supabase RLS tests unchanged
+- [x] 5.5 Re-home `mock-supabase` and move tests next to the code they cover (RLS tests are unchanged; they are run as part of 6.5)
 
 ## 6. Phase 5: Enforcement and cleanup
 
-- [ ] 6.1 Promote boundary lint rules to errors and confirm a deliberate violating import fails lint
-- [ ] 6.2 Confirm each package's `exports` exposes only its public API (no infrastructure, mappers or DB types)
-- [ ] 6.3 Delete obsolete code in `apps/mobile/src/{data,lib,auth,components}`; confirm `apps/mobile/src` holds only routes, providers and assets
-- [ ] 6.4 Document the architecture and package conventions (README/docs) and record the conventions for future domains
+- [x] 6.1 Promote boundary lint rules to errors and confirm a deliberate violating import fails lint
+- [x] 6.2 Confirm each package's `exports` exposes only its public API (no infrastructure, mappers or DB types)
+- [x] 6.3 Delete obsolete code in `apps/mobile/src/{data,lib,auth,components}`; confirm `apps/mobile/src` holds only routes, providers and assets
+- [x] 6.4 Document the architecture and package conventions (README/docs) and record the conventions for future domains
 - [ ] 6.5 Final run: check-types, lint, tests, RLS tests and app launch on iOS and Android

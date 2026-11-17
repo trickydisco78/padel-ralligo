@@ -7,14 +7,13 @@ A padel player finding app. pnpm + Turborepo monorepo.
 | Path | What it is |
 | --- | --- |
 | `apps/mobile` | Expo (React Native) app using Expo Router: opens on Home, with Home / Discover / Create / Matches / Profile tabs. Home, Discover and destinations can be browsed without an account; Create, Matches and Profile need sign in |
-| `packages/core` | Shared domain rules in TypeScript source (no build step): listing, trip, profile and sign-up validation, date and filter logic |
+| `packages/*` | Workspace packages, used only through their public entry points. Domains: `auth`, `destinations`, `profiles`, `listings`. Shared: `ui`, `supabase`, `query`, `core` (cross-domain primitives). See [`docs/architecture.md`](docs/architecture.md) |
 | `supabase` | Database migrations, row-level security and security tests for the hosted Supabase project |
-| `packages/typescript-config` | Shared `tsconfig` bases |
-| `packages/eslint-config` | Shared ESLint configs |
+| `packages/typescript-config`, `packages/eslint-config`, `packages/jest-config` | Shared `tsconfig` bases, ESLint configs (including the architecture boundary rules) and Jest presets |
 
-A web app is planned; it will live in `apps/web` and can reuse `@padel/core`.
+A web app is planned; it will live in `apps/web` and can reuse the domain rules and repositories in the workspace packages.
 
-Product background and design references are in [`docs/`](docs/): `product-vision.md`, `first-pass-prototype.md` and `design-reference.md`.
+Package boundaries and conventions are in [`docs/architecture.md`](docs/architecture.md). Product background and design references are in [`docs/`](docs/): `product-vision.md`, `first-pass-prototype.md` and `design-reference.md`.
 
 ## Setup
 
