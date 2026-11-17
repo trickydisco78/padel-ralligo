@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { render } from '@padel/query/testing';
 
-import { DestinationPicker } from '@/components/destination-picker';
+import { DestinationPicker } from '../src/presentation/components/destination-picker';
 import { mockState, resetMockSupabase } from '@padel/supabase/testing';
 
 jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));

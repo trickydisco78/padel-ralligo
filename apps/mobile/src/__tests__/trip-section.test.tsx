@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { TripSection } from '@/components/trip-section';
 import { activeTrip } from '@/data/trip';
@@ -18,9 +19,9 @@ beforeEach(() => {
 
 const renderSection = (today = '2026-02-10') =>
   render(
-    <SessionProvider>
+    <QueryTestProvider><SessionProvider>
       <TripSection today={today} />
-    </SessionProvider>,
+    </SessionProvider></QueryTestProvider>,
   );
 
 describe('TripSection', () => {

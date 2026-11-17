@@ -3,6 +3,7 @@ import { Slot } from 'expo-router';
 import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import DiscoverScreen from '@/app/(tabs)/discover';
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
@@ -48,9 +49,9 @@ const open = (url = '/') =>
   renderRouter(
     {
       _layout: () => (
-        <SessionProvider>
+        <QueryTestProvider><SessionProvider>
           <Slot />
-        </SessionProvider>
+        </SessionProvider></QueryTestProvider>
       ),
       index: DiscoverScreen,
     },

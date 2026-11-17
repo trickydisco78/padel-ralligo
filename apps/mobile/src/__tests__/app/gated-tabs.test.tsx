@@ -4,6 +4,7 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import CreateScreen from '@/app/(tabs)/create';
 import MatchesScreen from '@/app/(tabs)/matches';
 import ProfileScreen from '@/app/(tabs)/profile';
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
@@ -12,9 +13,9 @@ jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing')
 function routesFor(Screen: () => React.JSX.Element) {
   return {
     _layout: () => (
-      <SessionProvider>
+      <QueryTestProvider><SessionProvider>
         <Stack screenOptions={{ headerShown: false }} />
-      </SessionProvider>
+      </SessionProvider></QueryTestProvider>
     ),
     index: Screen,
   };

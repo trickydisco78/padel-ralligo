@@ -15,7 +15,7 @@ import { View } from 'react-native';
 import { useSession } from '@/auth/session';
 import { Chip, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { DateField } from '@/components/date-field';
-import { DestinationPicker } from '@/components/destination-picker';
+import { DestinationPicker } from '@padel/destinations';
 import { createListing, updateListing, type MyListing } from '@/data/listings';
 
 const PLAYER_COUNTS = Array.from(

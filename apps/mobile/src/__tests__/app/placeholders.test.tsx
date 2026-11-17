@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
 
 import MatchesScreen from '@/app/(tabs)/matches';
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
@@ -13,9 +14,9 @@ describe('Matches placeholder screen', () => {
     mockState.session = fakeSession();
     mockState.profile = { id: 'user-1', profile_sports: [{ skill_tier: 'Beginner' }] };
     await render(
-      <SessionProvider>
+      <QueryTestProvider><SessionProvider>
         <MatchesScreen />
-      </SessionProvider>,
+      </SessionProvider></QueryTestProvider>,
     );
     await waitFor(() => expect(screen.getByText('Coming soon')).toBeTruthy());
     expect(screen.getByText('Matches')).toBeTruthy();

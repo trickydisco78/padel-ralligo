@@ -7,7 +7,7 @@ import { useSession } from '@/auth/session';
 import { AccountActions } from '@/components/account-actions';
 import { Card, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { ListingCard } from '@/components/listing-card';
-import { fetchDestinations, type DestinationWithCount } from '@/data/destinations';
+import { useDestinations } from '@padel/destinations';
 import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
 
 const UPCOMING_GAMES = 5;
@@ -15,21 +15,14 @@ const UPCOMING_GAMES = 5;
 export default function HomeScreen() {
   const { status } = useSession();
   const router = useRouter();
-  const [destinations, setDestinations] = useState<DestinationWithCount[] | null>(null);
+  const { destinations, failed: destinationsFailed, refetch: refetchDestinations } = useDestinations();
   const [listings, setListings] = useState<DiscoverListing[] | null>(null);
-  const [destinationsFailed, setDestinationsFailed] = useState(false);
   const [listingsFailed, setListingsFailed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     await Promise.all([
-      fetchDestinations().then(
-        (list) => {
-          setDestinations(list);
-          setDestinationsFailed(false);
-        },
-        () => setDestinationsFailed(true),
-      ),
+      refetchDestinations(),
       fetchDiscoverListings().then(
         (list) => {
           setListings(list);
@@ -38,7 +31,7 @@ export default function HomeScreen() {
         () => setListingsFailed(true),
       ),
     ]);
-  }, []);
+  }, [refetchDestinations]);
 
   // Reload whenever the tab gains focus, so counts and games stay current.
   useFocusEffect(

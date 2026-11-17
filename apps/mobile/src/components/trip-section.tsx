@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { DateField } from '@/components/date-field';
-import { DestinationPicker } from '@/components/destination-picker';
+import { DestinationPicker } from '@padel/destinations';
 import { PrimaryButton, ThemedText, Spacing } from '@padel/ui';
 import { activeTrip, clearTrip, fetchTrip, saveTrip } from '@/data/trip';
 

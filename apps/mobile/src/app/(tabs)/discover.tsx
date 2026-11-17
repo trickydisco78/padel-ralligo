@@ -9,7 +9,7 @@ import { Chip, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@pad
 import { DateField } from '@/components/date-field';
 import { ListingCard } from '@/components/listing-card';
 import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
-import { useDestinations } from '@/data/use-destinations';
+import { useDestinations } from '@padel/destinations';
 import { activeTrip, fetchTrip } from '@/data/trip';
 
 type Filters = {

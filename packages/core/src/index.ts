@@ -2,7 +2,6 @@ export { currentListings, datesOverlap, listingEnd, matchesFilters } from "./fil
 export type { Filterable, ListingFilters } from "./filters";
 export { LEVELS_WANTED, SKILL_TIERS } from "./types";
 export type {
-  Destination,
   IsoDate,
   LevelWanted,
   Listing,

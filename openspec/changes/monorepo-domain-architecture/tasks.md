@@ -21,11 +21,11 @@
 
 ## 4. Phase 3: Query and destinations (reference domain)
 
-- [ ] 4.1 Create `@padel/query` (QueryClient factory) and wire the provider in `apps/mobile` root layout
-- [ ] 4.2 Create `@padel/destinations`: domain model, repository contract, Supabase repository, mapper, `useDestinations` query hook, `destination-picker`
-- [ ] 4.3 Write mapper and use-case/repository tests with a mock repository (no live Supabase)
-- [ ] 4.4 Point existing routes/screens at the package; remove `data/destinations.ts` and `data/use-destinations.ts`
-- [ ] 4.5 Verify loading/error states match prior behaviour; run all checks and launch the app
+- [x] 4.1 Create `@padel/query` (QueryClient factory) and wire the provider in `apps/mobile` root layout
+- [x] 4.2 Create `@padel/destinations`: domain model, repository contract, Supabase repository, mapper, `useDestinations` query hook, `destination-picker`
+- [x] 4.3 Write mapper and use-case/repository tests with a mock repository (no live Supabase)
+- [x] 4.4 Point existing routes/screens at the package; remove `data/destinations.ts` and `data/use-destinations.ts`
+- [x] 4.5 Verify loading/error states match prior behaviour; run all checks and launch the app
 
 ## 5. Phase 4: Remaining domains
 

@@ -1,6 +1,7 @@
 import { toIsoDate } from '@padel/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
+import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@/auth/session';
 import { MyListings } from '@/components/my-listings';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
@@ -39,9 +40,9 @@ beforeEach(() => {
 
 const renderIt = () =>
   render(
-    <SessionProvider>
+    <QueryTestProvider><SessionProvider>
       <MyListings />
-    </SessionProvider>,
+    </SessionProvider></QueryTestProvider>,
   );
 
 describe('MyListings', () => {
