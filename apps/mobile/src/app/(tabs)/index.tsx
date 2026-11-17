@@ -3,8 +3,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSession } from '@/auth/session';
-import { AccountActions } from '@/components/account-actions';
+import { useSession, AccountActions } from '@padel/auth';
 import { Card, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { ListingCard } from '@/components/listing-card';
 import { useDestinations } from '@padel/destinations';

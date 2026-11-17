@@ -2,7 +2,7 @@ import { toIsoDate, validateTrip, type FieldErrors, type IsoDate } from '@padel/
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { useSession } from '@/auth/session';
+import { useSession } from '@padel/auth';
 import { DateField } from '@/components/date-field';
 import { DestinationPicker } from '@padel/destinations';
 import { PrimaryButton, ThemedText, Spacing } from '@padel/ui';

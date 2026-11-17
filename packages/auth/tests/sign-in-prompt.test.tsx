@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
-import { SignInPrompt } from '@/components/sign-in-prompt';
+import { SignInPrompt } from '../src/presentation/components/sign-in-prompt';
 
 const routes = {
   _layout: () => <Stack screenOptions={{ headerShown: false }} />,

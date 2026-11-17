@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { QueryTestProvider } from '@padel/query/testing';
-import { SessionProvider } from '@/auth/session';
+import { SessionProvider } from '@padel/auth';
 import { ListingForm } from '@/components/listing-form';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 

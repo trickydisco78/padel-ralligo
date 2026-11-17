@@ -4,7 +4,7 @@ import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-li
 
 import DiscoverScreen from '@/app/(tabs)/discover';
 import { QueryTestProvider } from '@padel/query/testing';
-import { SessionProvider } from '@/auth/session';
+import { SessionProvider } from '@padel/auth';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
 jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));

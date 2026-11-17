@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { useSession } from '@/auth/session';
+import { useSession } from '@padel/auth';
 import { Card, Chip, PrimaryButton, ThemedText, Spacing } from '@padel/ui';
 import { ListingForm } from '@/components/listing-form';
 import { closeListing, fetchMyListings, type MyListing } from '@/data/listings';

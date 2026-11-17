@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 
-import { useSession } from '@/auth/session';
+import { useAppStatus } from '@/session/app-status';
 import { ThemedView, Colors } from '@padel/ui';
 
 /**
@@ -9,7 +9,7 @@ import { ThemedView, Colors } from '@padel/ui';
  * and reach the auth screens from them; signed-in users without a profile are held at setup.
  */
 export function RootStack() {
-  const { status } = useSession();
+  const status = useAppStatus();
 
   if (status === 'loading') {
     return (

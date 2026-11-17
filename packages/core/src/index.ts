@@ -17,7 +17,6 @@ export {
   MAX_HOME_CITY_LENGTH,
   MAX_PLAYERS_NEEDED,
   MIN_DISPLAY_NAME_LENGTH,
-  MIN_PASSWORD_LENGTH,
   MIN_PLAYERS_NEEDED,
   isTripActive,
   parseIsoDate,
@@ -25,14 +24,13 @@ export {
   toIsoDate,
   validateListing,
   validateProfile,
-  validateSignUp,
   validateTrip,
+  validationResult,
 } from "./validation";
 export type {
   FieldErrors,
   ListingInput,
   ProfileInput,
-  SignUpInput,
   TripInput,
   ValidationResult,
 } from "./validation";

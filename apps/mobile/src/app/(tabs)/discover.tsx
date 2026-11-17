@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSession } from '@/auth/session';
+import { useSession } from '@padel/auth';
 import { Chip, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { DateField } from '@/components/date-field';
 import { ListingCard } from '@/components/listing-card';

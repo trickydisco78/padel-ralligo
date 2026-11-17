@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { QueryTestProvider } from '@padel/query/testing';
-import { SessionProvider } from '@/auth/session';
+import { SessionProvider } from '@padel/auth';
 import { TripSection } from '@/components/trip-section';
 import { activeTrip } from '@/data/trip';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';

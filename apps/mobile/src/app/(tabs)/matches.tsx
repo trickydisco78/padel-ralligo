@@ -1,6 +1,5 @@
-import { useSession } from '@/auth/session';
+import { useSession, SignInPrompt } from '@padel/auth';
 import { PlaceholderScreen } from '@/components/placeholder-screen';
-import { SignInPrompt } from '@/components/sign-in-prompt';
 
 export default function MatchesScreen() {
   const { status } = useSession();

@@ -3,7 +3,7 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
 import { QueryTestProvider } from '@padel/query/testing';
-import { SessionProvider } from '@/auth/session';
+import { SessionProvider } from '@padel/auth';
 import { RootStack } from '@/components/root-stack';
 import { fakeSession, mockState, resetMockSupabase, supabase } from '@padel/supabase/testing';
 
