@@ -1,50 +1,32 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
 import { Card, Chip, PrimaryButton, ThemedText, Spacing } from '@padel/ui';
-import { ListingForm } from '@/components/listing-form';
-import { closeListing, fetchMyListings, type MyListing } from '@/data/listings';
-import { formatRange } from '@/lib/format';
+
+import { formatRange } from '../format-date';
+import { useCloseListing, useMyListings } from '../hooks/use-listings';
+import { ListingForm } from './listing-form';
 
 export function MyListings() {
   const { user } = useSession();
   const userId = user?.id;
-  const [listings, setListings] = useState<MyListing[] | null>(null);
+  const { data: listings, isPending, isError } = useMyListings(userId);
+  const closeListing = useCloseListing();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setListings(await fetchMyListings(userId));
-    } catch {
-      setError('Could not load your listings.');
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-    fetchMyListings(userId)
-      .then((rows) => !cancelled && setListings(rows))
-      .catch(() => !cancelled && setError('Could not load your listings.'));
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const error = closeError ?? (isError ? 'Could not load your listings.' : null);
 
   async function close(id: string) {
-    setError(null);
+    setCloseError(null);
     try {
-      await closeListing(id);
-      await load();
+      await closeListing.mutateAsync(id);
     } catch {
-      setError('Could not close that listing. Please try again.');
+      setCloseError('Could not close that listing. Please try again.');
     }
   }
 
-  if (listings === null && !error) return null;
+  if (isPending && !error) return null;
 
   return (
     <View style={{ gap: Spacing.three }}>
@@ -59,7 +41,6 @@ export function MyListings() {
               existing={l}
               onPosted={() => {
                 setEditingId(null);
-                load();
               }}
             />
             <PrimaryButton title="Cancel" onPress={() => setEditingId(null)} />

@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 
 import { QueryTestProvider } from '@padel/query/testing';
 import { SessionProvider } from '@padel/auth';
-import { MyListings } from '@/components/my-listings';
+import { MyListings } from '../src/presentation/components/my-listings';
 import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
 jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));

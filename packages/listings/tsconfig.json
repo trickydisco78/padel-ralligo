@@ -1,0 +1,5 @@
+{
+  "extends": ["expo/tsconfig.base", "@padel/typescript-config/react-native.json"],
+  "compilerOptions": { "types": ["expo/types", "jest"] },
+  "include": ["src", "tests", "jest.config.cjs"]
+}

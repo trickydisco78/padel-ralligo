@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession, SignInPrompt } from '@padel/auth';
 import { ProfileForm, TripSection, useProfile } from '@padel/profiles';
-import { MyListings } from '@/components/my-listings';
+import { MyListings } from '@padel/listings';
 import { PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function ProfileScreen() {

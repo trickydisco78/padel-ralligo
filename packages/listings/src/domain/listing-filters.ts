@@ -1,7 +1,9 @@
-import type { IsoDate, Listing, SkillTier } from "./types";
+import type { IsoDate, SkillTier } from '@padel/core';
+
+import type { Listing } from './listing';
 
 /** A listing with no end date occupies only its start date. */
-export function listingEnd(listing: Pick<Listing, "startDate" | "endDate">): IsoDate {
+export function listingEnd(listing: Pick<Listing, 'startDate' | 'endDate'>): IsoDate {
   return listing.endDate ?? listing.startDate;
 }
 
@@ -22,7 +24,7 @@ export type ListingFilters = {
   level?: SkillTier | null;
 };
 
-export type Filterable = Pick<Listing, "destinationId" | "startDate" | "endDate" | "levelWanted">;
+export type Filterable = Pick<Listing, 'destinationId' | 'startDate' | 'endDate' | 'levelWanted'>;
 
 export function matchesFilters(listing: Filterable, filters: ListingFilters): boolean {
   if (filters.destinationId && listing.destinationId !== filters.destinationId) return false;
@@ -31,7 +33,7 @@ export function matchesFilters(listing: Filterable, filters: ListingFilters): bo
   if (filters.startDate && end < filters.startDate) return false;
   if (filters.endDate && listing.startDate > filters.endDate) return false;
 
-  if (filters.level && listing.levelWanted !== "Any" && listing.levelWanted !== filters.level) {
+  if (filters.level && listing.levelWanted !== 'Any' && listing.levelWanted !== filters.level) {
     return false;
   }
 
@@ -41,6 +43,6 @@ export function matchesFilters(listing: Filterable, filters: ListingFilters): bo
 /** Open, current listings (not past, not closed), soonest first. */
 export function currentListings(listings: Listing[], today: IsoDate): Listing[] {
   return listings
-    .filter((l) => l.status === "open" && listingEnd(l) >= today)
+    .filter((l) => l.status === 'open' && listingEnd(l) >= today)
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
 }

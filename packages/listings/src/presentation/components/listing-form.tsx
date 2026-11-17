@@ -1,21 +1,20 @@
-import {
-  LEVELS_WANTED,
-  MAX_PLAYERS_NEEDED,
-  MIN_PLAYERS_NEEDED,
-  parseTime,
-  toIsoDate,
-  validateListing,
-  type FieldErrors,
-  type IsoDate,
-  type LevelWanted,
-} from '@padel/core';
+import { parseTime, toIsoDate, type FieldErrors, type IsoDate } from '@padel/core';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
 import { Chip, DateField, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { DestinationPicker } from '@padel/destinations';
-import { createListing, updateListing, type MyListing } from '@/data/listings';
+
+import {
+  LEVELS_WANTED,
+  MAX_PLAYERS_NEEDED,
+  MIN_PLAYERS_NEEDED,
+  validateListing,
+  type LevelWanted,
+  type MyListing,
+} from '../../domain/listing';
+import { useCreateListing, useUpdateListing } from '../hooks/use-listings';
 
 const PLAYER_COUNTS = Array.from(
   { length: MAX_PLAYERS_NEEDED - MIN_PLAYERS_NEEDED + 1 },
@@ -31,6 +30,8 @@ type Props = {
 
 export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted }: Props) {
   const { user } = useSession();
+  const createListing = useCreateListing();
+  const updateListing = useUpdateListing();
   const [formKey, setFormKey] = useState(0);
   const [destinationId, setDestinationId] = useState<string | null>(existing?.destinationId ?? null);
   const [startDate, setStartDate] = useState<IsoDate | null>(existing?.startDate ?? null);
@@ -93,9 +94,9 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
         description,
       };
       if (existing) {
-        await updateListing(existing.id, listing);
+        await updateListing.mutateAsync({ id: existing.id, listing });
       } else {
-        await createListing(user.id, listing);
+        await createListing.mutateAsync({ userId: user.id, listing });
         reset();
       }
       setPosted(true);
