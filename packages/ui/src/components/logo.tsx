@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { Colors, Typeface } from '@/constants/theme';
+import { Colors, Typeface } from '../theme/tokens';
 
 /**
  * The "Ralligo" wordmark: heavy navy letters, with the dot of the "i" drawn as a green padel ball.

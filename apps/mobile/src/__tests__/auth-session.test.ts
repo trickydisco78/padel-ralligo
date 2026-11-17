@@ -1,6 +1,6 @@
 import { deriveStatus } from '@/auth/session';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 const session = { user: { id: 'u' } } as never;
 

@@ -1,9 +1,7 @@
 import { SKILL_TIERS, type SkillTier } from '@padel/core';
 import { View } from 'react-native';
 
-import { Chip } from '@/components/chip';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Chip, ThemedText, Spacing } from '@padel/ui';
 
 type Props = {
   value: SkillTier | null;

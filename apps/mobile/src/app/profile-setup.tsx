@@ -2,9 +2,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileForm } from '@/components/profile-form';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 /** Shown after first sign in; saving the profile moves the user on to the tabs. */
 export default function ProfileSetupScreen() {

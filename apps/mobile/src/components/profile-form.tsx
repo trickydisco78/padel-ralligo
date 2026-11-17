@@ -3,12 +3,9 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@/auth/session';
-import { PrimaryButton } from '@/components/primary-button';
+import { PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { SkillTierPicker } from '@/components/skill-tier-picker';
-import { TextField } from '@/components/text-field';
-import { ThemedText } from '@/components/themed-text';
 import { saveProfile, type ProfileData } from '@/data/profile';
-import { Spacing } from '@/constants/theme';
 
 type Props = {
   initial?: ProfileData | null;

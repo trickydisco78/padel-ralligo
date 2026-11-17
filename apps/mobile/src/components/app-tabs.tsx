@@ -1,5 +1,5 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { Colors } from '@/constants/theme';
+import { Colors } from '@padel/ui';
 
 export default function AppTabs() {
   const colors = Colors.light;

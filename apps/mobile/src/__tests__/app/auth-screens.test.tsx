@@ -4,9 +4,9 @@ import { Text } from 'react-native';
 
 import SignInScreen from '@/app/(auth)/sign-in';
 import SignUpScreen from '@/app/(auth)/sign-up';
-import { supabase } from '@/test/mock-supabase';
+import { supabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 const routes = {
   '(auth)/_layout': () => <Stack screenOptions={{ headerShown: false }} />,

@@ -1,7 +1,6 @@
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { ThemedText, Colors, Radius, Spacing } from '@padel/ui';
 import { useDestinations } from '@/data/use-destinations';
 
 type Props = {

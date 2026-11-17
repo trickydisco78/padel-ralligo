@@ -1,4 +1,4 @@
-import { readSupabaseConfig } from '../supabase-config';
+import { readSupabaseConfig } from '../src/supabase-config';
 
 describe('readSupabaseConfig', () => {
   it('returns the url and key when both are set', () => {

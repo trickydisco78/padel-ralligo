@@ -5,13 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/auth/session';
 import { AccountActions } from '@/components/account-actions';
-import { Card } from '@/components/card';
-import { Logo } from '@/components/logo';
+import { Card, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { ListingCard } from '@/components/listing-card';
-import { PrimaryButton } from '@/components/primary-button';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 import { fetchDestinations, type DestinationWithCount } from '@/data/destinations';
 import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
 

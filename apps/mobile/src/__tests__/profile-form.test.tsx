@@ -3,9 +3,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import ProfileScreen from '@/app/(tabs)/profile';
 import ProfileSetupScreen from '@/app/profile-setup';
 import { SessionProvider } from '@/auth/session';
-import { fakeSession, mockState, resetMockSupabase } from '@/test/mock-supabase';
+import { fakeSession, mockState, resetMockSupabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 beforeEach(() => {
   resetMockSupabase();

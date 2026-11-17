@@ -1,4 +1,4 @@
-import { secureStorage } from '../secure-storage';
+import { secureStorage } from '../src/secure-storage';
 
 const mockStore = new Map<string, string>();
 
@@ -55,8 +55,8 @@ describe('secureStorage off native', () => {
   it('does not touch SecureStore on web', async () => {
     jest.resetModules();
     jest.doMock('react-native', () => ({ Platform: { OS: 'web' } }));
-    const SecureStore = require('expo-secure-store');
-    const { secureStorage: webStorage } = require('../secure-storage');
+    const SecureStore = jest.requireMock('expo-secure-store');
+    const { secureStorage: webStorage } = jest.requireActual('../src/secure-storage');
 
     expect(await webStorage.getItem('sb-auth')).toBeNull();
     await webStorage.setItem('sb-auth', 'x');

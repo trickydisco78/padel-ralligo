@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { ThemedText } from './themed-text';
+import { Colors, Radius, Spacing } from '../theme/tokens';
 
 type Props = {
   title: string;

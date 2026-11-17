@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { DestinationPicker } from '@/components/destination-picker';
-import { mockState, resetMockSupabase } from '@/test/mock-supabase';
+import { mockState, resetMockSupabase } from '@padel/supabase/testing';
 
-jest.mock('@/lib/supabase', () => jest.requireActual('@/test/mock-supabase'));
+jest.mock('@padel/supabase', () => jest.requireActual('@padel/supabase/testing'));
 
 const row = (id: string, name: string, open_listings: number) => ({
   id,

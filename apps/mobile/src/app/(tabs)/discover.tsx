@@ -5,14 +5,9 @@ import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/auth/session';
-import { Chip } from '@/components/chip';
+import { Chip, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { DateField } from '@/components/date-field';
 import { ListingCard } from '@/components/listing-card';
-import { Logo } from '@/components/logo';
-import { PrimaryButton } from '@/components/primary-button';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 import { fetchDiscoverListings, type DiscoverListing } from '@/data/discover';
 import { useDestinations } from '@/data/use-destinations';
 import { activeTrip, fetchTrip } from '@/data/trip';

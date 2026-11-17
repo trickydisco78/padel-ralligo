@@ -13,13 +13,9 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@/auth/session';
-import { Chip } from '@/components/chip';
+import { Chip, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 import { DateField } from '@/components/date-field';
 import { DestinationPicker } from '@/components/destination-picker';
-import { PrimaryButton } from '@/components/primary-button';
-import { TextField } from '@/components/text-field';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
 import { createListing, updateListing, type MyListing } from '@/data/listings';
 
 const PLAYER_COUNTS = Array.from(
