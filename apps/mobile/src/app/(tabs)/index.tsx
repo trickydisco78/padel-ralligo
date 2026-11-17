@@ -3,15 +3,13 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSession, AccountActions } from '@padel/auth';
-import { Card, Logo, PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { Card, Colors, Logo, PrimaryButton, Radius, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { useDestinations } from '@padel/destinations';
 import { ListingCard, useDiscoverListings } from '@padel/listings';
 
 const UPCOMING_GAMES = 5;
 
 export default function HomeScreen() {
-  const { status } = useSession();
   const router = useRouter();
   const { destinations, failed: destinationsFailed, refetch: refetchDestinations } = useDestinations();
   const { listings, failed: listingsFailed, refetch: refetchListings } = useDiscoverListings();
@@ -53,15 +51,23 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
 
-          {status === 'signedOut' ? (
-            <Card>
-              <ThemedText type="smallBold">Join in</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                Create an account to post a game, message players and build your profile.
-              </ThemedText>
-              <AccountActions />
-            </Card>
-          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Search for a city or destination"
+            accessibilityHint="Opens Discover so you can search"
+            onPress={() => router.push({ pathname: '/discover', params: { focusSearch: '1' } })}
+            style={{
+              borderWidth: 1,
+              borderColor: Colors.light.border,
+              borderRadius: Radius.button,
+              backgroundColor: Colors.light.backgroundElement,
+              paddingVertical: Spacing.three,
+              paddingHorizontal: Spacing.three,
+              minHeight: 48,
+              justifyContent: 'center',
+            }}>
+            <ThemedText themeColor="textSecondary">Search a city or destination</ThemedText>
+          </Pressable>
 
           <View style={{ gap: Spacing.two }}>
             <ThemedText type="subtitle">Destinations</ThemedText>
@@ -105,7 +111,11 @@ export default function HomeScreen() {
             ) : (
               <>
                 {upcoming.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    onPress={() => router.push({ pathname: '/match/[id]', params: { id: listing.id } })}
+                  />
                 ))}
                 <PrimaryButton title="See all games" onPress={() => router.push('/discover')} />
               </>

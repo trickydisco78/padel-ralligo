@@ -26,7 +26,7 @@ describe('SignInPrompt', () => {
 
   it('opens the sign-up screen', async () => {
     await renderRouter(routes);
-    await fireEvent.press(screen.getByText('Create an account'));
+    await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
     await waitFor(() => expect(screen.getByText('Sign-up screen')).toBeTruthy());
   });
 });

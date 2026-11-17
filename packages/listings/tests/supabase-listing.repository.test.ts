@@ -86,4 +86,58 @@ describe('createSupabaseListingRepository', () => {
     mockState.listingsError = { message: 'down' };
     await expect(repository.listDiscoverable()).rejects.toEqual({ message: 'down' });
   });
+
+  describe('getDiscoverable', () => {
+    const row = {
+      id: 'm1',
+      destination_id: 'd1',
+      destination_name: 'Marbella',
+      destination_country: 'Spain',
+      start_date: '2026-02-20',
+      level_wanted: 'Any',
+      players_needed: 2,
+      poster_name: 'Leon',
+    };
+
+    it('returns the public match with that id', async () => {
+      mockState.listings = [row, { ...row, id: 'm2' }];
+      expect(await repository.getDiscoverable('m1')).toMatchObject({
+        id: 'm1',
+        destinationName: 'Marbella',
+        destinationCountry: 'Spain',
+        posterName: 'Leon',
+      });
+    });
+
+    it('returns null for an id the view does not show (closed, past or unknown)', async () => {
+      mockState.listings = [row];
+      expect(await repository.getDiscoverable('closed-or-missing')).toBeNull();
+    });
+
+    it('returns null when the row lacks the fields a match needs', async () => {
+      mockState.listings = [{ id: 'm9', destination_id: null, start_date: null }];
+      expect(await repository.getDiscoverable('m9')).toBeNull();
+    });
+
+    it('treats a malformed id (invalid uuid) as not found rather than a failure', async () => {
+      mockState.listingsError = { code: '22P02', message: 'invalid input syntax for type uuid: "nope"' };
+      expect(await repository.getDiscoverable('nope')).toBeNull();
+    });
+
+    it('throws when the request fails', async () => {
+      mockState.listingsError = { message: 'down' };
+      await expect(repository.getDiscoverable('m1')).rejects.toEqual({ message: 'down' });
+    });
+
+    it('only asks the public view for its permitted columns', async () => {
+      const select = jest.fn(() => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }));
+      const from = jest.fn(() => ({ select }));
+      await createSupabaseListingRepository({ from } as unknown as TypedSupabaseClient).getDiscoverable('m1');
+
+      expect(from).toHaveBeenCalledWith('discover_listings');
+      const columns = (select.mock.calls[0] as unknown as [string])[0].split(',').map((column) => column.trim());
+      expect(columns).not.toContain('poster_id');
+      expect(columns.every((column) => !/email|user_id|poster_id|consent/i.test(column))).toBe(true);
+    });
+  });
 });

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
 
 import { ThemedText } from './themed-text';
@@ -6,6 +7,8 @@ import { Colors, Radius, Spacing } from '../theme/tokens';
 type Props = TextInputProps & {
   label: string;
   error?: string;
+  /** For moving focus into the field, e.g. when arriving from a search entry elsewhere. */
+  ref?: ComponentProps<typeof TextInput>['ref'];
 };
 
 export function TextField({ label, error, style, ...rest }: Props) {

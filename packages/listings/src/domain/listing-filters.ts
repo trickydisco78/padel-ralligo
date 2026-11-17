@@ -1,6 +1,6 @@
-import type { IsoDate, SkillTier } from '@padel/core';
+import { matchesSearchText, type IsoDate, type SkillTier } from '@padel/core';
 
-import type { Listing } from './listing';
+import type { DiscoverListing, Listing } from './listing';
 
 /** A listing with no end date occupies only its start date. */
 export function listingEnd(listing: Pick<Listing, 'startDate' | 'endDate'>): IsoDate {
@@ -45,4 +45,12 @@ export function currentListings(listings: Listing[], today: IsoDate): Listing[] 
   return listings
     .filter((l) => l.status === 'open' && listingEnd(l) >= today)
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
+}
+
+/** Free-text search over the destination, its country and the venue. A blank query matches everything. */
+export function matchesSearch(
+  listing: Pick<DiscoverListing, 'destinationName' | 'destinationCountry' | 'venue'>,
+  query: string,
+): boolean {
+  return matchesSearchText(query, listing.destinationName, listing.destinationCountry, listing.venue);
 }

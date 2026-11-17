@@ -1,7 +1,8 @@
 import { Stack } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
-import { useAppStatus } from '@/session/app-status';
+import { useAppStatus, type AppStatus } from '@/session/app-status';
 import { ThemedView, Colors } from '@padel/ui';
 
 /**
@@ -9,7 +10,13 @@ import { ThemedView, Colors } from '@padel/ui';
  * and reach the auth screens from them; signed-in users without a profile are held at setup.
  */
 export function RootStack() {
-  const status = useAppStatus();
+  const current = useAppStatus();
+
+  // The spinner is for the very first status only. Later `loading` moments (for example the profile
+  // check right after a guest signs in) keep the previous status, so the screens underneath stay
+  // mounted and the user's place, filters and scroll position are not thrown away.
+  const [status, setStatus] = useState<AppStatus>(current);
+  if (current !== 'loading' && current !== status) setStatus(current);
 
   if (status === 'loading') {
     return (
@@ -23,6 +30,7 @@ export function RootStack() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={status === 'signedOut' || status === 'ready'}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="match/[id]" />
       </Stack.Protected>
       <Stack.Protected guard={status === 'signedOut'}>
         <Stack.Screen name="(auth)" />

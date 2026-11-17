@@ -7,7 +7,7 @@ import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function CreateScreen() {
   const { status } = useSession();
-  if (status === 'signedOut') return <SignInPrompt message="Create an account to post a game and find players." />;
+  if (status === 'signedOut') return <SignInPrompt message="Create an account to post a game and find players." intent={{ type: 'createMatch' }} />;
 
   return (
     <ThemedView style={{ flex: 1 }}>

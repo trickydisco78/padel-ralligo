@@ -53,7 +53,7 @@ export function SignUpScreen() {
                 <ThemedText>
                   Check your email to verify your account, then sign in.
                 </ThemedText>
-                <Link href="/sign-in" asChild>
+                <Link href="/sign-in" replace asChild>
                   <PrimaryButton title="Go to sign in" onPress={() => {}} />
                 </Link>
               </>
@@ -94,7 +94,7 @@ export function SignUpScreen() {
                   </ThemedText>
                 ) : null}
                 <PrimaryButton title="Sign up" onPress={submit} disabled={submitting} />
-                <Link href="/sign-in">
+                <Link href="/sign-in" replace>
                   <ThemedText type="link" themeColor="primary">
                     Already have an account? Sign in
                   </ThemedText>

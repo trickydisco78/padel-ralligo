@@ -13,7 +13,15 @@ export default function ProfileScreen() {
   const userId = user?.id;
   const { data: profile, isPending } = useProfile(userId);
 
-  if (status === 'signedOut') return <SignInPrompt message="Sign in to view and edit your profile." />;
+  if (status === 'signedOut') {
+    return (
+      <SignInPrompt
+        title="Your padel profile"
+        message="Sign in or create an account to connect with players, manage your games and track your activity."
+        intent={{ type: 'openProfile' }}
+      />
+    );
+  }
 
   return (
     <ThemedView style={{ flex: 1 }}>

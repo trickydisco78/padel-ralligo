@@ -1,15 +1,21 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { Card, Chip, ThemedText, Spacing } from '@padel/ui';
 
 import type { DiscoverListing } from '../../domain/listing';
 import { dateParts, formatRange } from '../format-date';
 
-export function ListingCard({ listing }: { listing: DiscoverListing }) {
+type Props = {
+  listing: DiscoverListing;
+  /** When set the card opens the match; the screen supplies the navigation so this package stays router-free. */
+  onPress?: () => void;
+};
+
+export function ListingCard({ listing, onPress }: Props) {
   const from = dateParts(listing.startDate);
   const spots = `${listing.playersNeeded} ${listing.playersNeeded === 1 ? 'spot' : 'spots'} needed`;
 
-  return (
+  const card = (
     <Card style={{ flexDirection: 'row', gap: Spacing.three }}>
       <View style={{ alignItems: 'center', minWidth: 48 }}>
         <ThemedText type="small" themeColor="textSecondary">{from.weekday}</ThemedText>
@@ -35,5 +41,17 @@ export function ListingCard({ listing }: { listing: DiscoverListing }) {
         </ThemedText>
       </View>
     </Card>
+  );
+
+  if (!onPress) return card;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${listing.destinationName}, ${formatRange(listing.startDate, listing.endDate)}, ${spots}`}
+      accessibilityHint="Opens the match details"
+      onPress={onPress}>
+      {card}
+    </Pressable>
   );
 }

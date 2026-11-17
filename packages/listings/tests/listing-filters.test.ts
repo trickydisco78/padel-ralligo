@@ -1,5 +1,5 @@
 import type { Listing } from '../src/domain/listing';
-import { currentListings, datesOverlap, matchesFilters } from '../src/domain/listing-filters';
+import { currentListings, datesOverlap, matchesFilters, matchesSearch } from '../src/domain/listing-filters';
 
 function listing(overrides: Partial<Listing> = {}): Listing {
   return {
@@ -131,5 +131,25 @@ describe('currentListings', () => {
       today,
     );
     expect(result.map((l) => l.id)).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('matchesSearch', () => {
+  const found = { destinationName: 'Marbella', destinationCountry: 'Spain', venue: 'Puerto Banús Padel Club' };
+
+  it('matches the destination, the country and the venue', () => {
+    expect(matchesSearch(found, 'marbella')).toBe(true);
+    expect(matchesSearch(found, 'spain')).toBe(true);
+    expect(matchesSearch(found, 'banus')).toBe(true);
+  });
+
+  it('requires every word and ignores case', () => {
+    expect(matchesSearch(found, 'MARBELLA club')).toBe(true);
+    expect(matchesSearch(found, 'marbella tennis')).toBe(false);
+  });
+
+  it('matches everything for a blank query, and copes with no venue', () => {
+    expect(matchesSearch({ ...found, venue: null }, '')).toBe(true);
+    expect(matchesSearch({ ...found, venue: null }, 'club')).toBe(false);
   });
 });
