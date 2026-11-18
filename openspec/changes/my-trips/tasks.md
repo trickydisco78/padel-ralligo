@@ -13,7 +13,7 @@ Dependencies: the player-directory archive (`chore/archive-player-directory`) is
 - [x] 2.2 In the same migration add `my_trips_overview` and `find_overlapping_players` with the shared overlap predicate, inclusive days, one best row per other player, the owner check on the trip id, the clamped `p_today`, week, level and name filters, the 50 and 100 caps, `search_path = ''` and grants to `authenticated` only; verify by reading it against design decisions 3 to 5
 - [x] 2.3 Extend `supabase/tests/rls.mjs`: owner-only access to trips (another member and anon cannot read, insert or change), the 10-trip limit, `end < start` rejected, hidden trips and unlisted players never appear in overview counts or lists, other destinations and non-overlapping dates excluded, overlap days for the design's example (14 to 21 June against 14 to 21, 17 to 23, 15 to 20 and 16 to 19 gives 8, 5, 6 and 4), a supplied trip id that belongs to someone else returns nothing, overview counts equal list totals, This week, My level at both ends and the middle, name search, the caps (with temporary users), `anon` cannot execute either function, and the exact-function-grants check now lists `search_players` only for `anon`; verify the new checks fail when a rule is deliberately broken in a scratch copy
 - [x] 2.4 Update `supabase/README.md` (trip privacy boundary, the two functions, `profile_trips` deprecated) and `packages/supabase/src/database.types.ts`; verify `pnpm check-types` passes
-- [ ] 2.5 With the owner's go-ahead, apply the migration with `pnpm exec supabase db push --linked`, regenerate the types, and run `pnpm test:rls`; verify every check passes
+- [x] 2.5 With the owner's go-ahead, apply the migration with `pnpm exec supabase db push --linked`, regenerate the types, and run `pnpm test:rls`; verify every check passes
 
 ## 3. Trips package (`@padel/trips`)
 
@@ -48,12 +48,12 @@ Dependencies: the player-directory archive (`chore/archive-player-directory`) is
 
 ## 8. Seed data and docs
 
-- [ ] 8.1 Extend `supabase/seed/players.mjs` with shared trips for the four players using dates relative to today (Jordi 8 days; Hannah, Lucía and Diego overlapping partly; Lucía with a Lisbon home and a Málaga trip) and document an SQL snippet for the test account's trips in `supabase/README.md`; with the owner's go-ahead run the seed twice and `--remove`; verify the overview and list match the design's example
+- [x] 8.1 Extend `supabase/seed/players.mjs` with shared trips for the four players using dates relative to today (Jordi 8 days; Hannah, Lucía and Diego overlapping partly; Lucía with a Lisbon home and a Málaga trip) and document an SQL snippet for the test account's trips in `supabase/README.md`; with the owner's go-ahead run the seed twice and `--remove`; verify the overview and list match the design's example
 - [x] 8.2 Update `docs/architecture.md` (the trips package, the two functions and why they are functions, sharing model, Discover modes); verify it matches the code
 
 ## 9. Validation
 
-- [ ] 9.1 Run `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:rls`; verify against the baseline from 1.1
+- [x] 9.1 Run `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:rls`; verify against the baseline from 1.1
 - [ ] 9.2 Manually verify on iOS and Android against the dev project: add, edit, share and delete trips on the profile; My trips row with counts; overlapping players with the seeded data; This week, My level and search; Open matches for a trip; Explore places as guest and member; Sign in sheet for guests; screen reader reads trip cards, players and the selected state
 
 ## Workflow follow-up

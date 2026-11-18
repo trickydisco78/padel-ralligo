@@ -256,6 +256,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "trips_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations_with_counts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "trips_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
