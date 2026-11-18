@@ -28,6 +28,12 @@
   },
   "discover": {
     "title": "Discover",
+    "viewSwitchLabel": "Show",
+    "tabPlayers": "Players",
+    "tabMatches": "Open matches",
+    "playersSubtitle": "Players in your destination",
+    "showMore": "Show more players",
+    "playersEmptyHint": "Turn on \"Show me in Find players\" in your profile to be listed.",
     "searchLabel": "Search",
     "searchPlaceholder": "City, destination or venue",
     "destination": "Destination",

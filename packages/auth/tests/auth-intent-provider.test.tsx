@@ -193,6 +193,7 @@ describe('AuthPromptSheet', () => {
   });
 
   it.each([
+    [{ type: 'connectPlayer' }, 'Connect with players'],
     [{ type: 'createMatch' }, 'Post a match'],
     [{ type: 'openMessages' }, 'Your messages'],
     [{ type: 'openPersonalMatches' }, 'Your matches'],

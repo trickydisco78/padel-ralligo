@@ -1,15 +1,29 @@
 import { SKILL_TIERS, matchesSearchText, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useRef, useState, type ComponentRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
-import { useSession } from '@padel/auth';
-import { Chip, DateField, Logo, PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
-import { ListingCard, matchesFilters, matchesSearch, useDiscoverListings } from '@padel/listings';
+import { useRequireAuth, useSession } from '@padel/auth';
+import {
+  Chip,
+  DateField,
+  Logo,
+  PrimaryButton,
+  SecondaryButton,
+  SegmentedControl,
+  TextField,
+  ThemedText,
+  ThemedView,
+  Spacing,
+} from '@padel/ui';
+import { ListingCard, matchesFilters, matchesSearch, useDiscoverListings, type DiscoverListing } from '@padel/listings';
+import { PlayerCard, PlayersStatus, usePlayers, type Player } from '@padel/players';
 import { useDestinations } from '@padel/destinations';
 import { activeTrip, useTrip } from '@padel/profiles';
+
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 type Filters = {
   destinationId: string | null;
@@ -20,14 +34,26 @@ type Filters = {
 
 const NO_FILTERS: Filters = { destinationId: null, startDate: null, endDate: null, level: null };
 
+type DiscoverView = 'players' | 'matches';
+
+type Row =
+  | { kind: 'match'; key: string; listing: DiscoverListing }
+  | { kind: 'player'; key: string; player: Player };
+
 export default function DiscoverScreen() {
   const { t } = useTranslation('app');
   const { user } = useSession();
   const userId = user?.id;
   const router = useRouter();
-  const { destinationId: destinationParam, focusSearch } = useLocalSearchParams<{
+  const requireAuth = useRequireAuth();
+  const {
+    destinationId: destinationParam,
+    focusSearch,
+    view: viewParam,
+  } = useLocalSearchParams<{
     destinationId?: string;
     focusSearch?: string;
+    view?: string;
   }>();
   const { destinations } = useDestinations();
   const { data: savedTrip } = useTrip(userId);
@@ -39,6 +65,7 @@ export default function DiscoverScreen() {
   // Bumped when filters are replaced from outside, so the typed date fields pick up the new values.
   const [filterVersion, setFilterVersion] = useState(0);
   const [tripHandled, setTripHandled] = useState(false);
+  const [view, setView] = useState<DiscoverView>('matches');
 
   // Reload whenever the tab gains focus, so a listing just posted shows up.
   useFocusEffect(
@@ -58,6 +85,19 @@ export default function DiscoverScreen() {
       return () => clearTimeout(timer);
     }, [focusSearch, router]),
   );
+
+  // Arriving with `?view=players` (for example after signing in from a Connect prompt) switches to
+  // that view once, then the parameter is cleared so the same value can be used again later.
+  const [appliedView, setAppliedView] = useState<string | undefined>(undefined);
+  if (viewParam && viewParam !== appliedView) {
+    setAppliedView(viewParam);
+    if (viewParam === 'players' || viewParam === 'matches') setView(viewParam);
+  } else if (!viewParam && appliedView) {
+    setAppliedView(undefined);
+  }
+  useEffect(() => {
+    if (viewParam) router.setParams({ view: undefined });
+  }, [viewParam, router]);
 
   // A destination chosen elsewhere (e.g. a Home shortcut) replaces the filters and wins over the
   // saved trip. Adjusted during render, keyed on the param, so it applies once per new value.
@@ -83,9 +123,25 @@ export default function DiscoverScreen() {
     setFilterVersion((v) => v + 1);
   }
 
+  const debouncedSearch = useDebouncedValue(search);
+  const playerFilters = useMemo(
+    () => ({ destinationId: filters.destinationId, level: filters.level, query: debouncedSearch }),
+    [filters.destinationId, filters.level, debouncedSearch],
+  );
+  const {
+    players,
+    total: playersTotal,
+    isLoading: playersLoading,
+    failed: playersFailed,
+    hasMore: morePlayers,
+    fetchMore: fetchMorePlayers,
+    isFetchingMore: fetchingMorePlayers,
+    refetch: refetchPlayers,
+  } = usePlayers(playerFilters);
+
   async function refresh() {
     setRefreshing(true);
-    await refetchListings();
+    await Promise.all([refetchListings(), refetchPlayers()]);
     setRefreshing(false);
   }
 
@@ -96,6 +152,10 @@ export default function DiscoverScreen() {
   }
 
   const visible = (listings ?? []).filter((l) => matchesFilters(l, filters) && matchesSearch(l, search));
+  const rows: Row[] =
+    view === 'players'
+      ? players.map((player, index) => ({ kind: 'player', key: `player-${index}`, player }))
+      : visible.map((listing) => ({ kind: 'match', key: listing.id, listing }));
   // A chosen destination stays visible even if the search text no longer matches it.
   const visibleDestinations = destinations?.filter(
     (d) => d.id === filters.destinationId || matchesSearchText(search, d.name, d.country),
@@ -105,6 +165,9 @@ export default function DiscoverScreen() {
     <View style={{ gap: Spacing.three }}>
       <Logo />
       <ThemedText type="title">{t('discover.title')}</ThemedText>
+      {view === 'players' ? (
+        <ThemedText themeColor="textSecondary">{t('discover.playersSubtitle')}</ThemedText>
+      ) : null}
 
       <TextField
         ref={searchInput}
@@ -115,6 +178,16 @@ export default function DiscoverScreen() {
         returnKeyType="search"
         autoCapitalize="none"
         autoCorrect={false}
+      />
+
+      <SegmentedControl
+        accessibilityLabel={t('discover.viewSwitchLabel')}
+        value={view}
+        onChange={setView}
+        options={[
+          { value: 'players', label: t('discover.tabPlayers'), count: playersLoading ? undefined : playersTotal },
+          { value: 'matches', label: t('discover.tabMatches'), count: listings === null ? undefined : visible.length },
+        ]}
       />
 
       <View style={{ gap: Spacing.one }}>
@@ -136,18 +209,22 @@ export default function DiscoverScreen() {
         </View>
       </View>
 
-      <DateField
-        key={`from-${filterVersion}`}
-        label={t('discover.from')}
-        value={filters.startDate}
-        onChange={(startDate) => setFilters((f) => ({ ...f, startDate }))}
-      />
-      <DateField
-        key={`to-${filterVersion}`}
-        label={t('discover.to')}
-        value={filters.endDate}
-        onChange={(endDate) => setFilters((f) => ({ ...f, endDate }))}
-      />
+      {view === 'matches' ? (
+        <>
+          <DateField
+            key={`from-${filterVersion}`}
+            label={t('discover.from')}
+            value={filters.startDate}
+            onChange={(startDate) => setFilters((f) => ({ ...f, startDate }))}
+          />
+          <DateField
+            key={`to-${filterVersion}`}
+            label={t('discover.to')}
+            value={filters.endDate}
+            onChange={(endDate) => setFilters((f) => ({ ...f, endDate }))}
+          />
+        </>
+      ) : null}
 
       <View style={{ gap: Spacing.one }}>
         <ThemedText type="smallBold">{t('discover.level')}</ThemedText>
@@ -174,20 +251,50 @@ export default function DiscoverScreen() {
     <ThemedView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         <FlatList
-          data={visible}
-          keyExtractor={(l) => l.id}
-          renderItem={({ item }) => (
-            <ListingCard
-              listing={item}
-              onPress={() => router.push({ pathname: '/match/[id]', params: { id: item.id } })}
-            />
-          )}
+          data={rows}
+          keyExtractor={(row) => row.key}
+          renderItem={({ item }) =>
+            item.kind === 'match' ? (
+              <ListingCard
+                listing={item.listing}
+                onPress={() => router.push({ pathname: '/match/[id]', params: { id: item.listing.id } })}
+              />
+            ) : (
+              <PlayerCard
+                player={item.player}
+                connectDisabled={!!user}
+                onConnect={() => requireAuth({ type: 'connectPlayer' })}
+              />
+            )
+          }
           keyboardShouldPersistTaps="handled"
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           contentContainerStyle={{ padding: Spacing.three, gap: Spacing.three }}
           ListHeaderComponent={header}
+          ListFooterComponent={
+            view === 'players' && morePlayers ? (
+              <SecondaryButton
+                title={t('discover.showMore')}
+                onPress={fetchMorePlayers}
+                disabled={fetchingMorePlayers}
+              />
+            ) : undefined
+          }
           ListEmptyComponent={
-            failed ? (
+            view === 'players' ? (
+              <View>
+                <PlayersStatus
+                  state={playersFailed ? 'error' : playersLoading ? 'loading' : 'empty'}
+                  onRetry={refetchPlayers}
+                  onClearFilters={clearFilters}
+                />
+                {user && !playersFailed && !playersLoading ? (
+                  <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
+                    {t('discover.playersEmptyHint')}
+                  </ThemedText>
+                ) : null}
+              </View>
+            ) : failed ? (
               <ThemedText style={{ color: '#C62828' }}>{t('discover.error')}</ThemedText>
             ) : listings === null ? (
               <ActivityIndicator />

@@ -10,15 +10,17 @@ type Props = {
   /** Lets the user clear the selection, e.g. for a filter. */
   allowClear?: boolean;
   error?: string;
+  /** Heading above the list. Defaults to "Destination". */
+  label?: string;
 };
 
-export function DestinationPicker({ value, onChange, allowClear = false, error }: Props) {
+export function DestinationPicker({ value, onChange, allowClear = false, error, label }: Props) {
   const { t } = useTranslation('destinations');
   const { destinations, loading, failed } = useDestinations();
 
   return (
     <View style={{ gap: Spacing.one }}>
-      <ThemedText type="smallBold">{t('destinationPicker.label')}</ThemedText>
+      <ThemedText type="smallBold">{label ?? t('destinationPicker.label')}</ThemedText>
       {loading ? <ActivityIndicator color={Colors.light.primary} /> : null}
       {failed ? (
         <ThemedText type="small" style={{ color: '#C62828' }}>

@@ -23,6 +23,7 @@ const ids = {
   a: '00000000-0000-4000-8000-00000000000a', // verified, has profile
   b: '00000000-0000-4000-8000-00000000000b', // verified, has profile
   c: '00000000-0000-4000-8000-00000000000c', // email NOT verified, has profile
+  d: '00000000-0000-4000-8000-00000000000d', // verified, has profile but no skill tier
 };
 
 let passed = 0;
@@ -74,11 +75,19 @@ async function main() {
   await user(ids.a, true);
   await user(ids.b, true);
   await user(ids.c, false);
+  await user(ids.d, true);
   for (const [name, id] of [['Ann', ids.a], ['Ben', ids.b], ['Cat', ids.c]]) {
     await client.query(`insert into public.profiles (id, display_name) values ($1, $2)`, [id, name]);
     await client.query(`insert into public.profile_sports (profile_id, skill_tier) values ($1, 'Intermediate')`, [id]);
   }
   const { rows: [dest] } = await client.query(`select id from public.destinations where name = 'Marbella'`);
+  // Player directory fixtures: Ann (Marbella) and Ben (Tenerife) opted in; Cat has not; Dee opted in
+  // but has no skill tier, so she is never listed.
+  await client.query(`insert into public.profiles (id, display_name) values ($1, 'Dee')`, [ids.d]);
+  const { rows: [tenerife] } = await client.query(`select id from public.destinations where name = 'Tenerife'`);
+  await client.query(`update public.profiles set home_destination_id = $1, discoverable_at = now() where id = $2`, [dest.id, ids.a]);
+  await client.query(`update public.profiles set home_destination_id = $1, discoverable_at = now() where id = $2`, [tenerife.id, ids.b]);
+  await client.query(`update public.profiles set home_destination_id = $1, discoverable_at = now() where id = $2`, [dest.id, ids.d]);
   const listing = (poster, extra = '') =>
     `insert into public.listings (poster_id, destination_id, start_date, level_wanted, players_needed${extra ? ', ' + extra.split('=')[0] : ''})
      values ('${poster}', '${dest.id}', current_date + 5, 'Any', 2${extra ? ', ' + extra.split('=')[1] : ''}) returning id`;
@@ -325,6 +334,102 @@ async function main() {
     await asRole('authenticated', ids.b);
     const r = await client.query(`select open_listings from public.destinations_with_counts where name = 'Marbella'`);
     if (r.rows[0].open_listings < 1) throw new Error(`count ${r.rows[0].open_listings}`);
+  });
+
+  // --- player directory: search_players ---
+  const directoryColumns = ['player_id', 'display_name', 'destination_id', 'destination_name', 'skill_tier', 'total_count'];
+  const names = (res) => res.rows.map((r) => r.display_name).sort().join(',');
+
+  await check('anon directory returns exactly the permitted columns and no player id', 'ok', async () => {
+    await asRole('anon');
+    const r = await client.query(`select * from public.search_players()`);
+    const got = r.fields.map((f) => f.name).sort().join(',');
+    if (got !== [...directoryColumns].sort().join(',')) throw new Error(`columns differ: ${got}`);
+    if (r.rowCount < 2) throw new Error(`expected opted-in players, got ${r.rowCount}`);
+    if (r.rows.some((row) => row.player_id !== null)) throw new Error('player id exposed to anon');
+  });
+  await check('directory lists only opted-in players with a home destination and a skill tier', 'ok', async () => {
+    await asRole('anon');
+    const got = names(await client.query(`select * from public.search_players()`));
+    if (got !== 'Ann,Ben') throw new Error(`got ${got}`); // Cat has not opted in, Dee has no tier
+  });
+  await check('directory shows first name and last initial only', 'ok', async () => {
+    await client.query(`update public.profiles set display_name = 'Ben van der Berg' where id = $1`, [ids.b]);
+    await asRole('anon');
+    const got = names(await client.query(`select * from public.search_players()`));
+    if (got !== 'Ann,Ben B.') throw new Error(`got ${got}`);
+  });
+  await check('a player who opts out disappears', 'ok', async () => {
+    await client.query(`update public.profiles set discoverable_at = null where id = $1`, [ids.a]);
+    await asRole('anon');
+    const got = names(await client.query(`select * from public.search_players()`));
+    if (got !== 'Ben') throw new Error(`got ${got}`);
+  });
+  await check('signed-in caller gets player ids and not their own row', 'ok', async () => {
+    await asRole('authenticated', ids.b);
+    const r = await client.query(`select * from public.search_players()`);
+    if (names(r) !== 'Ann') throw new Error(`got ${names(r)}`);
+    if (r.rows.some((row) => !row.player_id)) throw new Error('missing player id for a signed-in caller');
+  });
+  await check('directory filters by destination, level and destination or country text', 'ok', async () => {
+    await asRole('anon');
+    const byDest = names(await client.query(`select * from public.search_players($1)`, [dest.id]));
+    const byText = names(await client.query(`select * from public.search_players(null, 'marbel')`));
+    const byCountry = names(await client.query(`select * from public.search_players(null, 'SPAIN')`));
+    const byLevel = names(await client.query(`select * from public.search_players(null, null, 'Advanced')`));
+    if (byDest !== 'Ann' || byText !== 'Ann' || byCountry !== 'Ann,Ben' || byLevel !== '') {
+      throw new Error(`dest=${byDest} text=${byText} country=${byCountry} level=${byLevel}`);
+    }
+  });
+  await check('directory search never matches player names or wildcards', 'ok', async () => {
+    await asRole('anon');
+    for (const q of ['Ann', 'ben', '%', '_', '.*']) {
+      const r = await client.query(`select 1 from public.search_players(null, $1)`, [q]);
+      if (r.rowCount !== 0) throw new Error(`query ${JSON.stringify(q)} matched ${r.rowCount}`);
+    }
+  });
+  await check('directory caps results at 50 per call and nothing from offset 100', 'ok', async () => {
+    await client.query(
+      `insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data)
+       select gen_random_uuid(), 'bulk' || g || '@rls-test.invalid', now(), '{"terms_accepted":"true","age_confirmed":"true"}'
+       from generate_series(1, 120) g`);
+    await client.query(
+      `insert into public.profiles (id, display_name, home_destination_id, discoverable_at)
+       select id, 'Bulk Player', $1, now() from auth.users where email like 'bulk%@rls-test.invalid'`, [dest.id]);
+    await client.query(
+      `insert into public.profile_sports (profile_id, skill_tier)
+       select id, 'Beginner' from public.profiles where display_name = 'Bulk Player'`);
+    await asRole('anon');
+    const first = await client.query(`select * from public.search_players(null, null, null, 1000, 0)`);
+    const second = await client.query(`select * from public.search_players(null, null, null, 50, 50)`);
+    const beyond = await client.query(`select * from public.search_players(null, null, null, 50, 100)`);
+    const negative = await client.query(`select * from public.search_players(null, null, null, -5, 0)`);
+    if (first.rowCount !== 50) throw new Error(`first page ${first.rowCount}`);
+    if (Number(first.rows[0].total_count) < 120) throw new Error(`total_count ${first.rows[0].total_count}`);
+    if (second.rowCount !== 50) throw new Error(`second page ${second.rowCount}`);
+    if (beyond.rowCount !== 0) throw new Error(`offset 100 returned ${beyond.rowCount}`);
+    if (negative.rowCount !== 0) throw new Error(`negative limit returned ${negative.rowCount}`);
+  });
+  await check('anon cannot read profiles or skills behind the directory', 'deny', async () => {
+    await asRole('anon');
+    return client.query(`select discoverable_at, home_destination_id from public.profiles`);
+  });
+  await check('a profile cannot be listed without a home destination', 'deny', async () => {
+    return client.query(`update public.profiles set discoverable_at = now() where id = $1`, [ids.c]);
+  });
+  await check("user cannot change another user's opt-in (0 rows)", 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    expectRows(0)(await client.query(`update public.profiles set discoverable_at = null where id = $1`, [ids.b]));
+  });
+  await check('anon can execute exactly one non-trigger function, search_players', 'ok', async () => {
+    const r = await client.query(
+      `select p.proname
+       from pg_proc p
+       join pg_namespace n on n.oid = p.pronamespace and n.nspname = 'public'
+       where p.prorettype <> 'trigger'::regtype and has_function_privilege('anon', p.oid, 'EXECUTE')
+       order by p.proname`);
+    const got = r.rows.map((x) => x.proname).join(',');
+    if (got !== 'search_players') throw new Error(`anon can execute: ${got}`);
   });
 
   // --- no sensitive columns exposed ---

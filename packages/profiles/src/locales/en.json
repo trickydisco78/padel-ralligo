@@ -8,6 +8,9 @@
     "displayName": "Display name",
     "homeCity": "Home city (optional)",
     "bio": "Bio (optional)",
+    "discoverable": "Show me in Find players",
+    "discoverableHelp": "Other people can see your first name and last initial, your home destination and your skill tier. You can turn this off at any time.",
+    "homeDestination": "Home destination",
     "saved": "Profile saved",
     "saveFailed": "Could not save your profile. Please try again."
   },
@@ -37,6 +40,7 @@
     "homeCityTooLong": "Home city must be {{homeCityMax}} characters or fewer",
     "bioTooLong": "Bio must be {{bioMax}} characters or fewer",
     "skillTierRequired": "Choose a skill level",
+    "homeDestinationRequired": "Choose a home destination to be listed",
     "destinationRequired": "Choose a destination",
     "startDateRequired": "Choose a start date",
     "endDateRequired": "Choose an end date",

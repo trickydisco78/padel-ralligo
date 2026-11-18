@@ -4,6 +4,7 @@
  */
 export type AuthIntent =
   | { type: 'joinMatch'; matchId: string }
+  | { type: 'connectPlayer' }
   | { type: 'createMatch' }
   | { type: 'openMessages' }
   | { type: 'openPersonalMatches' }
@@ -18,7 +19,7 @@ export function isValidMatchId(value: unknown): value is string {
   return typeof value === 'string' && MATCH_ID_PATTERN.test(value);
 }
 
-const SIMPLE_INTENTS: readonly AuthIntentType[] = ['createMatch', 'openMessages', 'openPersonalMatches', 'openProfile'];
+const SIMPLE_INTENTS: readonly AuthIntentType[] = ['connectPlayer', 'createMatch', 'openMessages', 'openPersonalMatches', 'openProfile'];
 
 /** Returns the intent if `value` is a well-formed one, otherwise null. Extra properties are dropped. */
 export function parseAuthIntent(value: unknown): AuthIntent | null {

@@ -45,6 +45,10 @@
       "title": "Join this match",
       "body": "Create a free account or sign in to reserve your place and connect with other players."
     },
+    "connectPlayer": {
+      "title": "Connect with players",
+      "body": "Create a free account or sign in to connect with other players."
+    },
     "createMatch": {
       "title": "Post a match",
       "body": "Create a free account or sign in to post a match and find players to join you."

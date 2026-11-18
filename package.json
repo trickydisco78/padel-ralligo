@@ -10,6 +10,7 @@
     "test": "turbo run test",
     "start": "pnpm --filter mobile start",
     "test:rls": "node --env-file=supabase/tests/.env.local supabase/tests/rls.mjs",
+    "seed:players": "node --env-file=supabase/tests/.env.local supabase/seed/players.mjs",
     "boundaries": "turbo boundaries"
   },
   "devDependencies": {

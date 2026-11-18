@@ -48,7 +48,7 @@ Observed in the repo (see proposal.md for motivation):
 
 12. **Profile form.** `@padel/profiles` adds a switch ("Show me in Find players") with the explanation text and a home destination picker using `DestinationPicker` (profiles already depends on `destinations`, a domain-base package). Saving writes `home_destination_id` and sets `discoverable_at` to now when turned on from off, or keeps the existing value; turning off writes null.
 
-13. **Seed data is a script, not SQL.** Profiles reference `auth.users`, so development players are created through the admin API by a script in `supabase/seed/` using the secret key from `.env.local` (never in the app), tagged with an `@seed.invalid` email domain, idempotent, with a `--remove` option. Players mirror the design: Jordi M., Hannah K., Lucía C., Diego R., opted in, with tiers and home destinations (Málaga for three, Lisbon for one). It runs against the hosted dev project only with the project owner's go-ahead.
+13. **Seed data is a script, not SQL.** Profiles reference `auth.users`, so development players are created by a script in `supabase/seed/` that uses the same direct database connection as the RLS tests (so no secret key is needed anywhere), shows what it would do unless given `--apply`, and tags accounts with an `@seed.invalid` email domain, idempotent, with a `--remove` option. Players mirror the design: Jordi M., Hannah K., Lucía C., Diego R., opted in, with tiers and home destinations (Málaga for three, Lisbon for one). It runs against the hosted dev project only with the project owner's go-ahead.
 
 ## Design notes (supplied design vs this change)
 

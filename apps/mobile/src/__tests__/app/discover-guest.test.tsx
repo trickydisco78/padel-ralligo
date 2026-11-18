@@ -1,5 +1,5 @@
 import { toIsoDate } from '@padel/core';
-import { SessionProvider, SignInScreen, SignUpScreen } from '@padel/auth';
+import { AuthIntentProvider, SessionProvider, SignInScreen, SignUpScreen } from '@padel/auth';
 import { QueryTestProvider } from '@padel/query/testing';
 import { mockState, resetMockSupabase } from '@padel/supabase/testing';
 import { Stack, router, useGlobalSearchParams } from 'expo-router';
@@ -60,8 +60,10 @@ const openDiscover = (url = '/') =>
       _layout: () => (
         <QueryTestProvider>
           <SessionProvider>
-            <Stack screenOptions={{ headerShown: false }} />
-            <ParamsProbe />
+            <AuthIntentProvider>
+              <Stack screenOptions={{ headerShown: false }} />
+              <ParamsProbe />
+            </AuthIntentProvider>
           </SessionProvider>
         </QueryTestProvider>
       ),

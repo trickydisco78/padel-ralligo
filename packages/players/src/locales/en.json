@@ -1,0 +1,9 @@
+{
+  "connect": "Connect",
+  "connectUnavailableHint": "Connecting with players isn't available yet",
+  "empty": "No players here yet",
+  "clearFilters": "Clear filters",
+  "error": "Could not load players",
+  "retry": "Try again",
+  "cardLabel": "{{name}}, {{destination}}, {{tier}}"
+}

@@ -18,7 +18,7 @@ describe('parseAuthIntent', () => {
     expect(parseAuthIntent({ type: 'joinMatch', matchId: 'abc-123' })).toEqual({ type: 'joinMatch', matchId: 'abc-123' });
   });
 
-  it.each(['createMatch', 'openMessages', 'openPersonalMatches', 'openProfile'])('accepts the %s intent', (type) => {
+  it.each(['connectPlayer', 'createMatch', 'openMessages', 'openPersonalMatches', 'openProfile'])('accepts the %s intent', (type) => {
     expect(parseAuthIntent({ type })).toEqual({ type });
   });
 
@@ -34,6 +34,10 @@ describe('parseAuthIntent', () => {
     expect(parseAuthIntent('openProfile')).toBeNull();
     expect(parseAuthIntent(null)).toBeNull();
     expect(parseAuthIntent(undefined)).toBeNull();
+  });
+
+  it('keeps no player id on a connect intent', () => {
+    expect(parseAuthIntent({ type: 'connectPlayer', playerId: 'p1' })).toEqual({ type: 'connectPlayer' });
   });
 
   it('drops extra properties, including any callback', () => {

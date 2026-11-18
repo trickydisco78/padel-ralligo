@@ -11,6 +11,7 @@
     "@padel/destinations": "workspace:*",
     "@padel/i18n": "workspace:*",
     "@padel/listings": "workspace:*",
+    "@padel/players": "workspace:*",
     "@padel/profiles": "workspace:*",
     "@padel/query": "workspace:*",
     "@padel/ui": "workspace:*",
