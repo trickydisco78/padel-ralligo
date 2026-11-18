@@ -105,3 +105,13 @@ All user-facing text lives in JSON, not in components. `@padel/i18n` wraps i18ne
 - **Tests:** each package has `tests/setup-i18n.ts` that registers real English copy with `initTestI18n`, so tests assert on the actual text.
 - **Adding a language:** add `es.json` (for example) beside each `en.json`, add it to that package's `locales/index.ts`, and it is picked up automatically. Missing keys fall back to English.
 - **Not translated yet:** dates and numbers use `Intl` with `en-GB`; skill tier names come from `@padel/core`; server error messages and user-entered data (venues, names) are shown as they arrive.
+
+## Player directory
+
+The Players list on Discover is the `@padel/players` package (`domain-feature`). It imports only shared packages and `@padel/auth` (for the session in its cache key), never `profiles` or `listings`; the app puts the Players and Open matches lists side by side.
+
+- **One public read, a function not a view.** `public.search_players` is `SECURITY DEFINER`, granted to `anon` and `authenticated`, and returns first name plus last initial, home destination, skill tier and a count. It enforces what a view cannot: at most 50 rows per call and nothing from offset 100 onwards. Guests get a null `player_id`; signed-in callers get ids and never see their own row. Search matches destination or country text only, never names. The base tables keep no `anon` grants, and `supabase/tests/rls.mjs` asserts this function is the only non-trigger function `anon` can execute.
+- **Opt-in.** A player appears only when `profiles.discoverable_at` is set, they chose a home destination, and they have a skill tier. Everyone starts not listed. The profile form (`@padel/profiles`) has the switch and the home destination picker.
+- **Client.** `usePlayers(filters)` pages offsets 0 and 50 only, keyed by session so a guest's results never serve a member. `PlayerCard` is not pressable as a whole (there is no profile page) and `PlayersStatus` covers loading, empty and error; Discover owns the scrolling list.
+- **Connect.** Not active yet. A guest gets the contextual sheet through a `connectPlayer` intent, which carries no player id and returns them to `/discover?view=players`. A signed-in member sees a disabled button with an explanation.
+- **View state.** Discover holds a `players | matches` view (default matches), settable with a `view` route parameter that is cleared once applied. The destination chips, level chips and search text are shared by both views; the date fields only apply to matches.

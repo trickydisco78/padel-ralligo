@@ -16,6 +16,9 @@ export type Profile = {
   homeCity: string;
   bio: string;
   skillTier: SkillTier | null;
+  homeDestinationId: string | null;
+  /** ISO timestamp of when the member agreed to be listed in Find players; null when not listed. */
+  discoverableAt: string | null;
 };
 
 export type ProfileInput = {
@@ -23,6 +26,8 @@ export type ProfileInput = {
   homeCity?: string;
   bio: string;
   skillTier: SkillTier | null;
+  homeDestinationId?: string | null;
+  discoverable?: boolean;
 };
 
 /**
@@ -48,6 +53,10 @@ export function validateProfile(input: ProfileInput): ValidationResult {
 
   if (!input.skillTier || !SKILL_TIERS.includes(input.skillTier)) {
     errors.skillTier = 'validation.skillTierRequired';
+  }
+
+  if (input.discoverable && !input.homeDestinationId) {
+    errors.homeDestinationId = 'validation.homeDestinationRequired';
   }
 
   return validationResult(errors);

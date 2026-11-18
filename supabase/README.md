@@ -18,6 +18,16 @@ The app can be browsed without an account. The two views run with the owner's ri
 
 Guests also open a single match by id (the match details screen). That is one more read of `discover_listings` with an `id` filter, so closed, past and unknown ids simply return no row and there is no new policy, view or migration. The app talks to the database with the publishable key as `anon`; never put a secret or `service_role` key in it, and never widen a table policy to serve guests: new guest reads go through a view with an explicit column list.
 
+### Player directory
+
+Guests and members can browse a list of players through one function, `public.search_players`, which is granted to `anon` and `authenticated`. It is a function rather than a view because it has to enforce limits a view cannot: at most 50 rows per call, nothing from offset 100 onwards, and a negative limit returns nothing. It is `SECURITY DEFINER` with `search_path = ''`, so the tables behind it keep no `anon` grants.
+
+- **Opt-in:** a player appears only if `profiles.discoverable_at` is set (null for every account until they turn on "Show me in Find players"), they have a `home_destination_id`, and they have a padel skill tier. A check constraint stops a profile being listed without a home destination.
+- **What is returned:** first name plus last initial ("Jordi M."), home destination, skill tier and a count of matches. `player_id` is returned only to signed-in callers; guests get null. The caller's own row is excluded. Email, consents, trips, bio, the free-text home city and photos are never returned.
+- **Search** matches destination name or country with `strpos`, so `%` and `_` are plain characters, and never matches player names.
+- **Boundary:** a profile row is still readable by every signed-in user whatever the opt-in. The opt-in controls the directory only. Revisit this before connections ship.
+- `tests/rls.mjs` asserts the columns, the opt-in rules, the caps, and that `search_players` is the only non-trigger function `anon` can execute. Any new public function needs the same `revoke ... from public, anon` and an entry here.
+
 Decided boundaries for who can read what:
 
 - **Poster display name and skill tier are public** (through `discover_listings`). Nothing else about a poster is.
@@ -46,8 +56,16 @@ pnpm exec supabase migration new <name>  # create a new migration file
 Migrations are additive and are never edited after they have been pushed; add a new one instead. After a schema change, regenerate the app's types:
 
 ```bash
-pnpm exec supabase gen types typescript --linked --schema public > apps/mobile/src/lib/database.types.ts
+pnpm exec supabase gen types typescript --linked --schema public > packages/supabase/src/database.types.ts
 ```
+
+## Development seed players
+
+`pnpm seed:players` adds four fake, opted-in players (Jordi M., Hannah K., Lucía C., Diego R.) so the Players list has something to show. They are accounts with no password, so nobody can sign in as them, and they use the reserved `@seed.invalid` email domain. It uses the same connection string as the RLS tests (`supabase/tests/.env.local`), so it needs no secret key.
+
+- `pnpm seed:players` only shows what it would do. Add `-- --apply` to write: `pnpm seed:players -- --apply`. It is safe to run again.
+- `pnpm seed:players -- --remove` shows what would be removed, and `-- --remove --apply` deletes every `@seed.invalid` account together with its profile.
+- The development project is the one the app uses, so seeded players are visible in the running app until removed. Never run it against a production project.
 
 ## Security tests
 

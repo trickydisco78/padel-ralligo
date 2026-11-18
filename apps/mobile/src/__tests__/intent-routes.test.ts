@@ -26,6 +26,7 @@ describe('goToIntent', () => {
   });
 
   it.each([
+    [{ type: 'connectPlayer' }, '/discover?view=players'],
     [{ type: 'createMatch' }, '/create'],
     [{ type: 'openMessages' }, '/matches'],
     [{ type: 'openPersonalMatches' }, '/matches'],

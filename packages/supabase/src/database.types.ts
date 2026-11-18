@@ -178,25 +178,46 @@ export type Database = {
         Row: {
           bio: string
           created_at: string
+          discoverable_at: string | null
           display_name: string
           home_city: string | null
+          home_destination_id: string | null
           id: string
         }
         Insert: {
           bio?: string
           created_at?: string
+          discoverable_at?: string | null
           display_name: string
           home_city?: string | null
+          home_destination_id?: string | null
           id: string
         }
         Update: {
           bio?: string
           created_at?: string
+          discoverable_at?: string | null
           display_name?: string
           home_city?: string | null
+          home_destination_id?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_home_destination_id_fkey"
+            columns: ["home_destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_home_destination_id_fkey"
+            columns: ["home_destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations_with_counts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_consents: {
         Row: {
@@ -279,6 +300,23 @@ export type Database = {
     }
     Functions: {
       is_email_confirmed: { Args: never; Returns: boolean }
+      search_players: {
+        Args: {
+          p_destination_id?: string
+          p_level?: string
+          p_limit?: number
+          p_offset?: number
+          p_query?: string
+        }
+        Returns: {
+          destination_id: string
+          destination_name: string
+          display_name: string
+          player_id: string
+          skill_tier: string
+          total_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

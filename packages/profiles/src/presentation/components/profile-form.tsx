@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
-import { PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
+import { DestinationPicker } from '@padel/destinations';
+import { CheckRow, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 
 import {
   MAX_BIO_LENGTH,
@@ -29,13 +30,15 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
   const [homeCity, setHomeCity] = useState(initial?.homeCity ?? '');
   const [bio, setBio] = useState(initial?.bio ?? '');
   const [skillTier, setSkillTier] = useState<SkillTier | null>(initial?.skillTier ?? null);
+  const [homeDestinationId, setHomeDestinationId] = useState<string | null>(initial?.homeDestinationId ?? null);
+  const [discoverable, setDiscoverable] = useState(!!initial?.discoverableAt);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function submit() {
     setSaved(false);
-    const result = validateProfile({ displayName, homeCity, bio, skillTier });
+    const result = validateProfile({ displayName, homeCity, bio, skillTier, homeDestinationId, discoverable });
     if (!result.ok || !skillTier || !user) {
       setErrors(result.ok ? {} : result.errors);
       return;
@@ -43,7 +46,7 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
     setErrors({});
     setSaving(true);
     try {
-      await saveProfile.mutateAsync({ userId: user.id, input: { displayName, homeCity, bio, skillTier } });
+      await saveProfile.mutateAsync({ userId: user.id, input: { displayName, homeCity, bio, skillTier, homeDestinationId, discoverable } });
       setSaved(true);
       onSaved?.();
     } catch {
@@ -74,6 +77,17 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
       <SkillTierPicker value={skillTier} onChange={setSkillTier} error={messages.skillTier} />
+      <CheckRow label={t('profileForm.discoverable')} checked={discoverable} onChange={setDiscoverable} />
+      <ThemedText type="small" themeColor="textSecondary">
+        {t('profileForm.discoverableHelp')}
+      </ThemedText>
+      <DestinationPicker
+        label={t('profileForm.homeDestination')}
+        value={homeDestinationId}
+        onChange={setHomeDestinationId}
+        allowClear
+        error={messages.homeDestinationId}
+      />
       {errors.form ? (
         <ThemedText type="small" style={{ color: '#C62828' }}>
           {messages.form}

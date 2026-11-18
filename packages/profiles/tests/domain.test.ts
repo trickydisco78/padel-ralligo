@@ -81,6 +81,22 @@ describe('validateProfile', () => {
   });
 });
 
+describe('validateProfile discoverability', () => {
+  const valid = { displayName: 'Leon', bio: '', skillTier: 'Intermediate' as const };
+
+  it('allows the switch off without a home destination', () => {
+    expect(validateProfile({ ...valid, discoverable: false, homeDestinationId: null })).toEqual({ ok: true });
+  });
+
+  it('requires a home destination when the switch is on', () => {
+    const result = validateProfile({ ...valid, discoverable: true, homeDestinationId: null });
+    expect(result.ok ? {} : result.errors).toEqual({
+      homeDestinationId: 'validation.homeDestinationRequired',
+    });
+    expect(validateProfile({ ...valid, discoverable: true, homeDestinationId: 'd1' })).toEqual({ ok: true });
+  });
+});
+
 describe('activeTrip', () => {
   const trip = { destinationId: 't', startDate: '2026-02-01', endDate: '2026-02-10' };
 

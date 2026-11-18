@@ -21,6 +21,10 @@ export function goToIntent(navigator: IntentNavigator, intent: AuthIntent, curre
       if (currentPath !== path) navigator.push(path);
       return;
     }
+    case 'connectPlayer':
+      // There is no player page and Connect is not active yet, so the guest goes back to the list.
+      navigator.navigate('/discover?view=players');
+      return;
     case 'createMatch':
       navigator.navigate('/create');
       return;

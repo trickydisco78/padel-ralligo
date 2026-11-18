@@ -27,6 +27,10 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light;
 
+/** Soft background colours for initials tiles, taken from the Find players design. */
+export const TileColors = ['#D5E8CC', '#EBD3C0', '#E0D0E4', '#CFE3EA', '#EDE6C3'] as const;
+
+
 /** Plus Jakarta Sans: geometric, heavy headings like the Ralligo wordmark. Loaded in the root layout. */
 export const Typeface = {
   medium: 'PlusJakartaSans_500Medium',

@@ -2,6 +2,7 @@ import { authLocales } from '@padel/auth';
 import { destinationsLocales } from '@padel/destinations';
 import { buildResources, createI18n, getDeviceLanguage } from '@padel/i18n';
 import { listingsLocales } from '@padel/listings';
+import { playersLocales } from '@padel/players';
 import { profilesLocales } from '@padel/profiles';
 import { uiLocales } from '@padel/ui';
 
@@ -12,6 +13,7 @@ export const resources = buildResources({
   auth: authLocales,
   ui: uiLocales,
   listings: listingsLocales,
+  players: playersLocales,
   profiles: profilesLocales,
   destinations: destinationsLocales,
 });

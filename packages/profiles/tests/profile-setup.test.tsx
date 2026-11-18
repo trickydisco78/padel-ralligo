@@ -51,7 +51,14 @@ describe('profile setup', () => {
     await waitFor(() => expect(mockState.upserts).toHaveLength(2));
     expect(mockState.upserts[0]).toEqual({
       table: 'profiles',
-      values: { id: 'user-1', display_name: 'Leon', home_city: 'Bristol', bio: '' },
+      values: {
+        id: 'user-1',
+        display_name: 'Leon',
+        home_city: 'Bristol',
+        bio: '',
+        home_destination_id: null,
+        discoverable_at: null,
+      },
     });
     expect(mockState.upserts[1]).toEqual({
       table: 'profile_sports',

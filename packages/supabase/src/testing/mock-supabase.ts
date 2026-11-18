@@ -16,6 +16,9 @@ export const mockState = {
   insertError: null as unknown,
   upserts: [] as { table: string; values: Record<string, unknown> }[],
   upsertError: null as unknown,
+  players: [] as unknown[],
+  playersError: null as unknown,
+  rpcCalls: [] as { name: string; args: Record<string, unknown> }[],
   listeners: new Set<Listener>(),
 };
 
@@ -34,6 +37,9 @@ export function resetMockSupabase() {
   mockState.insertError = null;
   mockState.upserts = [];
   mockState.upsertError = null;
+  mockState.players = [];
+  mockState.playersError = null;
+  mockState.rpcCalls = [];
   mockState.listeners.clear();
 }
 
@@ -58,6 +64,15 @@ export const supabase = {
     startAutoRefresh: jest.fn(),
     stopAutoRefresh: jest.fn(),
   },
+  rpc: jest.fn(async (name: string, args: Record<string, unknown> = {}) => {
+    mockState.rpcCalls.push({ name, args });
+    if (name === 'search_players') {
+      return mockState.playersError
+        ? { data: null, error: mockState.playersError }
+        : { data: mockState.players, error: null };
+    }
+    return { data: null, error: { message: `unknown rpc ${name}` } };
+  }),
   from: jest.fn((table: string) => ({
     select: () => ({
       eq: (column: string, value: unknown) => ({

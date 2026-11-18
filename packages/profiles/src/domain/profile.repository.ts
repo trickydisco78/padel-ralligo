@@ -2,7 +2,11 @@ import type { SkillTier } from '@padel/core';
 
 import type { Profile } from './profile';
 
-export type SaveProfileInput = Omit<Profile, 'skillTier'> & { skillTier: SkillTier };
+/** `discoverable` is the switch; the repository decides the stored `discoverable_at` timestamp from it. */
+export type SaveProfileInput = Omit<Profile, 'skillTier' | 'discoverableAt'> & {
+  skillTier: SkillTier;
+  discoverable: boolean;
+};
 
 export interface ProfileRepository {
   get(userId: string): Promise<Profile | null>;
