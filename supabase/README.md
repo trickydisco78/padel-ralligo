@@ -56,7 +56,7 @@ pnpm exec supabase migration new <name>  # create a new migration file
 Migrations are additive and are never edited after they have been pushed; add a new one instead. After a schema change, regenerate the app's types:
 
 ```bash
-pnpm exec supabase gen types typescript --linked --schema public > apps/mobile/src/lib/database.types.ts
+pnpm exec supabase gen types typescript --linked --schema public > packages/supabase/src/database.types.ts
 ```
 
 ## Development seed players
