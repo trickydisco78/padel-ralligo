@@ -111,6 +111,14 @@ describe('Players | Open matches switch', () => {
     expect(screen.getByRole('tab', { name: /^Players/, selected: true })).toBeTruthy();
   });
 
+  it('uses the design heading and a search hint that matches what is searched', async () => {
+    await openPlayers();
+    expect(screen.getByText('Find your kind of game.')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Search a destination')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: /^Open matches/ }));
+    expect(screen.getByPlaceholderText('City, destination or venue')).toBeTruthy();
+  });
+
   it('hides the date filters, which only apply to matches', async () => {
     await openPlayers();
     expect(screen.queryByLabelText('From')).toBeNull();

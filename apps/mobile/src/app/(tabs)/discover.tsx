@@ -176,7 +176,7 @@ export default function DiscoverScreen() {
         label={t('discover.searchLabel')}
         value={search}
         onChangeText={setSearch}
-        placeholder={t('discover.searchPlaceholder')}
+        placeholder={t(view === 'players' ? 'discover.searchPlaceholderPlayers' : 'discover.searchPlaceholder')}
         returnKeyType="search"
         autoCapitalize="none"
         autoCorrect={false}

@@ -27,7 +27,7 @@
     "seeAll": "See all games"
   },
   "discover": {
-    "title": "Discover",
+    "title": "Find your kind of game.",
     "viewSwitchLabel": "Show",
     "tabPlayers": "Players",
     "tabMatches": "Open matches",
@@ -38,6 +38,7 @@
     "playersEmptyHint": "Turn on \"Show me in Find players\" in your profile to be listed.",
     "searchLabel": "Search",
     "searchPlaceholder": "City, destination or venue",
+    "searchPlaceholderPlayers": "Search a destination",
     "destination": "Destination",
     "allDestinations": "All destinations",
     "from": "From",
