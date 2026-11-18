@@ -210,6 +210,13 @@ export type Database = {
             referencedRelation: "destinations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_home_destination_id_fkey"
+            columns: ["home_destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations_with_counts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_consents: {

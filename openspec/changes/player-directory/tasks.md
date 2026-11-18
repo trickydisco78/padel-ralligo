@@ -10,9 +10,9 @@ Dependencies: 1 first. 2 before 3, 4 and 7 can use real data. 3, 4, 5 and 6 can 
 ## 2. Database (`supabase/migrations`)
 
 - [x] 2.1 Write one additive migration: `profiles.discoverable_at`, `profiles.home_destination_id` (FK), the `check` that listing needs a home destination, Málaga and Lisbon rows, and `public.search_players` with the caps, name formatting, self-exclusion, `player_id` only for signed-in callers, `search_path = ''` and explicit grants; verify by reading the migration against design decisions 1 to 6 and by applying it to a local or scratch database if available
-- [ ] 2.2 Extend `supabase/tests/rls.mjs`: anonymous call returns rows with exactly the permitted columns and a null `player_id`; opted-out and not-opted-in players are never returned; a player without a home destination or sport is not returned; anonymous cannot read `profiles` or `profile_sports`; signed-in caller gets `player_id` and not their own row; text search matches destination or country and never names; `p_limit` above 50 and offsets of 100 or more return no more than the caps (using temporary opted-in users created and removed by the test); the exact-grants check now lists the two views plus this one function; a user cannot set `discoverable_at` for another profile; verify the new checks fail against a build without the caps
+- [x] 2.2 Extend `supabase/tests/rls.mjs`: anonymous call returns rows with exactly the permitted columns and a null `player_id`; opted-out and not-opted-in players are never returned; a player without a home destination or sport is not returned; anonymous cannot read `profiles` or `profile_sports`; signed-in caller gets `player_id` and not their own row; text search matches destination or country and never names; `p_limit` above 50 and offsets of 100 or more return no more than the caps (using temporary opted-in users created and removed by the test); the exact-grants check now lists the two views plus this one function; a user cannot set `discoverable_at` for another profile; verify the new checks fail against a build without the caps
 - [x] 2.3 Record the decided boundary in `supabase/README.md` (what the directory exposes, opt-in default, caps, that profile rows remain readable by signed-in users) and regenerate `database.types.ts`; verify `pnpm check-types` passes with the new types
-- [ ] 2.4 With the owner's go-ahead, apply the migration to the dev project and run `pnpm test:rls`; verify every check passes
+- [x] 2.4 With the owner's go-ahead, apply the migration to the dev project and run `pnpm test:rls`; verify every check passes
 
 ## 3. Profiles (`@padel/profiles`)
 
@@ -51,7 +51,7 @@ Dependencies: 1 first. 2 before 3, 4 and 7 can use real data. 3, 4, 5 and 6 can 
 
 ## 9. Validation
 
-- [ ] 9.1 Run `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:rls`; verify against the baseline from 1.1
+- [x] 9.1 Run `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:rls`; verify against the baseline from 1.1
 - [ ] 9.2 Manually verify on iOS and Android against the dev project with seeded players: guest sees the list with no account and no ids, switch and counts, destination and level filters, Connect sheet then sign in returns to Players, signed-in Connect disabled, turning the setting on and off in Profile adds and removes the player, screen reader announces cards and the sheet
 
 ## Workflow follow-up
