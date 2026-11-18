@@ -48,6 +48,7 @@ export function toDiscoverListing(row: DiscoverRow): DiscoverListing | null {
     id: row.id,
     destinationId: row.destination_id,
     destinationName: row.destination_name ?? '',
+    destinationCountry: row.destination_country ?? '',
     startDate: row.start_date,
     endDate: row.end_date ?? null,
     startTime: toTime(row.start_time ?? null),

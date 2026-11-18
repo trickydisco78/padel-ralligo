@@ -18,6 +18,22 @@ export function useDiscoverListings() {
   return { listings: query.data ?? null, failed: query.isError, refetch: refetchListings };
 }
 
+/**
+ * One open, current match by id. `listing` is `undefined` while loading, `null` when the match is
+ * closed, past or does not exist, and `failed` is set when the request itself fails.
+ */
+export function useDiscoverListing(id: string | undefined) {
+  const query = useQuery({
+    queryKey: [...discoverKey, id] as const,
+    queryFn: () => listingRepository.getDiscoverable(id!),
+    enabled: !!id,
+  });
+  const { refetch } = query;
+  const retry = useCallback(() => refetch(), [refetch]);
+
+  return { listing: query.data, loading: query.isPending && !!id, failed: query.isError, refetch: retry };
+}
+
 export function useMyListings(userId: string | undefined) {
   return useQuery({
     queryKey: mineKey(userId),

@@ -9,8 +9,7 @@ import { DefaultTheme, ThemeProvider } from 'expo-router';
 
 import { QueryProvider } from '@padel/query';
 
-import { SessionProvider } from '@padel/auth';
-import { RootStack } from '@/components/root-stack';
+import { AppShell } from '@/components/app-shell';
 import { Colors } from '@padel/ui';
 
 // Visitors start on the tabs; the auth screens are opened from them, never the other way round.
@@ -41,9 +40,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={theme}>
       <QueryProvider>
-        <SessionProvider>
-          <RootStack />
-        </SessionProvider>
+        <AppShell />
       </QueryProvider>
     </ThemeProvider>
   );

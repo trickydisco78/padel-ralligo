@@ -40,8 +40,18 @@ const dest = (id: string, name: string, open_listings: number) => ({
 });
 
 const Discover = () => {
-  const { destinationId } = useLocalSearchParams();
-  return <Text>{`Discover screen ${destinationId ?? 'all'}`}</Text>;
+  const { destinationId, focusSearch } = useLocalSearchParams();
+  return (
+    <>
+      <Text>{`Discover screen ${destinationId ?? 'all'}`}</Text>
+      <Text>{`Discover search focus: ${focusSearch ?? 'none'}`}</Text>
+    </>
+  );
+};
+
+const Match = () => {
+  const { id } = useLocalSearchParams();
+  return <Text>{`Match screen ${id}`}</Text>;
 };
 
 const open = () =>
@@ -54,6 +64,7 @@ const open = () =>
       ),
       index: HomeScreen,
       discover: Discover,
+      'match/[id]': Match,
       '(auth)/sign-in': () => <Text>Sign-in screen</Text>,
       '(auth)/sign-up': () => <Text>Sign-up screen</Text>,
     },
@@ -67,17 +78,33 @@ beforeEach(() => {
 });
 
 describe('Home', () => {
-  it('shows a visitor the sign-in and create-account actions', async () => {
+  it('shows a visitor discovery content, not a registration promotion', async () => {
     await open();
     await waitFor(() => expect(screen.getByText('Find your next padel game')).toBeTruthy());
-    expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();
-    expect(screen.getByText('Create an account')).toBeTruthy();
+    expect(screen.getByText('Meet players at your level, at home or on holiday.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Search for a city or destination' })).toBeTruthy();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Marbella, 3 open games' })).toBeTruthy());
+
+    expect(screen.queryByText('Join in')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sign in' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Create account' })).toBeNull();
+    expect(screen.queryByText(/Create an account/)).toBeNull();
   });
 
-  it('opens the sign-in screen from the visitor action', async () => {
+  it('opens Discover ready for a search from the search entry', async () => {
     await open();
-    await fireEvent.press(await screen.findByRole('button', { name: 'Sign in' }));
-    await waitFor(() => expect(screen.getByText('Sign-in screen')).toBeTruthy());
+    await fireEvent.press(await screen.findByRole('button', { name: 'Search for a city or destination' }));
+    await waitFor(() => expect(screen.getByText('Discover screen all')).toBeTruthy());
+    expect(screen.getByText('Discover search focus: 1')).toBeTruthy();
+  });
+
+  it('opens a match from its card without asking the visitor to sign in', async () => {
+    await open();
+    await waitFor(() => expect(screen.getByText('Upcoming games')).toBeTruthy());
+    const cards = await screen.findAllByRole('button', { name: /Marbella, .*2 spots needed/ });
+    expect(cards).toHaveLength(5);
+    await fireEvent.press(cards[0]!);
+    await waitFor(() => expect(screen.getByText('Match screen l1')).toBeTruthy());
   });
 
   it('hides the account actions from a signed-in user', async () => {

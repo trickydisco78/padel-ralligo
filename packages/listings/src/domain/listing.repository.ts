@@ -8,4 +8,6 @@ export interface ListingRepository {
   listMine(userId: string): Promise<MyListing[]>;
   /** Open, current listings from every poster, soonest first. */
   listDiscoverable(): Promise<DiscoverListing[]>;
+  /** One open, current listing by id, or null when it is closed, past or does not exist. */
+  getDiscoverable(id: string): Promise<DiscoverListing | null>;
 }

@@ -10,11 +10,11 @@ Background and decisions: `openspec/changes/monorepo-domain-architecture/` (prop
 
 | Package | Owns |
 | --- | --- |
-| `@padel/ui` | Design tokens, theme and reusable components (button, chip, card, text and date fields, themed text and view, logo). No domain knowledge. |
+| `@padel/ui` | Design tokens, theme and reusable components (buttons, chip, card, text and date fields, themed text and view, logo, `BottomSheet`). No domain knowledge. |
 | `@padel/supabase` | The one Supabase client, secure session storage, generated database types, and a `/testing` fake client. |
 | `@padel/query` | The shared TanStack Query client (no retries, refetch on mount), a provider, and a `/testing` provider and `render`. |
 | `@padel/core` | Cross-domain primitives only: `IsoDate`, `SkillTier`, `FieldErrors` / `ValidationResult`, date and time helpers. Pure TypeScript. |
-| `@padel/auth` | Authentication: session provider and `useSession`, sign-in and sign-up screens, sign-in prompt, sign-up validation. |
+| `@padel/auth` | Authentication: session provider and `useSession`, sign-in and sign-up screens, sign-up validation, and guest-first prompting: the typed `AuthIntent`, an in-memory `AuthIntentProvider`, `useRequireAuth`, the contextual `AuthPromptSheet`, and `AccountActions` / `SignInPrompt` (the one place Create account and Sign in are offered). |
 | `@padel/destinations` | Destinations and their open-game counts, `useDestinations`, `DestinationPicker`. |
 | `@padel/profiles` | Profiles, skill tier and saved trips: rules, repositories, hooks, `ProfileForm`, `TripSection`, `ProfileSetupScreen`. |
 | `@padel/listings` | Listings: rules and filters, repository, hooks, `ListingForm`, `ListingCard`, `MyListings`. |
@@ -41,6 +41,15 @@ ui, supabase, query, core ──► (no other @padel package; ui may use core)
   `infrastructure` may use `domain`; `presentation` may use `application` and `domain` but never
   `infrastructure`. `src/composition.ts` is the one place that wires a Supabase repository into the package.
 - Not every domain has every layer. Add `application/` only when there is logic beyond calling a repository.
+
+## Guest-first authentication
+
+Browsing needs no account. When a guest attempts an action that needs one, `useRequireAuth()` returns whether to go ahead: `true` when signed in, `false` while the session is loading, and for a guest it records an `AuthIntent` and opens the contextual sheet.
+
+- An `AuthIntent` is a fixed union (`joinMatch` with a match id, `createMatch`, `openMessages`, `openPersonalMatches`, `openProfile`), held in memory only. It never holds a callback or a route, and `parseAuthIntent` rejects anything malformed.
+- `@padel/auth` knows no routes and imports no other domain. `AccountActions` is the only code that navigates to sign-in and sign-up (it records the intent first). `apps/mobile` owns the mapping from an intent to a route and resumes it once the user is signed in with a complete profile.
+- The sheet lives in `@padel/auth` because its content depends only on the intent kind. It is built on `@padel/ui`'s `BottomSheet`, which handles the accessible title, focus, backdrop and Android back.
+- Whatever is pending is dropped when the sheet is dismissed, the user leaves the auth screens, or they sign out.
 
 ## Conventions
 

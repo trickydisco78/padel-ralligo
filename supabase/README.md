@@ -16,6 +16,15 @@ Tables: `destinations` (seeded), `profiles`, `profile_sports`, `profile_trips`, 
 
 The app can be browsed without an account. The two views run with the owner's rights (`security_invoker = false`) and are granted to `anon`; the tables have no `anon` grants, so profiles, trips, consents and raw listings stay unreadable. Anonymous requests see only open, current listings and these columns: destination, dates, start time, venue, level wanted, players needed, description, poster display name and skill tier (plus destination counts). `poster_id` is deliberately not exposed. Adding a column to either view widens public access, so `tests/rls.mjs` asserts the exact column list; update it only on purpose.
 
+Guests also open a single match by id (the match details screen). That is one more read of `discover_listings` with an `id` filter, so closed, past and unknown ids simply return no row and there is no new policy, view or migration. The app talks to the database with the publishable key as `anon`; never put a secret or `service_role` key in it, and never widen a table policy to serve guests: new guest reads go through a view with an explicit column list.
+
+Decided boundaries for who can read what:
+
+- **Poster display name and skill tier are public** (through `discover_listings`). Nothing else about a poster is.
+- **`profiles` is readable by every signed-in user** (including bio and home city) and by nobody else. Anonymous requests cannot read it. This is deliberate, and `tests/rls.mjs` asserts both halves.
+- **Writes always need a signed-in user**, and posting also needs a verified email. There are no joins, participants or messages tables yet, so there is nothing to protect there; when they are added, their policies and tests come with them.
+- **Drafts and other statuses** do not exist (a listing is `open` or `closed`). The public view only returns `open` listings, so adding a status later would not expose it by default. It would be its own change, with a migration and tests.
+
 ## One-time setup
 
 1. Create a Supabase project (a dev project, no real users). In Authentication → Providers → Email, keep **Confirm email** on: posting a listing needs a verified email.
@@ -42,7 +51,7 @@ pnpm exec supabase gen types typescript --linked --schema public > apps/mobile/s
 
 ## Security tests
 
-`tests/rls.mjs` checks, for anonymous, owner and other-user cases, that every table and view allows and denies the right things (including that anonymous requests cannot read tables or write anything, see exactly the permitted view columns and no closed or past listings, and that no email or consent columns are exposed). It creates test users inside a transaction and rolls everything back.
+`tests/rls.mjs` checks, for anonymous, owner and other-user cases, that every table and view allows and denies the right things (including that anonymous requests cannot read tables or write anything, see exactly the permitted view columns and no closed or past listings, can read one open match by id and nothing for an unknown id, hold `SELECT` on only the two views and no write privilege anywhere, and cannot call `is_email_confirmed`; that a signed-in user can read another user's profile but an anonymous request cannot; and that no email or consent columns are exposed). It creates test users inside a transaction and rolls everything back.
 
 It needs a Postgres connection string. In the Supabase dashboard open Connect, choose **Session pooler**, and save the string (with your database password) in `supabase/tests/.env.local`, which is git-ignored:
 

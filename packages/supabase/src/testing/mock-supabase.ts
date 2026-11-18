@@ -60,12 +60,18 @@ export const supabase = {
   },
   from: jest.fn((table: string) => ({
     select: () => ({
-      eq: () => ({
+      eq: (column: string, value: unknown) => ({
         order: async () => ({ data: mockState.myListings, error: null }),
-        maybeSingle: async () => ({
-          data: table === 'profile_trips' ? mockState.trip : mockState.profile,
-          error: null,
-        }),
+        maybeSingle: async () => {
+          if (table === 'discover_listings') {
+            const rows = mockState.listings as Record<string, unknown>[];
+            return {
+              data: mockState.listingsError ? null : (rows.find((row) => row[column] === value) ?? null),
+              error: mockState.listingsError,
+            };
+          }
+          return { data: table === 'profile_trips' ? mockState.trip : mockState.profile, error: null };
+        },
       }),
       order: async () =>
         table === 'discover_listings'

@@ -56,6 +56,7 @@ describe('toDiscoverListing', () => {
     id: 'l1',
     destination_id: 'm',
     destination_name: 'Marbella',
+    destination_country: 'Spain',
     start_date: '2026-02-20',
     end_date: '2026-02-22',
     start_time: '09:00:00',
@@ -72,6 +73,7 @@ describe('toDiscoverListing', () => {
       id: 'l1',
       destinationId: 'm',
       destinationName: 'Marbella',
+      destinationCountry: 'Spain',
       startDate: '2026-02-20',
       endDate: '2026-02-22',
       startTime: '09:00',
@@ -96,6 +98,7 @@ describe('toDiscoverListing', () => {
     });
     expect(listing).toMatchObject({
       destinationName: '',
+      destinationCountry: '',
       levelWanted: 'Any',
       playersNeeded: 0,
       description: '',

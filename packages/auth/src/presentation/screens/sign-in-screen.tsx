@@ -56,7 +56,7 @@ export function SignInScreen() {
               </ThemedText>
             ) : null}
             <PrimaryButton title="Sign in" onPress={submit} disabled={submitting} />
-            <Link href="/sign-up">
+            <Link href="/sign-up" replace>
               <ThemedText type="link" themeColor="primary">
                 New here? Create an account
               </ThemedText>

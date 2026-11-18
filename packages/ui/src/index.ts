@@ -1,9 +1,11 @@
+export { BottomSheet } from './components/bottom-sheet';
 export { Card } from './components/card';
 export { CheckRow } from './components/check-row';
 export { Chip } from './components/chip';
 export { DateField } from './components/date-field';
 export { Logo } from './components/logo';
 export { PrimaryButton } from './components/primary-button';
+export { SecondaryButton } from './components/secondary-button';
 export { TextField } from './components/text-field';
 export { ThemedText, type ThemedTextProps } from './components/themed-text';
 export { ThemedView, type ThemedViewProps } from './components/themed-view';

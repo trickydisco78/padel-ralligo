@@ -158,6 +158,43 @@ async function main() {
     expectRows(0)(await client.query(`select 1 from public.discover_listings where id = $1`, [aListing.id]));
   });
 
+  // --- anonymous: match details by id (the guest-first match screen) ---
+  const detailColumns = anonColumns.discover_listings;
+  await check('anon reads one open match by id with exactly the permitted columns', 'ok', async () => {
+    await client.query(`update public.listings set status = 'open', start_date = current_date + 5, end_date = null where id = $1`, [aListing.id]);
+    await asRole('anon');
+    const r = await client.query(`select ${detailColumns.join(', ')} from public.discover_listings where id = $1`, [aListing.id]);
+    if (r.rowCount !== 1) throw new Error(`expected 1 row, got ${r.rowCount}`);
+    const star = await client.query(`select * from public.discover_listings where id = $1`, [aListing.id]);
+    const got = star.fields.map((f) => f.name).sort().join(',');
+    if (got !== [...detailColumns].sort().join(',')) throw new Error(`columns differ: ${got}`);
+    if (star.fields.some((f) => /poster_id|email|user_id|consent/i.test(f.name))) throw new Error('private column exposed');
+  });
+  await check('anon gets no row for an unknown match id', 'ok', async () => {
+    await asRole('anon');
+    expectRows(0)(await client.query(`select 1 from public.discover_listings where id = gen_random_uuid()`));
+  });
+  await check('anon has select on exactly the two read models and no write privilege anywhere', 'ok', async () => {
+    const r = await client.query(
+      `select c.relname, p.privilege
+       from pg_class c
+       join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+       cross join (values ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE'), ('REFERENCES'), ('TRIGGER')) as p(privilege)
+       where c.relkind in ('r', 'v', 'm', 'p') and has_table_privilege('anon', c.oid, p.privilege)
+       order by c.relname, p.privilege`);
+    const got = r.rows.map((x) => `${x.relname}:${x.privilege}`).join(',');
+    const want = 'destinations_with_counts:SELECT,discover_listings:SELECT';
+    if (got !== want) throw new Error(`anon privileges: ${got}`);
+  });
+  await check('anon cannot call is_email_confirmed', 'deny', async () => {
+    await asRole('anon');
+    return client.query('select public.is_email_confirmed()');
+  });
+  await check('anon cannot read a profile bio or home city', 'deny', async () => {
+    await asRole('anon');
+    return client.query(`select display_name, bio, home_city from public.profiles where id = '${ids.b}'`);
+  });
+
   // --- destinations ---
   await check('signed-in user reads destinations (at least 4)', 'ok', async () => {
     await asRole('authenticated', ids.a);
@@ -177,6 +214,13 @@ async function main() {
       return res;
     });
   }
+
+  // --- profiles: decided boundary, readable by every signed-in user and by nobody else ---
+  await check("signed-in user can read another user's profile (decided boundary)", 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    const r = await client.query(`select display_name, bio, home_city from public.profiles where id = '${ids.b}'`);
+    if (r.rowCount !== 1 || r.rows[0].display_name !== 'Ben') throw new Error('could not read another profile');
+  });
 
   // --- profiles ---
   await check("user cannot create someone else's profile", 'deny', async () => {

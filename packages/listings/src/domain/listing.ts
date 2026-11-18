@@ -52,6 +52,7 @@ export type DiscoverListing = {
   id: string;
   destinationId: string;
   destinationName: string;
+  destinationCountry: string;
   startDate: IsoDate;
   endDate: IsoDate | null;
   startTime: string | null;
