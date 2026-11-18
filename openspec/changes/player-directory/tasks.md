@@ -46,7 +46,7 @@ Dependencies: 1 first. 2 before 3, 4 and 7 can use real data. 3, 4, 5 and 6 can 
 
 ## 8. Seed data and docs
 
-- [ ] 8.1 Add `supabase/seed/players.mjs` (direct database connection like the RLS runner, dry run unless `--apply`, `@seed.invalid` emails, opted in, idempotent, `--remove`) for Jordi M., Hannah K., Lucía C. and Diego R.; verify with the owner's go-ahead by running it twice and then `--remove`, and that the directory shows and then drops them
+- [x] 8.1 Add `supabase/seed/players.mjs` (direct database connection like the RLS runner, dry run unless `--apply`, `@seed.invalid` emails, opted in, idempotent, `--remove`) for Jordi M., Hannah K., Lucía C. and Diego R.; verify with the owner's go-ahead by running it twice and then `--remove`, and that the directory shows and then drops them
 - [x] 8.2 Update `docs/architecture.md` (the players package, the function-based public read and why it is not a view, the new intent) and the supabase README seed instructions; verify the docs match the code
 
 ## 9. Validation
