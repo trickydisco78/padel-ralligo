@@ -16,7 +16,7 @@ The app SHALL provide a bottom tab bar with four tabs labelled "Discover", "Crea
 - **WHEN** the user taps the "Matches" tab
 - **THEN** the Matches screen is shown and the tab is marked as active
 
-#### Scenario: Placeholder screen
+#### Scenario: Placeholder screens
 - **WHEN** the user opens the "Matches" tab
 - **THEN** a placeholder screen with a title and short "coming soon" message is displayed
 
