@@ -6,12 +6,17 @@
 **Reason**: Guests should be led into discovery, not registration. Accounts are requested in context when an action needs one.
 **Migration**: Use the contextual authentication sheet and the Profile tab. Home SHALL NOT show any sign-in or create-account entry for Guests.
 
+## RENAMED Requirements
+
+- FROM: `### Requirement: Game cards on Home`
+- TO: `### Requirement: Match cards on Home`
+
 ## MODIFIED Requirements
 
 ### Requirement: Match cards on Home
 Matches on Home SHALL use the same card as Discover, SHALL NOT require sign in to view, and selecting one SHALL open its match details.
 
-#### Scenario: Visitor views a match
+#### Scenario: Visitor views a game
 - **WHEN** a signed-out visitor views Home
 - **THEN** match cards are shown and selecting one opens its details without a sign-in prompt
 

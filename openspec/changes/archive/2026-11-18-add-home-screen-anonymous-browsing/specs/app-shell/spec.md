@@ -16,7 +16,7 @@ The app SHALL provide a bottom tab bar with five tabs labelled "Home", "Discover
 - **WHEN** the user taps the "Matches" tab
 - **THEN** the Matches screen (or the sign-in prompt for a visitor) is shown and the tab is marked as active
 
-#### Scenario: Placeholder screen
+#### Scenario: Placeholder screens
 - **WHEN** a signed-in user opens the "Matches" tab
 - **THEN** a placeholder screen with a title and short "coming soon" message is displayed
 
