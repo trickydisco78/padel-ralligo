@@ -219,6 +219,58 @@ export type Database = {
           },
         ]
       }
+      trips: {
+        Row: {
+          created_at: string
+          destination_id: string
+          end_date: string
+          id: string
+          profile_id: string
+          start_date: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          destination_id: string
+          end_date: string
+          id?: string
+          profile_id: string
+          start_date: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          destination_id?: string
+          end_date?: string
+          id?: string
+          profile_id?: string
+          start_date?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations_with_counts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_consents: {
         Row: {
           age_confirmed_at: string
@@ -299,7 +351,43 @@ export type Database = {
       }
     }
     Functions: {
+      find_overlapping_players: {
+        Args: {
+          p_limit?: number
+          p_my_level?: boolean
+          p_offset?: number
+          p_query?: string
+          p_this_week?: boolean
+          p_today?: string
+          p_trip_id: string
+        }
+        Returns: {
+          destination_id: string
+          destination_name: string
+          display_name: string
+          overlap_days: number
+          player_id: string
+          skill_tier: string
+          total_count: number
+          trip_end: string
+          trip_start: string
+        }[]
+      }
       is_email_confirmed: { Args: never; Returns: boolean }
+      my_trips_overview: {
+        Args: { p_today?: string }
+        Returns: {
+          days: number
+          destination_country: string
+          destination_id: string
+          destination_name: string
+          end_date: string
+          overlap_players: number
+          start_date: string
+          trip_id: string
+          visibility: string
+        }[]
+      }
       search_players: {
         Args: {
           p_destination_id?: string

@@ -18,6 +18,11 @@ export const mockState = {
   upsertError: null as unknown,
   players: [] as unknown[],
   playersError: null as unknown,
+  overlapPlayers: [] as unknown[],
+  overlapPlayersError: null as unknown,
+  trips: [] as Record<string, unknown>[],
+  tripsError: null as unknown,
+  tripsOverview: [] as unknown[],
   rpcCalls: [] as { name: string; args: Record<string, unknown> }[],
   listeners: new Set<Listener>(),
 };
@@ -39,6 +44,11 @@ export function resetMockSupabase() {
   mockState.upsertError = null;
   mockState.players = [];
   mockState.playersError = null;
+  mockState.overlapPlayers = [];
+  mockState.overlapPlayersError = null;
+  mockState.trips = [];
+  mockState.tripsError = null;
+  mockState.tripsOverview = [];
   mockState.rpcCalls = [];
   mockState.listeners.clear();
 }
@@ -46,6 +56,59 @@ export function resetMockSupabase() {
 export const fakeSession = (id = 'user-1', confirmed = true) => ({
   user: { id, email: 'a@example.com', email_confirmed_at: confirmed ? '2026-01-01T00:00:00Z' : null },
 });
+
+type Row = Record<string, unknown>;
+
+// `trips` rows live in mockState.trips (snake_case, as the table). Select joins the destination name;
+// every call can be failed with mockState.tripsError. Filters chain with eq() and can be awaited.
+function tripsTable() {
+  let nextId = mockState.trips.length;
+  const chain = (run: (matches: (row: Row) => boolean) => unknown) => {
+    const filters: [string, unknown][] = [];
+    const matches = (row: Row) => filters.every(([column, value]) => row[column] === value);
+    const api = {
+      eq(column: string, value: unknown) {
+        filters.push([column, value]);
+        return api;
+      },
+      order: () => api,
+      then(resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) {
+        return Promise.resolve(run(matches)).then(resolve, reject);
+      },
+    };
+    return api;
+  };
+  return {
+    select: () =>
+      chain((matches) => {
+        if (mockState.tripsError) return { data: null, error: mockState.tripsError };
+        const data = mockState.trips.filter(matches).map((row) => {
+          const destination = (mockState.destinations as Row[]).find((d) => d.id === row.destination_id);
+          return { ...row, destinations: destination ? { name: destination.name } : null };
+        });
+        return { data, error: null };
+      }),
+    insert: async (values: Row) => {
+      mockState.inserts.push({ table: 'trips', values });
+      if (mockState.tripsError) return { error: mockState.tripsError };
+      mockState.trips = [...mockState.trips, { id: `trip-${++nextId}`, visibility: 'hidden', ...values }];
+      return { error: null };
+    },
+    update: (values: Row) =>
+      chain((matches) => {
+        mockState.updates.push({ table: 'trips', values, id: mockState.trips.find(matches)?.id });
+        if (mockState.tripsError) return { error: mockState.tripsError };
+        mockState.trips = mockState.trips.map((row) => (matches(row) ? { ...row, ...values } : row));
+        return { error: null };
+      }),
+    delete: () =>
+      chain((matches) => {
+        if (mockState.tripsError) return { error: mockState.tripsError };
+        mockState.trips = mockState.trips.filter((row) => !matches(row));
+        return { error: null };
+      }),
+  };
+}
 
 export const supabase = {
   auth: {
@@ -71,9 +134,19 @@ export const supabase = {
         ? { data: null, error: mockState.playersError }
         : { data: mockState.players, error: null };
     }
+    if (name === 'find_overlapping_players') {
+      return mockState.overlapPlayersError
+        ? { data: null, error: mockState.overlapPlayersError }
+        : { data: mockState.overlapPlayers, error: null };
+    }
+    if (name === 'my_trips_overview') {
+      return mockState.tripsError
+        ? { data: null, error: mockState.tripsError }
+        : { data: mockState.tripsOverview, error: null };
+    }
     return { data: null, error: { message: `unknown rpc ${name}` } };
   }),
-  from: jest.fn((table: string) => ({
+  from: jest.fn((table: string) => table === 'trips' ? tripsTable() : ({
     select: () => ({
       eq: (column: string, value: unknown) => ({
         order: async () => ({ data: mockState.myListings, error: null }),

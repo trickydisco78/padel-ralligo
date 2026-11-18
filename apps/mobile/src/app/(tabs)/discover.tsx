@@ -1,45 +1,50 @@
-import { SKILL_TIERS, matchesSearchText, toIsoDate, type IsoDate, type SkillTier } from '@padel/core';
+import { Ionicons } from '@expo/vector-icons';
+import { formatDateRange, matchesSearchText, toIsoDate } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTranslation } from '@padel/i18n';
 import { useRequireAuth, useSession } from '@padel/auth';
+import { useDestinations } from '@padel/destinations';
+import { useTranslation } from '@padel/i18n';
+import { ListingCard, matchesFilters, matchesSearch, useDiscoverListings, type DiscoverListing } from '@padel/listings';
+import {
+  PlayerCard,
+  PlayersStatus,
+  useOverlappingPlayers,
+  usePlayers,
+  type OverlapPlayer,
+  type Player,
+} from '@padel/players';
+import { SavedTripsRow, useTripsOverview } from '@padel/trips';
 import {
   BottomSheet,
   Chip,
-  DateField,
+  Colors,
   Logo,
+  NoticeBanner,
   PrimaryButton,
   SecondaryButton,
   SegmentedControl,
+  Spacing,
   TextField,
   ThemedText,
   ThemedView,
-  Spacing,
 } from '@padel/ui';
-import { ListingCard, matchesFilters, matchesSearch, useDiscoverListings, type DiscoverListing } from '@padel/listings';
-import { PlayerCard, PlayersStatus, usePlayers, type Player } from '@padel/players';
-import { useDestinations } from '@padel/destinations';
-import { activeTrip, useTrip } from '@padel/profiles';
 
+import { DiscoverFilterBlock, NO_FILTERS, type DiscoverFilters } from '@/components/discover-filters';
+import { resolveSelectedTrip } from '@/discover/trip-selection';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
-type Filters = {
-  destinationId: string | null;
-  startDate: IsoDate | null;
-  endDate: IsoDate | null;
-  level: SkillTier | null;
-};
-
-const NO_FILTERS: Filters = { destinationId: null, startDate: null, endDate: null, level: null };
-
 type DiscoverView = 'players' | 'matches';
+type DiscoverMode = 'trips' | 'explore';
 
 type Row =
   | { kind: 'match'; key: string; listing: DiscoverListing }
-  | { kind: 'player'; key: string; player: Player };
+  | { kind: 'player'; key: string; player: Player | OverlapPlayer };
+
+const isOverlapPlayer = (player: Player | OverlapPlayer): player is OverlapPlayer => 'overlapDays' in player;
 
 export default function DiscoverScreen() {
   const { t } = useTranslation('app');
@@ -56,18 +61,34 @@ export default function DiscoverScreen() {
     focusSearch?: string;
     view?: string;
   }>();
+  const today = toIsoDate(new Date());
   const { destinations } = useDestinations();
-  const { data: savedTrip } = useTrip(userId);
   const { listings, failed, refetch: refetchListings } = useDiscoverListings();
+  const tripsOverview = useTripsOverview(userId, today);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const searchInput = useRef<ComponentRef<typeof TextInput>>(null);
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [filters, setFilters] = useState<DiscoverFilters>(NO_FILTERS);
   // Bumped when filters are replaced from outside, so the typed date fields pick up the new values.
   const [filterVersion, setFilterVersion] = useState(0);
-  const [tripHandled, setTripHandled] = useState(false);
-  const [view, setView] = useState<DiscoverView>('matches');
+  // Null until the user picks a side; My trips defaults to Players, Explore places to Open matches.
+  const [chosenView, setChosenView] = useState<DiscoverView | null>(null);
+  const [chosenMode, setChosenMode] = useState<DiscoverMode | null>(null);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [thisWeek, setThisWeek] = useState(false);
+  const [myLevel, setMyLevel] = useState(false);
   const [connectSheetOpen, setConnectSheetOpen] = useState(false);
+
+  // A different user (or signing out) starts again from the defaults. Adjusted during render.
+  const [seenUserId, setSeenUserId] = useState(userId);
+  if (seenUserId !== userId) {
+    setSeenUserId(userId);
+    setChosenMode(null);
+    setChosenView(null);
+    setSelectedTripId(null);
+    setThisWeek(false);
+    setMyLevel(false);
+  }
 
   // Reload whenever the tab gains focus, so a listing just posted shows up.
   useFocusEffect(
@@ -93,7 +114,7 @@ export default function DiscoverScreen() {
   const [appliedView, setAppliedView] = useState<string | undefined>(undefined);
   if (viewParam && viewParam !== appliedView) {
     setAppliedView(viewParam);
-    if (viewParam === 'players' || viewParam === 'matches') setView(viewParam);
+    if (viewParam === 'players' || viewParam === 'matches') setChosenView(viewParam);
   } else if (!viewParam && appliedView) {
     setAppliedView(undefined);
   }
@@ -101,151 +122,252 @@ export default function DiscoverScreen() {
     if (viewParam) router.setParams({ view: undefined });
   }, [viewParam, router]);
 
-  // A destination chosen elsewhere (e.g. a Home shortcut) replaces the filters and wins over the
-  // saved trip. Adjusted during render, keyed on the param, so it applies once per new value.
+  // A destination chosen elsewhere (e.g. a Home shortcut) replaces the filters. It is an Explore
+  // choice, so it also brings Explore places forward. Adjusted during render, keyed on the param.
   const [appliedParam, setAppliedParam] = useState<string | undefined>(undefined);
   if (destinationParam && destinationParam !== appliedParam) {
     setAppliedParam(destinationParam);
     setFilters({ ...NO_FILTERS, destinationId: destinationParam });
     setFilterVersion((v) => v + 1);
-    setTripHandled(true);
+    setChosenMode('explore');
+    setChosenView(null);
   }
 
-  // Open pre-filtered to the saved trip, once, unless its end date has passed. Adjusted during
-  // render as soon as the trip has loaded.
-  const currentTrip = activeTrip(savedTrip ?? null, toIsoDate(new Date()));
-  if (!tripHandled && !destinationParam && currentTrip) {
-    setTripHandled(true);
-    setFilters({
-      destinationId: currentTrip.destinationId,
-      startDate: currentTrip.startDate,
-      endDate: currentTrip.endDate,
-      level: null,
-    });
-    setFilterVersion((v) => v + 1);
-  }
+  // Members with an upcoming trip open on My trips; everyone else on Explore places.
+  const trips = tripsOverview.trips;
+  const resolvingMode = !!user && chosenMode === null && tripsOverview.isLoading;
+  const mode: DiscoverMode = !user ? 'explore' : (chosenMode ?? (trips.length > 0 ? 'trips' : 'explore'));
+  const view: DiscoverView = chosenView ?? (mode === 'trips' ? 'players' : 'matches');
+  const selectedTrip = mode === 'trips' ? resolveSelectedTrip(trips, selectedTripId, today) : null;
 
   const debouncedSearch = useDebouncedValue(search);
   const playerFilters = useMemo(
     () => ({ destinationId: filters.destinationId, level: filters.level, query: debouncedSearch }),
     [filters.destinationId, filters.level, debouncedSearch],
   );
-  const {
-    players,
-    total: playersTotal,
-    isLoading: playersLoading,
-    failed: playersFailed,
-    hasMore: morePlayers,
-    fetchMore: fetchMorePlayers,
-    isFetchingMore: fetchingMorePlayers,
-    refetch: refetchPlayers,
-  } = usePlayers(playerFilters);
+  const explorePlayers = usePlayers(playerFilters);
+  const overlapFilters = useMemo(() => ({ myLevel, thisWeek, query: debouncedSearch }), [myLevel, thisWeek, debouncedSearch]);
+  const overlapPlayers = useOverlappingPlayers(selectedTrip?.id ?? null, overlapFilters);
+
+  const tripsMode = mode === 'trips';
+  const playersList = tripsMode ? overlapPlayers : explorePlayers;
 
   async function refresh() {
     setRefreshing(true);
-    await Promise.all([refetchListings(), refetchPlayers()]);
+    await Promise.all([refetchListings(), explorePlayers.refetch(), tripsOverview.refetch(), overlapPlayers.refetch()]);
     setRefreshing(false);
   }
 
   function clearFilters() {
     setFilters(NO_FILTERS);
     setSearch('');
+    setThisWeek(false);
+    setMyLevel(false);
     setFilterVersion((v) => v + 1);
   }
 
-  const visible = (listings ?? []).filter((l) => matchesFilters(l, filters) && matchesSearch(l, search));
-  const rows: Row[] =
-    view === 'players'
-      ? players.map((player, index) => ({ kind: 'player', key: `player-${index}`, player }))
-      : visible.map((listing) => ({ kind: 'match', key: listing.id, listing }));
+  const exploreMatches = (listings ?? []).filter((l) => matchesFilters(l, filters) && matchesSearch(l, search));
+  // Open matches for a trip: at its destination, during its dates.
+  const tripMatches = selectedTrip
+    ? (listings ?? []).filter((l) =>
+        matchesFilters(l, {
+          destinationId: selectedTrip.destinationId,
+          startDate: selectedTrip.startDate,
+          endDate: selectedTrip.endDate,
+          level: null,
+        }),
+      )
+    : [];
+  const matches = tripsMode ? tripMatches : exploreMatches;
+
+  const rows: Row[] = resolvingMode
+    ? []
+    : view === 'players'
+      ? playersList.players.map((player, index) => ({ kind: 'player', key: `player-${index}`, player }))
+      : matches.map((listing) => ({ kind: 'match', key: listing.id, listing }));
+
   // A chosen destination stays visible even if the search text no longer matches it.
   const visibleDestinations = destinations?.filter(
     (d) => d.id === filters.destinationId || matchesSearchText(search, d.name, d.country),
   );
+  const exploreDestinationName = destinations?.find((d) => d.id === filters.destinationId)?.name;
+
+  const heading = user ? t('discover.title') : t('discover.titleGuest');
+  const searchPlaceholder = tripsMode
+    ? t('discover.searchPlaceholderTrips')
+    : t(view === 'players' ? 'discover.searchPlaceholderExplore' : 'discover.searchPlaceholder');
+  // In My trips the search narrows the overlapping players by name; it has nothing to do for matches.
+  const showSearch = !(tripsMode && view === 'matches');
+  const playersCount = playersList.isLoading ? undefined : playersList.total;
 
   const header = (
     <View style={{ gap: Spacing.three }}>
       <Logo />
-      <ThemedText type="title">{t('discover.title')}</ThemedText>
-      {view === 'players' ? (
-        <ThemedText themeColor="textSecondary">{t('discover.playersSubtitle')}</ThemedText>
+      <ThemedText
+        type="smallBold"
+        themeColor="primaryDark"
+        style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
+        {tripsMode ? t('discover.eyebrowTrips') : t('discover.eyebrowExplore')}
+      </ThemedText>
+      <ThemedText type="title">{heading}</ThemedText>
+      <ThemedText themeColor="textSecondary">
+        {tripsMode ? t('discover.subtitleTrips') : t('discover.subtitleExplore')}
+      </ThemedText>
+
+      {user ? (
+        <SegmentedControl
+          accessibilityLabel={t('discover.modeSwitchLabel')}
+          value={mode}
+          onChange={(next) => {
+            setChosenMode(next);
+            setChosenView(null);
+          }}
+          options={[
+            {
+              value: 'trips',
+              label: t('discover.modeTrips'),
+              icon: <Ionicons name="calendar-outline" size={16} color={Colors.light.textSecondary} />,
+            },
+            {
+              value: 'explore',
+              label: t('discover.modeExplore'),
+              icon: <Ionicons name="compass-outline" size={16} color={Colors.light.textSecondary} />,
+            },
+          ]}
+        />
       ) : null}
 
-      <TextField
-        ref={searchInput}
-        label={t('discover.searchLabel')}
-        value={search}
-        onChangeText={setSearch}
-        placeholder={t(view === 'players' ? 'discover.searchPlaceholderPlayers' : 'discover.searchPlaceholder')}
-        returnKeyType="search"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-
-      <SegmentedControl
-        accessibilityLabel={t('discover.viewSwitchLabel')}
-        value={view}
-        onChange={setView}
-        options={[
-          { value: 'players', label: t('discover.tabPlayers'), count: playersLoading ? undefined : playersTotal },
-          { value: 'matches', label: t('discover.tabMatches'), count: listings === null ? undefined : visible.length },
-        ]}
-      />
-
-      <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">{t('discover.destination')}</ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip
-            label={t('discover.allDestinations')}
-            selected={filters.destinationId === null}
-            onPress={() => setFilters((f) => ({ ...f, destinationId: null }))}
-          />
-          {visibleDestinations?.map((d) => (
-            <Chip
-              key={d.id}
-              label={d.name}
-              selected={filters.destinationId === d.id}
-              onPress={() => setFilters((f) => ({ ...f, destinationId: d.id }))}
-            />
-          ))}
-        </View>
-      </View>
-
-      {view === 'matches' ? (
-        <>
-          <DateField
-            key={`from-${filterVersion}`}
-            label={t('discover.from')}
-            value={filters.startDate}
-            onChange={(startDate) => setFilters((f) => ({ ...f, startDate }))}
-          />
-          <DateField
-            key={`to-${filterVersion}`}
-            label={t('discover.to')}
-            value={filters.endDate}
-            onChange={(endDate) => setFilters((f) => ({ ...f, endDate }))}
-          />
-        </>
+      {showSearch ? (
+        <TextField
+          ref={searchInput}
+          label={t('discover.searchLabel')}
+          value={search}
+          onChangeText={setSearch}
+          placeholder={searchPlaceholder}
+          returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
       ) : null}
 
-      <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">{t('discover.level')}</ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip
-            label={t('discover.allLevels')}
-            selected={filters.level === null}
-            onPress={() => setFilters((f) => ({ ...f, level: null }))}
-          />
-          {SKILL_TIERS.map((tier) => (
-            <Chip
-              key={tier}
-              label={tier}
-              selected={filters.level === tier}
-              onPress={() => setFilters((f) => ({ ...f, level: tier }))}
-            />
-          ))}
+      {tripsMode && trips.length > 0 ? (
+        <View style={{ gap: Spacing.one }}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={{ textTransform: 'uppercase' }}>
+            {t('discover.savedTrips')}
+          </ThemedText>
+          <SavedTripsRow trips={trips} selectedTripId={selectedTrip?.id ?? null} onSelect={setSelectedTripId} />
         </View>
+      ) : null}
+
+      {!tripsMode || selectedTrip ? (
+        <SegmentedControl
+          accessibilityLabel={t('discover.viewSwitchLabel')}
+          value={view}
+          onChange={setChosenView}
+          options={[
+            { value: 'players', label: t('discover.tabPlayers'), count: playersCount },
+            { value: 'matches', label: t('discover.tabMatches'), count: listings === null ? undefined : matches.length },
+          ]}
+        />
+      ) : null}
+
+      {tripsMode ? null : (
+        <DiscoverFilterBlock
+          filters={filters}
+          onChange={setFilters}
+          destinations={visibleDestinations}
+          showDates={view === 'matches'}
+          filterVersion={filterVersion}
+        />
+      )}
+
+      {tripsMode && selectedTrip && view === 'players' ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
+          <Chip label={t('discover.thisWeek')} selected={thisWeek} onPress={() => setThisWeek((v) => !v)} />
+          <Chip label={t('discover.myLevel')} selected={myLevel} onPress={() => setMyLevel((v) => !v)} />
+        </View>
+      ) : null}
+
+      {tripsMode && selectedTrip ? (
+        <NoticeBanner icon={<Ionicons name="calendar-outline" size={16} color={Colors.light.primaryDark} />}>
+          {t('discover.noticeTrips', {
+            destination: selectedTrip.destinationName,
+            dates: formatDateRange(selectedTrip.startDate, selectedTrip.endDate),
+          })}
+        </NoticeBanner>
+      ) : null}
+      {!tripsMode && view === 'players' ? (
+        <NoticeBanner icon={<Ionicons name="eye-outline" size={16} color={Colors.light.primaryDark} />}>
+          {t('discover.noticeExplore')}
+        </NoticeBanner>
+      ) : null}
+
+      {view === 'players' && (!tripsMode || selectedTrip) ? (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <ThemedText type="subtitle" accessibilityRole="header" style={{ flexShrink: 1 }}>
+            {tripsMode
+              ? t('discover.playersIn', { destination: selectedTrip?.destinationName })
+              : exploreDestinationName
+                ? t('discover.publicPlayersIn', { destination: exploreDestinationName })
+                : t('discover.publicPlayers')}
+          </ThemedText>
+          {playersCount === undefined ? null : (
+            <ThemedText type="smallBold" themeColor="primaryDark">
+              {t(tripsMode ? 'discover.overlapCount' : 'discover.playersCount', { count: playersCount })}
+            </ThemedText>
+          )}
+        </View>
+      ) : null}
+    </View>
+  );
+
+  const emptyTrips = tripsMode && !selectedTrip;
+  const empty = resolvingMode ? (
+    <ActivityIndicator />
+  ) : emptyTrips ? (
+    tripsOverview.failed ? (
+      <View style={{ gap: Spacing.three }}>
+        <ThemedText accessibilityRole="alert" style={{ color: '#C62828' }}>
+          {t('discover.tripsError')}
+        </ThemedText>
+        <SecondaryButton title={t('discover.tripsRetry')} onPress={() => tripsOverview.refetch()} />
       </View>
+    ) : tripsOverview.isLoading ? (
+      <ActivityIndicator />
+    ) : (
+      <View style={{ gap: Spacing.three }}>
+        <ThemedText type="smallBold">{t('discover.noTrips')}</ThemedText>
+        <ThemedText themeColor="textSecondary">{t('discover.noTripsHint')}</ThemedText>
+        <PrimaryButton title={t('discover.addTrip')} onPress={() => router.navigate('/profile')} />
+      </View>
+    )
+  ) : view === 'players' ? (
+    <View>
+      <PlayersStatus
+        state={playersList.failed ? 'error' : playersList.isLoading ? 'loading' : 'empty'}
+        onRetry={playersList.refetch}
+        onClearFilters={clearFilters}
+      />
+      {!playersList.failed && !playersList.isLoading ? (
+        tripsMode ? (
+          <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
+            {t('discover.noOverlapsHint')}
+          </ThemedText>
+        ) : user ? (
+          <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
+            {t('discover.playersEmptyHint')}
+          </ThemedText>
+        ) : null
+      ) : null}
+    </View>
+  ) : failed ? (
+    <ThemedText style={{ color: '#C62828' }}>{t('discover.error')}</ThemedText>
+  ) : listings === null ? (
+    <ActivityIndicator />
+  ) : (
+    <View style={{ gap: Spacing.three }}>
+      <ThemedText themeColor="textSecondary">{t('discover.noMatches')}</ThemedText>
+      <PrimaryButton title={t('discover.clearFilters')} onPress={clearFilters} />
     </View>
   );
 
@@ -264,6 +386,17 @@ export default function DiscoverScreen() {
             ) : (
               <PlayerCard
                 player={item.player}
+                guest={!user}
+                overlap={
+                  isOverlapPlayer(item.player) && selectedTrip
+                    ? {
+                        startDate: item.player.tripStart,
+                        endDate: item.player.tripEnd,
+                        days: item.player.overlapDays,
+                        tripDays: selectedTrip.days,
+                      }
+                    : undefined
+                }
                 // A guest is asked to sign in; a signed-in member sees the placeholder sheet.
                 onConnect={() => {
                   if (requireAuth({ type: 'connectPlayer' })) setConnectSheetOpen(true);
@@ -276,39 +409,15 @@ export default function DiscoverScreen() {
           contentContainerStyle={{ padding: Spacing.three, gap: Spacing.three }}
           ListHeaderComponent={header}
           ListFooterComponent={
-            view === 'players' && morePlayers ? (
+            view === 'players' && playersList.hasMore ? (
               <SecondaryButton
                 title={t('discover.showMore')}
-                onPress={fetchMorePlayers}
-                disabled={fetchingMorePlayers}
+                onPress={playersList.fetchMore}
+                disabled={playersList.isFetchingMore}
               />
             ) : undefined
           }
-          ListEmptyComponent={
-            view === 'players' ? (
-              <View>
-                <PlayersStatus
-                  state={playersFailed ? 'error' : playersLoading ? 'loading' : 'empty'}
-                  onRetry={refetchPlayers}
-                  onClearFilters={clearFilters}
-                />
-                {user && !playersFailed && !playersLoading ? (
-                  <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
-                    {t('discover.playersEmptyHint')}
-                  </ThemedText>
-                ) : null}
-              </View>
-            ) : failed ? (
-              <ThemedText style={{ color: '#C62828' }}>{t('discover.error')}</ThemedText>
-            ) : listings === null ? (
-              <ActivityIndicator />
-            ) : (
-              <View style={{ gap: Spacing.three }}>
-                <ThemedText themeColor="textSecondary">{t('discover.noMatches')}</ThemedText>
-                <PrimaryButton title={t('discover.clearFilters')} onPress={clearFilters} />
-              </View>
-            )
-          }
+          ListEmptyComponent={empty}
         />
       </SafeAreaView>
       <BottomSheet

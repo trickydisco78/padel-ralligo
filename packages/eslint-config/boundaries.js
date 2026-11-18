@@ -24,6 +24,7 @@ const DOMAIN_PACKAGES = [
   "@padel/bookings",
   "@padel/profiles",
   "@padel/players",
+  "@padel/trips",
 ];
 
 const layer = (name) => ({

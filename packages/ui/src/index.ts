@@ -6,6 +6,7 @@ export { DateField } from './components/date-field';
 export { InitialsTile, initialsOf, tileColorFor } from './components/initials-tile';
 export { Logo } from './components/logo';
 export { uiLocales } from './locales';
+export { NoticeBanner } from './components/notice-banner';
 export { PrimaryButton } from './components/primary-button';
 export { SecondaryButton } from './components/secondary-button';
 export { SegmentedControl, type SegmentOption } from './components/segmented-control';

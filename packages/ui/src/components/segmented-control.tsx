@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { ThemedText } from './themed-text';
@@ -10,6 +11,8 @@ export type SegmentOption<T extends string> = {
   label: string;
   /** Shown beside the label, and read out with it. */
   count?: number;
+  /** Drawn before the label; decorative, the label carries the meaning. */
+  icon?: ReactNode;
 };
 
 type Props<T extends string> = {
@@ -53,6 +56,11 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
               borderRadius: Radius.card,
               backgroundColor: selected ? Colors.light.background : 'transparent',
             }}>
+            {option.icon === undefined || option.icon === null ? null : (
+              <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                {option.icon}
+              </View>
+            )}
             <ThemedText type="smallBold" themeColor={selected ? 'text' : 'textSecondary'}>
               {option.label}
             </ThemedText>

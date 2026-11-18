@@ -40,3 +40,10 @@ Destinations SHALL be held as data, not code, so that one can be added or edited
 #### Scenario: New destination
 - **WHEN** a destination row is added to the data store
 - **THEN** it appears in pickers and counts the next time the app loads destinations
+
+### Requirement: Málaga and Lisbon available
+The curated destinations SHALL also include Málaga (Spain) and Lisbon (Portugal), each with a tagline, so that players and matches can be found there.
+
+#### Scenario: Picking a new destination
+- **WHEN** a user opens a destination picker or a destination filter
+- **THEN** Málaga and Lisbon are listed in alphabetical order with the others

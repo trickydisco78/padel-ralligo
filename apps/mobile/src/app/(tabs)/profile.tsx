@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
 import { useSession, SignInPrompt } from '@padel/auth';
-import { ProfileForm, TripSection, useProfile } from '@padel/profiles';
+import { ProfileForm, useProfile } from '@padel/profiles';
+import { TripsSection } from '@padel/trips';
 import { MyListings } from '@padel/listings';
 import { PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 
@@ -34,7 +35,7 @@ export default function ProfileScreen() {
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four }}>
             <ThemedText type="title">{t('profile.title')}</ThemedText>
             {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel={t('profile.save')} />}
-            <TripSection />
+            <TripsSection />
             <MyListings />
             <PrimaryButton
               title={t('profile.signOut')}

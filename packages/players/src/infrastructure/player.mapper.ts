@@ -1,6 +1,6 @@
-import { SKILL_TIERS, type SkillTier } from '@padel/core';
+import { SKILL_TIERS, type IsoDate, type SkillTier } from '@padel/core';
 
-import type { Player } from '../domain/player';
+import type { OverlapPlayer, Player } from '../domain/player';
 
 export type PlayerRow = {
   player_id?: string | null;
@@ -9,6 +9,12 @@ export type PlayerRow = {
   destination_name?: string | null;
   skill_tier?: string | null;
   total_count?: number | string | null;
+};
+
+export type OverlapRow = PlayerRow & {
+  trip_start?: string | null;
+  trip_end?: string | null;
+  overlap_days?: number | string | null;
 };
 
 const isTier = (value: unknown): value is SkillTier => (SKILL_TIERS as readonly unknown[]).includes(value);
@@ -27,6 +33,14 @@ export function toPlayer(row: PlayerRow): Player | null {
 }
 
 /** `total_count` is a bigint in Postgres and may arrive as a string. */
+export function toOverlapPlayer(row: OverlapRow): OverlapPlayer | null {
+  const player = toPlayer(row);
+  if (!player || row.trip_start == null || row.trip_end == null) return null;
+  const days = row.overlap_days == null ? Number.NaN : Number(row.overlap_days);
+  if (!Number.isFinite(days)) return null;
+  return { ...player, tripStart: row.trip_start as IsoDate, tripEnd: row.trip_end as IsoDate, overlapDays: days };
+}
+
 export function toTotal(rows: PlayerRow[]): number {
   const n = Number(rows[0]?.total_count ?? 0);
   return Number.isFinite(n) ? n : 0;

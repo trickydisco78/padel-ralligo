@@ -1,0 +1,49 @@
+{
+  "tripsSection": {
+    "title": "My trips",
+    "intro": "Save the trips you are planning to find players who will be there too.",
+    "empty": "No trips yet",
+    "add": "Add a trip",
+    "edit": "Edit",
+    "delete": "Delete",
+    "ended": "Ended",
+    "shared": "Shared with members",
+    "private": "Only you",
+    "loadFailed": "Could not load your trips.",
+    "retry": "Try again",
+    "deleted": "Trip deleted",
+    "saved": "Trip saved",
+    "saveFailed": "Could not save your trip. Please try again.",
+    "deleteFailed": "Could not delete your trip. Please try again.",
+    "formAddTitle": "Add a trip",
+    "formEditTitle": "Edit trip",
+    "destination": "Where are you going?",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "share": "Let other members see this trip",
+    "shareHelp": "Other signed-in members who are listed in Find players can see this trip's destination and dates. You can turn this off at any time.",
+    "save": "Save trip",
+    "cancel": "Cancel",
+    "editLabel": "Edit {{destination}} trip",
+    "deleteLabel": "Delete {{destination}} trip"
+  },
+  "savedTrips": {
+    "place": "{{country}} · {{dates}}",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "players_one": "{{count}} player overlaps",
+    "players_other": "{{count}} players overlap",
+    "overlap": "{{days}} · {{players}}",
+    "noOverlap": "{{days}} · No overlaps yet",
+    "card": "{{destination}}, {{dates}}, {{summary}}, {{state}}",
+    "selected": "selected",
+    "notSelected": "not selected"
+  },
+  "validation": {
+    "destinationRequired": "Choose a destination",
+    "startDateRequired": "Choose a start date",
+    "endDateRequired": "Choose an end date",
+    "endBeforeStart": "End date can't be before the start date",
+    "limitReached": "You can save up to 10 trips. Delete a trip to add another."
+  }
+}

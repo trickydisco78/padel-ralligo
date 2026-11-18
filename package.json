@@ -11,6 +11,7 @@
     "start": "pnpm --filter mobile start",
     "test:rls": "node --env-file=supabase/tests/.env.local supabase/tests/rls.mjs",
     "seed:players": "node --env-file=supabase/tests/.env.local supabase/seed/players.mjs",
+    "seed:matches": "node --env-file=supabase/tests/.env.local supabase/seed/matches.mjs",
     "boundaries": "turbo boundaries"
   },
   "devDependencies": {

@@ -22,28 +22,11 @@
       "Advanced": "Advanced"
     }
   },
-  "tripSection": {
-    "title": "Your current trip",
-    "intro": "Discover opens filtered to this destination and these dates.",
-    "ended": "This trip has ended.",
-    "startDate": "Start date",
-    "endDate": "End date",
-    "save": "Save trip",
-    "clear": "Clear trip",
-    "saved": "Trip saved",
-    "cleared": "Trip cleared",
-    "saveFailed": "Could not save your trip. Please try again.",
-    "clearFailed": "Could not clear your trip. Please try again."
-  },
   "validation": {
     "nameLength": "Name must be {{nameMin}} to {{nameMax}} characters",
     "homeCityTooLong": "Home city must be {{homeCityMax}} characters or fewer",
     "bioTooLong": "Bio must be {{bioMax}} characters or fewer",
     "skillTierRequired": "Choose a skill level",
-    "homeDestinationRequired": "Choose a home destination to be listed",
-    "destinationRequired": "Choose a destination",
-    "startDateRequired": "Choose a start date",
-    "endDateRequired": "Choose an end date",
-    "endBeforeStart": "End date can't be before the start date"
+    "homeDestinationRequired": "Choose a home destination to be listed"
   }
 }

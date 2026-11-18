@@ -14,6 +14,7 @@
     "@padel/players": "workspace:*",
     "@padel/profiles": "workspace:*",
     "@padel/query": "workspace:*",
+    "@padel/trips": "workspace:*",
     "@padel/ui": "workspace:*",
     "expo": "~58.0.25",
     "expo-constants": "~58.0.16",

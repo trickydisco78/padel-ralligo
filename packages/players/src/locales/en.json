@@ -5,5 +5,14 @@
   "clearFilters": "Clear filters",
   "error": "Could not load players",
   "retry": "Try again",
-  "cardLabel": "{{name}}, {{destination}}, {{tier}}"
+  "cardLabel": "{{name}}, {{destination}}, {{tier}}",
+  "signIn": "Sign in",
+  "sport": "Padel",
+  "detail": "{{destination}} · {{sport}} · {{tier}}",
+  "tripLine": "{{destination}} · {{dates}}",
+  "overlapLine": "{{overlap}} · {{tier}}",
+  "overlapAll": "All {{count}} days overlap",
+  "overlap_one": "{{count}} day overlap",
+  "overlap_other": "{{count}} days overlap",
+  "cardLabelOverlap": "{{name}}, {{destination}}, {{dates}}, {{overlap}}, {{tier}}"
 }

@@ -24,6 +24,12 @@ const ids = {
   b: '00000000-0000-4000-8000-00000000000b', // verified, has profile
   c: '00000000-0000-4000-8000-00000000000c', // email NOT verified, has profile
   d: '00000000-0000-4000-8000-00000000000d', // verified, has profile but no skill tier
+  eva: '00000000-0000-4000-8000-00000000000e', // listed, Beginner, shared trip
+  finn: '00000000-0000-4000-8000-00000000000f', // listed, Advanced, shared trip
+  gus: '00000000-0000-4000-8000-000000000001', // listed, Intermediate, trip NOT shared
+  hal: '00000000-0000-4000-8000-000000000002', // listed, shared trip to another destination
+  ida: '00000000-0000-4000-8000-000000000003', // listed, shared trip that does not overlap
+  lena: '00000000-0000-4000-8000-000000000004', // listed, Intermediate, shared trip
 };
 
 let passed = 0;
@@ -57,13 +63,27 @@ async function check(name, expect, fn) {
   console.log(`${good ? 'PASS' : 'FAIL'}  ${name}${good ? '' : `  (got ${outcome}: ${detail})`}`);
 }
 
-const expectRows = (n) => async (res) => {
+// Synchronous on purpose: callers do not await it, and a failed assertion must throw inside the check.
+const expectRows = (n) => (res) => {
   if (res.rowCount !== n) throw new Error(`expected ${n} rows, got ${res.rowCount}`);
 };
 
 async function main() {
   await client.connect();
   await client.query('begin');
+
+  // Optional: load a migration that has not been applied yet, inside this rolled-back transaction,
+  // so its SQL and these checks can be tried without changing the database.
+  //   RLS_PRE_SQL=supabase/migrations/<file>.sql pnpm test:rls
+  if (process.env.RLS_PRE_SQL) {
+    const { readFileSync } = await import('node:fs');
+    await client.query(readFileSync(process.env.RLS_PRE_SQL, 'utf8'));
+    console.log(`(loaded ${process.env.RLS_PRE_SQL} inside the test transaction)\n`);
+  }
+
+  // Development seed players (pnpm seed:players) would show up in directory and overlap results.
+  // They are removed inside this rolled-back transaction so the checks do not depend on them.
+  await client.query(`delete from auth.users where email like '%@seed.invalid'`);
 
   // --- fixtures (as the database owner) ---
   const user = (id, confirmed) =>
@@ -430,6 +450,207 @@ async function main() {
        order by p.proname`);
     const got = r.rows.map((x) => x.proname).join(',');
     if (got !== 'search_players') throw new Error(`anon can execute: ${got}`);
+  });
+
+  // --- trips: private to their owner, shared on purpose, overlap on the server ---
+  const { rows: [tenerifeDest] } = await client.query(`select id from public.destinations where name = 'Tenerife'`);
+  const base = `current_date + 10`;
+  const people = [
+    [ids.eva, 'Eva', 'Beginner'], [ids.finn, 'Finn', 'Advanced'], [ids.gus, 'Gus', 'Intermediate'],
+    [ids.hal, 'Hal', 'Intermediate'], [ids.ida, 'Ida', 'Advanced'], [ids.lena, 'Lena', 'Intermediate'],
+  ];
+  for (const [id, name, tier] of people) {
+    await user(id, true);
+    await client.query(`insert into public.profiles (id, display_name, home_destination_id, discoverable_at) values ($1, $2, $3, now())`, [id, name, dest.id]);
+    await client.query(`insert into public.profile_sports (profile_id, skill_tier) values ($1, $2)`, [id, tier]);
+  }
+  // Ann's own trip (hidden): Marbella, base to base + 7 = 8 days.
+  const trip = async (owner, destId, from, to, visibility = 'members') => {
+    const r = await client.query(
+      `insert into public.trips (profile_id, destination_id, start_date, end_date, visibility)
+       values ($1, $2, ${from}, ${to}, $3) returning id`, [owner, destId, visibility]);
+    return r.rows[0].id;
+  };
+  const annTrip = await trip(ids.a, dest.id, base, `${base} + 7`, 'hidden');
+  const evaTrip = await trip(ids.eva, dest.id, base, `${base} + 7`);           // 8 days with Ann
+  await trip(ids.lena, dest.id, `${base} + 1`, `${base} + 6`);                   // 6 days
+  await trip(ids.b, dest.id, `${base} + 3`, `${base} + 9`);                      // 5 days
+  await trip(ids.finn, dest.id, `${base} + 1`, `${base} + 4`);                   // 4 days
+  await trip(ids.gus, dest.id, base, `${base} + 7`, 'hidden');                   // not shared
+  await trip(ids.hal, tenerifeDest.id, base, `${base} + 7`);                     // another destination
+  await trip(ids.ida, dest.id, `${base} + 20`, `${base} + 25`);                  // no overlap in time
+  await trip(ids.c, dest.id, base, `${base} + 7`);                               // Cat is not listed
+  await trip(ids.d, dest.id, base, `${base} + 7`);                               // Dee has no skill tier
+
+  const overlapFor = (asUser, tripId, args = '') =>
+    client.query(`select * from public.find_overlapping_players($1${args ? ', ' + args : ''})`, [tripId]);
+  const listNames = (res) => res.rows.map((r) => r.display_name).join(',');
+
+  await check('anon cannot read, add or change trips', 'deny', async () => {
+    await asRole('anon');
+    return client.query(`select * from public.trips`);
+  });
+  await check('anon cannot add a trip', 'deny', async () => {
+    await asRole('anon');
+    return client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date) values ('${ids.a}', '${dest.id}', current_date, current_date)`);
+  });
+  await check("a member cannot read another member's trips", 'ok', async () => {
+    await asRole('authenticated', ids.b);
+    expectRows(0)(await client.query(`select * from public.trips where profile_id = '${ids.a}'`));
+  });
+  await check("a member cannot change or delete another member's trip (0 rows)", 'ok', async () => {
+    await asRole('authenticated', ids.b);
+    expectRows(0)(await client.query(`update public.trips set visibility = 'members' where id = $1`, [annTrip]));
+    expectRows(0)(await client.query(`delete from public.trips where id = $1`, [annTrip]));
+  });
+  await check('a member cannot add a trip for someone else', 'deny', async () => {
+    await asRole('authenticated', ids.b);
+    return client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date) values ('${ids.a}', '${dest.id}', current_date, current_date)`);
+  });
+  await check('a member reads, edits and deletes their own trip', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    expectRows(1)(await client.query(`select 1 from public.trips where id = $1`, [annTrip]));
+    expectRows(1)(await client.query(`update public.trips set visibility = 'members' where id = $1`, [annTrip]));
+    expectRows(1)(await client.query(`delete from public.trips where id = $1`, [annTrip]));
+  });
+  await check('a trip that ends before it starts is rejected', 'deny', async () => {
+    await asRole('authenticated', ids.a);
+    return client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date) values ('${ids.a}', '${dest.id}', current_date + 2, current_date)`);
+  });
+  await check('a new trip is hidden by default', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    const r = await client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date) values ('${ids.a}', '${dest.id}', current_date + 40, current_date + 41) returning visibility`);
+    if (r.rows[0].visibility !== 'hidden') throw new Error(`default is ${r.rows[0].visibility}`);
+  });
+  await check('an unknown visibility is rejected', 'deny', async () => {
+    await asRole('authenticated', ids.a);
+    return client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date, visibility) values ('${ids.a}', '${dest.id}', current_date, current_date, 'public')`);
+  });
+  await check('the eleventh trip is refused', 'deny', async () => {
+    await client.query(
+      `insert into public.trips (profile_id, destination_id, start_date, end_date)
+       select '${ids.lena}', '${dest.id}', current_date + 100 + g, current_date + 100 + g from generate_series(1, 9) g`);
+    await asRole('authenticated', ids.lena);
+    return client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date) values ('${ids.lena}', '${dest.id}', current_date + 200, current_date + 200)`);
+  });
+  await check('ten trips are allowed', 'ok', async () => {
+    await client.query(
+      `insert into public.trips (profile_id, destination_id, start_date, end_date)
+       select '${ids.lena}', '${dest.id}', current_date + 100 + g, current_date + 100 + g from generate_series(1, 9) g`);
+    const r = await client.query(`select count(*)::int as n from public.trips where profile_id = '${ids.lena}'`);
+    if (r.rows[0].n !== 10) throw new Error(`count ${r.rows[0].n}`);
+  });
+
+  await check('anon cannot run the overview or the overlap query', 'deny', async () => {
+    await asRole('anon');
+    return client.query(`select * from public.my_trips_overview()`);
+  });
+  await check('anon cannot run the overlap query', 'deny', async () => {
+    await asRole('anon');
+    return overlapFor('anon', annTrip);
+  });
+  await check('overlap lists the design example: 8, 6, 5 and 4 days, most days first', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    const r = await overlapFor('a', annTrip);
+    if (listNames(r) !== 'Eva,Lena,Ben,Finn') throw new Error(`got ${listNames(r)}`);
+    const days = r.rows.map((x) => x.overlap_days).join(',');
+    if (days !== '8,6,5,4') throw new Error(`days ${days}`);
+    if (r.rows.some((x) => !x.player_id)) throw new Error('missing player id');
+  });
+  await check('overlap excludes hidden trips, unlisted players, other destinations and other dates', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    const r = await overlapFor('a', annTrip, `false, false, null, current_date, 50, 0`);
+    for (const name of ['Gus', 'Hal', 'Ida', 'Cat', 'Dee', 'Ann']) {
+      if (r.rows.some((x) => x.display_name === name)) throw new Error(`${name} should not appear`);
+    }
+  });
+  await check('the overview counts match the list and give the trip length', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    const o = await client.query(`select * from public.my_trips_overview() where trip_id = $1`, [annTrip]);
+    const l = await overlapFor('a', annTrip);
+    if (o.rowCount !== 1) throw new Error(`overview rows ${o.rowCount}`);
+    if (o.rows[0].days !== 8) throw new Error(`days ${o.rows[0].days}`);
+    if (o.rows[0].overlap_players !== 4 || Number(l.rows[0].total_count) !== 4) throw new Error(`counts ${o.rows[0].overlap_players} / ${l.rows[0].total_count}`);
+  });
+  await check('the overview shows only the caller\'s own upcoming trips', 'ok', async () => {
+    await client.query(`insert into public.trips (profile_id, destination_id, start_date, end_date) values ('${ids.a}', '${dest.id}', current_date - 9, current_date - 5)`);
+    await asRole('authenticated', ids.a);
+    const o = await client.query(`select * from public.my_trips_overview()`);
+    if (o.rows.some((x) => new Date(x.end_date) < new Date(new Date().toDateString()))) throw new Error('an ended trip is listed');
+    await asRole('authenticated', ids.b);
+    const other = await client.query(`select * from public.my_trips_overview()`);
+    if (other.rows.some((x) => x.trip_id === annTrip)) throw new Error("another member's trip is listed");
+  });
+  await check("a supplied trip id that belongs to someone else returns nothing", 'ok', async () => {
+    await asRole('authenticated', ids.b);
+    expectRows(0)(await overlapFor('b', annTrip));
+    expectRows(0)(await overlapFor('b', '00000000-0000-4000-8000-0000000000ff'));
+  });
+  await check('My level keeps the caller\'s tier and the one next to it, at the low end', 'ok', async () => {
+    await asRole('authenticated', ids.eva); // Beginner
+    const all = await overlapFor('eva', evaTrip);
+    const mine = await overlapFor('eva', evaTrip, `true`);
+    // Eva's own trip overlaps Lena (Intermediate), Ben (Intermediate) and Finn (Advanced); Ann's trip is hidden.
+    if (listNames(all) !== 'Lena,Ben,Finn') throw new Error(`all: ${listNames(all)}`);
+    if (listNames(mine) !== 'Lena,Ben') throw new Error(`my level: ${listNames(mine)}`);
+  });
+  await check('My level in the middle keeps the tier below and above', 'ok', async () => {
+    await asRole('authenticated', ids.a); // Intermediate
+    const mine = await overlapFor('a', annTrip, `true`);
+    if (listNames(mine) !== 'Eva,Lena,Ben,Finn') throw new Error(`got ${listNames(mine)}`);
+  });
+  await check('My level at the high end drops Beginners', 'ok', async () => {
+    await client.query(`update public.profile_sports set skill_tier = 'Advanced' where profile_id = '${ids.a}'`);
+    await asRole('authenticated', ids.a);
+    const mine = await overlapFor('a', annTrip, `true`);
+    if (listNames(mine) !== 'Lena,Ben,Finn') throw new Error(`got ${listNames(mine)}`);
+  });
+  await check('This week keeps only overlaps that include a day of this week', 'ok', async () => {
+    const week = await trip(ids.a, dest.id, `current_date`, `current_date + 2`, 'hidden');
+    await trip(ids.b, dest.id, `current_date`, `current_date + 5`);
+    await asRole('authenticated', ids.a);
+    const thisWeek = await overlapFor('a', week, `false, true`);
+    if (listNames(thisWeek) !== 'Ben') throw new Error(`this week: ${listNames(thisWeek)}`);
+    const farTrip = await overlapFor('a', annTrip, `false, true`);
+    if (farTrip.rowCount !== 0) throw new Error(`a trip ten days away matched this week: ${listNames(farTrip)}`);
+  });
+  await check('name search matches names only, with no wildcards', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    const byName = await overlapFor('a', annTrip, `false, false, 'fin'`);
+    if (listNames(byName) !== 'Finn') throw new Error(`got ${listNames(byName)}`);
+    for (const q of ['zzz', '%', '_', '.*']) {
+      const r = await overlapFor('a', annTrip, `false, false, '${q}'`);
+      if (r.rowCount !== 0) throw new Error(`query ${q} matched ${r.rowCount}`);
+    }
+  });
+  await check('the caller\'s date is clamped to within a day of the server\'s', 'ok', async () => {
+    await asRole('authenticated', ids.a);
+    // A date far in the future would hide the trip as "ended" if it were trusted.
+    const r = await overlapFor('a', annTrip, `false, false, null, current_date + 3650, 50, 0`);
+    if (r.rowCount !== 4) throw new Error(`expected 4 rows, got ${r.rowCount}`);
+  });
+  await check('overlap caps results at 50 per call and nothing from offset 100', 'ok', async () => {
+    await client.query(
+      `insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data)
+       select gen_random_uuid(), 'trip' || g || '@rls-test.invalid', now(), '{"terms_accepted":"true","age_confirmed":"true"}'
+       from generate_series(1, 120) g`);
+    await client.query(
+      `insert into public.profiles (id, display_name, home_destination_id, discoverable_at)
+       select id, 'Trip Bulk', $1, now() from auth.users where email like 'trip%@rls-test.invalid'`, [dest.id]);
+    await client.query(`insert into public.profile_sports (profile_id, skill_tier) select id, 'Beginner' from public.profiles where display_name = 'Trip Bulk'`);
+    await client.query(
+      `insert into public.trips (profile_id, destination_id, start_date, end_date, visibility)
+       select id, '${dest.id}', ${base}, ${base} + 7, 'members' from public.profiles where display_name = 'Trip Bulk'`);
+    await asRole('authenticated', ids.a);
+    const first = await overlapFor('a', annTrip, `false, false, null, current_date, 1000, 0`);
+    const second = await overlapFor('a', annTrip, `false, false, null, current_date, 50, 50`);
+    const beyond = await overlapFor('a', annTrip, `false, false, null, current_date, 50, 100`);
+    const negative = await overlapFor('a', annTrip, `false, false, null, current_date, -5, 0`);
+    if (first.rowCount !== 50) throw new Error(`first page ${first.rowCount}`);
+    if (Number(first.rows[0].total_count) < 120) throw new Error(`total_count ${first.rows[0].total_count}`);
+    if (second.rowCount !== 50) throw new Error(`second page ${second.rowCount}`);
+    if (beyond.rowCount !== 0) throw new Error(`offset 100 returned ${beyond.rowCount}`);
+    if (negative.rowCount !== 0) throw new Error(`negative limit returned ${negative.rowCount}`);
   });
 
   // --- no sensitive columns exposed ---

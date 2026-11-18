@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 import { InitialsTile, initialsOf, tileColorFor } from '../src/components/initials-tile';
 import { SegmentedControl } from '../src/components/segmented-control';
@@ -69,5 +70,18 @@ describe('InitialsTile', () => {
     await render(<InitialsTile name="Jordi M." />);
     expect(screen.getByText('JM', { includeHiddenElements: true })).toBeTruthy();
     expect(screen.queryByText('JM')).toBeNull();
+  });
+});
+
+describe('SegmentedControl icons', () => {
+  it('draws the icon before the label without changing the accessible name', async () => {
+    const withIcon = [
+      { value: 'a', label: 'A', icon: <Text testID="icon-a">*</Text> },
+      { value: 'b', label: 'B' },
+    ] as const;
+    await render(<SegmentedControl options={withIcon} value="a" onChange={() => {}} />);
+    expect(screen.getByRole('tab', { name: 'A', selected: true })).toBeTruthy();
+    expect(screen.getByTestId('icon-a', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId('icon-a')).toBeNull();
   });
 });
