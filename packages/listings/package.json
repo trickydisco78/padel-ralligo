@@ -16,6 +16,7 @@
     "@padel/auth": "workspace:*",
     "@padel/core": "workspace:*",
     "@padel/destinations": "workspace:*",
+    "@padel/i18n": "workspace:*",
     "@padel/supabase": "workspace:*",
     "@padel/ui": "workspace:*",
     "@tanstack/react-query": "^5.107.1"

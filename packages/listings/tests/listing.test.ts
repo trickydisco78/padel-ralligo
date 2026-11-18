@@ -31,6 +31,7 @@ describe('validateListing', () => {
   it('requires a destination', () => {
     expect(errorsOf(validateListing({ ...validListing, destinationId: null }, today))).toHaveProperty(
       'destinationId',
+      'validation.destination',
     );
   });
 
@@ -43,13 +44,13 @@ describe('validateListing', () => {
   it('rejects a start date in the past', () => {
     expect(
       errorsOf(validateListing({ ...validListing, startDate: '2026-02-09' }, today)),
-    ).toHaveProperty('startDate');
+    ).toHaveProperty('startDate', 'validation.startInPast');
   });
 
   it('rejects an end date before the start date', () => {
     expect(
       errorsOf(validateListing({ ...validListing, endDate: '2026-02-14' }, today)),
-    ).toHaveProperty('endDate');
+    ).toHaveProperty('endDate', 'validation.endBeforeStart');
   });
 
   it.each([0, 4, 1.5, -1])('rejects players needed of %s', (playersNeeded) => {
@@ -74,7 +75,7 @@ describe('validateListing', () => {
     });
     expect(
       errorsOf(validateListing({ ...validListing, description: 'a'.repeat(501) }, today)),
-    ).toHaveProperty('description');
+    ).toHaveProperty('description', 'validation.descriptionLength');
   });
 
   it('requires a level wanted', () => {

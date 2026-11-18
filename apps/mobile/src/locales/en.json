@@ -1,0 +1,63 @@
+{
+  "tabs": {
+    "home": "Home",
+    "discover": "Discover",
+    "create": "Create",
+    "matches": "Matches",
+    "profile": "Profile"
+  },
+  "placeholder": {
+    "comingSoon": "Coming soon"
+  },
+  "home": {
+    "title": "Find your next padel game",
+    "subtitle": "Meet players at your level, at home or on holiday.",
+    "searchLabel": "Search for a city or destination",
+    "searchHint": "Opens Discover so you can search",
+    "searchPlaceholder": "Search a city or destination",
+    "destinations": "Destinations",
+    "destinationsError": "Could not load destinations. Pull down to retry.",
+    "openGames_one": "{{count}} open game",
+    "openGames_other": "{{count}} open games",
+    "destinationLabel_one": "{{name}}, {{count}} open game",
+    "destinationLabel_other": "{{name}}, {{count}} open games",
+    "upcoming": "Upcoming games",
+    "gamesError": "Could not load games. Pull down to retry.",
+    "noGames": "No games yet. Check back soon.",
+    "seeAll": "See all games"
+  },
+  "discover": {
+    "title": "Discover",
+    "searchLabel": "Search",
+    "searchPlaceholder": "City, destination or venue",
+    "destination": "Destination",
+    "allDestinations": "All destinations",
+    "from": "From",
+    "to": "To",
+    "level": "Level",
+    "allLevels": "All levels",
+    "error": "Could not load games. Pull down to retry.",
+    "noMatches": "No games match your filters.",
+    "clearFilters": "Clear filters"
+  },
+  "create": {
+    "signInMessage": "Create an account to post a game and find players.",
+    "title": "Post a game"
+  },
+  "matches": {
+    "signInMessage": "Sign in to see your matches and messages."
+  },
+  "profile": {
+    "signInTitle": "Your padel profile",
+    "signInMessage": "Sign in or create an account to connect with players, manage your games and track your activity.",
+    "title": "Profile",
+    "save": "Save profile",
+    "signOut": "Sign out"
+  },
+  "match": {
+    "back": "Back",
+    "backLink": "‹ Back",
+    "join": "Join match",
+    "joinUnavailable": "Joining is not available yet"
+  }
+}

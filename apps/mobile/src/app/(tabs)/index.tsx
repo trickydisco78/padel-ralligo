@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTranslation } from '@padel/i18n';
 import { Card, Colors, Logo, PrimaryButton, Radius, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { useDestinations } from '@padel/destinations';
 import { ListingCard, useDiscoverListings } from '@padel/listings';
@@ -10,6 +11,7 @@ import { ListingCard, useDiscoverListings } from '@padel/listings';
 const UPCOMING_GAMES = 5;
 
 export default function HomeScreen() {
+  const { t } = useTranslation('app');
   const router = useRouter();
   const { destinations, failed: destinationsFailed, refetch: refetchDestinations } = useDestinations();
   const { listings, failed: listingsFailed, refetch: refetchListings } = useDiscoverListings();
@@ -45,16 +47,16 @@ export default function HomeScreen() {
           contentContainerStyle={{ padding: Spacing.three, gap: Spacing.four }}>
           <Logo />
           <View style={{ gap: Spacing.two }}>
-            <ThemedText type="title">Find your next padel game</ThemedText>
+            <ThemedText type="title">{t('home.title')}</ThemedText>
             <ThemedText themeColor="textSecondary">
-              Meet players at your level, at home or on holiday.
+              {t('home.subtitle')}
             </ThemedText>
           </View>
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Search for a city or destination"
-            accessibilityHint="Opens Discover so you can search"
+            accessibilityLabel={t('home.searchLabel')}
+            accessibilityHint={t('home.searchHint')}
             onPress={() => router.push({ pathname: '/discover', params: { focusSearch: '1' } })}
             style={{
               borderWidth: 1,
@@ -66,13 +68,13 @@ export default function HomeScreen() {
               minHeight: 48,
               justifyContent: 'center',
             }}>
-            <ThemedText themeColor="textSecondary">Search a city or destination</ThemedText>
+            <ThemedText themeColor="textSecondary">{t('home.searchPlaceholder')}</ThemedText>
           </Pressable>
 
           <View style={{ gap: Spacing.two }}>
-            <ThemedText type="subtitle">Destinations</ThemedText>
+            <ThemedText type="subtitle">{t('home.destinations')}</ThemedText>
             {destinationsFailed && destinations === null ? (
-              <ThemedText style={{ color: '#C62828' }}>Could not load destinations. Pull down to retry.</ThemedText>
+              <ThemedText style={{ color: '#C62828' }}>{t('home.destinationsError')}</ThemedText>
             ) : destinations === null ? (
               <ActivityIndicator />
             ) : (
@@ -80,7 +82,7 @@ export default function HomeScreen() {
                 <Pressable
                   key={d.id}
                   accessibilityRole="button"
-                  accessibilityLabel={`${d.name}, ${d.openListings} open ${d.openListings === 1 ? 'game' : 'games'}`}
+                  accessibilityLabel={t('home.destinationLabel', { name: d.name, count: d.openListings })}
                   onPress={() => router.push({ pathname: '/discover', params: { destinationId: d.id } })}>
                   <Card style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flex: 1 }}>
@@ -92,7 +94,7 @@ export default function HomeScreen() {
                       ) : null}
                     </View>
                     <ThemedText type="small" themeColor="primary">
-                      {d.openListings} open {d.openListings === 1 ? 'game' : 'games'}
+                      {t('home.openGames', { count: d.openListings })}
                     </ThemedText>
                   </Card>
                 </Pressable>
@@ -101,13 +103,13 @@ export default function HomeScreen() {
           </View>
 
           <View style={{ gap: Spacing.three }}>
-            <ThemedText type="subtitle">Upcoming games</ThemedText>
+            <ThemedText type="subtitle">{t('home.upcoming')}</ThemedText>
             {listingsFailed && listings === null ? (
-              <ThemedText style={{ color: '#C62828' }}>Could not load games. Pull down to retry.</ThemedText>
+              <ThemedText style={{ color: '#C62828' }}>{t('home.gamesError')}</ThemedText>
             ) : listings === null ? (
               <ActivityIndicator />
             ) : upcoming.length === 0 ? (
-              <ThemedText themeColor="textSecondary">No games yet. Check back soon.</ThemedText>
+              <ThemedText themeColor="textSecondary">{t('home.noGames')}</ThemedText>
             ) : (
               <>
                 {upcoming.map((listing) => (
@@ -117,7 +119,7 @@ export default function HomeScreen() {
                     onPress={() => router.push({ pathname: '/match/[id]', params: { id: listing.id } })}
                   />
                 ))}
-                <PrimaryButton title="See all games" onPress={() => router.push('/discover')} />
+                <PrimaryButton title={t('home.seeAll')} onPress={() => router.push('/discover')} />
               </>
             )}
           </View>

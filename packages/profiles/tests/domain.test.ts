@@ -20,7 +20,7 @@ describe('validateTrip', () => {
       startDate: '2026-02-15',
       endDate: '2026-02-14',
     });
-    expect(result.ok ? {} : result.errors).toHaveProperty('endDate');
+    expect(result.ok ? {} : result.errors).toEqual({ endDate: 'validation.endBeforeStart' });
   });
 
   it('requires destination and both dates', () => {
@@ -30,6 +30,11 @@ describe('validateTrip', () => {
       'endDate',
       'startDate',
     ]);
+    expect(result.ok ? {} : result.errors).toEqual({
+      destinationId: 'validation.destinationRequired',
+      startDate: 'validation.startDateRequired',
+      endDate: 'validation.endDateRequired',
+    });
   });
 });
 
@@ -49,30 +54,30 @@ describe('validateProfile', () => {
 
   it.each(['', ' ', 'A'])('rejects a display name of %j', (displayName) => {
     const result = validateProfile({ ...valid, displayName });
-    expect(result.ok ? {} : result.errors).toHaveProperty('displayName');
+    expect(result.ok ? {} : result.errors).toEqual({ displayName: 'validation.nameLength' });
   });
 
   it('limits display name to 40 characters', () => {
     expect(validateProfile({ ...valid, displayName: 'a'.repeat(40) })).toEqual({ ok: true });
     const result = validateProfile({ ...valid, displayName: 'a'.repeat(41) });
-    expect(result.ok ? {} : result.errors).toHaveProperty('displayName');
+    expect(result.ok ? {} : result.errors).toEqual({ displayName: 'validation.nameLength' });
   });
 
   it('limits bio to 300 characters', () => {
     expect(validateProfile({ ...valid, bio: 'a'.repeat(300) })).toEqual({ ok: true });
     const result = validateProfile({ ...valid, bio: 'a'.repeat(301) });
-    expect(result.ok ? {} : result.errors).toHaveProperty('bio');
+    expect(result.ok ? {} : result.errors).toEqual({ bio: 'validation.bioTooLong' });
   });
 
   it('limits home city to 80 characters', () => {
     expect(validateProfile({ ...valid, homeCity: 'a'.repeat(80) })).toEqual({ ok: true });
     const result = validateProfile({ ...valid, homeCity: 'a'.repeat(81) });
-    expect(result.ok ? {} : result.errors).toHaveProperty('homeCity');
+    expect(result.ok ? {} : result.errors).toEqual({ homeCity: 'validation.homeCityTooLong' });
   });
 
   it('requires a skill tier', () => {
     const result = validateProfile({ ...valid, skillTier: null });
-    expect(result.ok ? {} : result.errors).toHaveProperty('skillTier');
+    expect(result.ok ? {} : result.errors).toEqual({ skillTier: 'validation.skillTierRequired' });
   });
 });
 

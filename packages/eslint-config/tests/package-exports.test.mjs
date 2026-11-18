@@ -17,6 +17,7 @@ const publicApi = {
   profiles: ['.'],
   ui: ['.'],
   query: ['.', './testing'],
+  i18n: ['.', './testing'],
   supabase: ['.', './testing'],
 };
 

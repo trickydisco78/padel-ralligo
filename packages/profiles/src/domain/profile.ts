@@ -25,24 +25,29 @@ export type ProfileInput = {
   skillTier: SkillTier | null;
 };
 
+/**
+ * Field errors are translation keys in the `profiles` namespace; `validation.nameLength` takes
+ * `{ nameMin: MIN_DISPLAY_NAME_LENGTH, nameMax: MAX_DISPLAY_NAME_LENGTH }`, `validation.homeCityTooLong` takes
+ * `{ homeCityMax: MAX_HOME_CITY_LENGTH }` and `validation.bioTooLong` takes `{ bioMax: MAX_BIO_LENGTH }`.
+ */
 export function validateProfile(input: ProfileInput): ValidationResult {
   const errors: FieldErrors = {};
   const name = input.displayName.trim();
 
   if (name.length < MIN_DISPLAY_NAME_LENGTH || name.length > MAX_DISPLAY_NAME_LENGTH) {
-    errors.displayName = `Name must be ${MIN_DISPLAY_NAME_LENGTH} to ${MAX_DISPLAY_NAME_LENGTH} characters`;
+    errors.displayName = 'validation.nameLength';
   }
 
   if ((input.homeCity ?? '').length > MAX_HOME_CITY_LENGTH) {
-    errors.homeCity = `Home city must be ${MAX_HOME_CITY_LENGTH} characters or fewer`;
+    errors.homeCity = 'validation.homeCityTooLong';
   }
 
   if (input.bio.length > MAX_BIO_LENGTH) {
-    errors.bio = `Bio must be ${MAX_BIO_LENGTH} characters or fewer`;
+    errors.bio = 'validation.bioTooLong';
   }
 
   if (!input.skillTier || !SKILL_TIERS.includes(input.skillTier)) {
-    errors.skillTier = 'Choose a skill level';
+    errors.skillTier = 'validation.skillTierRequired';
   }
 
   return validationResult(errors);

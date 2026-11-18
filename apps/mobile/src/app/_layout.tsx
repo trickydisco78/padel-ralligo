@@ -7,9 +7,11 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { DefaultTheme, ThemeProvider } from 'expo-router';
 
+import { I18nextProvider } from '@padel/i18n';
 import { QueryProvider } from '@padel/query';
 
 import { AppShell } from '@/components/app-shell';
+import { i18n } from '@/i18n';
 import { Colors } from '@padel/ui';
 
 // Visitors start on the tabs; the auth screens are opened from them, never the other way round.
@@ -38,10 +40,12 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <ThemeProvider value={theme}>
-      <QueryProvider>
-        <AppShell />
-      </QueryProvider>
-    </ThemeProvider>
+    <I18nextProvider i18n={i18n}>
+      <ThemeProvider value={theme}>
+        <QueryProvider>
+          <AppShell />
+        </QueryProvider>
+      </ThemeProvider>
+    </I18nextProvider>
   );
 }

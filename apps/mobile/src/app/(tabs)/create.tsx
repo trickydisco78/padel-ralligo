@@ -1,13 +1,15 @@
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTranslation } from '@padel/i18n';
 import { useSession, SignInPrompt } from '@padel/auth';
 import { ListingForm } from '@padel/listings';
 import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function CreateScreen() {
+  const { t } = useTranslation('app');
   const { status } = useSession();
-  if (status === 'signedOut') return <SignInPrompt message="Create an account to post a game and find players." intent={{ type: 'createMatch' }} />;
+  if (status === 'signedOut') return <SignInPrompt message={t('create.signInMessage')} intent={{ type: 'createMatch' }} />;
 
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -16,7 +18,7 @@ export default function CreateScreen() {
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">Post a game</ThemedText>
+            <ThemedText type="title">{t('create.title')}</ThemedText>
             <ListingForm />
           </ScrollView>
         </KeyboardAvoidingView>

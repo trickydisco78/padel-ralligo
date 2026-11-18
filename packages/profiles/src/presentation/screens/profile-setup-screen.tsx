@@ -1,3 +1,4 @@
+import { useTranslation } from '@padel/i18n';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,6 +7,7 @@ import { ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 /** Shown after first sign in; saving the profile moves the user on to the tabs. */
 export function ProfileSetupScreen() {
+  const { t } = useTranslation('profiles');
   return (
     <ThemedView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -13,11 +15,11 @@ export function ProfileSetupScreen() {
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">Set up your profile</ThemedText>
+            <ThemedText type="title">{t('profileSetup.title')}</ThemedText>
             <ThemedText themeColor="textSecondary">
-              Other players see your name, city, bio and skill level.
+              {t('profileSetup.intro')}
             </ThemedText>
-            <ProfileForm submitLabel="Save and continue" />
+            <ProfileForm submitLabel={t('profileSetup.submit')} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

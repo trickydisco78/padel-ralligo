@@ -77,7 +77,7 @@ describe('Discover', () => {
     mockState.listings = [row('a', { poster_name: 'First' }), row('b', { poster_name: 'Second' })];
     await open();
     await waitFor(() => expect(screen.getByText(/First/)).toBeTruthy());
-    const posters = screen.getAllByText(/^(First|Second) ·/).map((n) => n.props.children.join(''));
+    const posters = screen.getAllByText(/^(First|Second) ·/).map((n) => [n.props.children].flat().join(''));
     expect(posters[0]).toMatch(/First/);
   });
 

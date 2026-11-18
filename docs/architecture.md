@@ -93,3 +93,15 @@ Two tools, covering different things:
 - `pnpm lint` fails on boundary violations. `pnpm test` runs `packages/eslint-config/tests`, which check that the
   lint rules fire and that each package exposes only its intended entry points.
 - Supabase row-level security is tested separately with `pnpm test:rls` (needs a dev database).
+
+## Copy and translations
+
+All user-facing text lives in JSON, not in components. `@padel/i18n` wraps i18next and react-i18next (`createI18n`, `buildResources`, `useTranslation`, `translateFieldErrors`, `getDeviceLanguage`) and is a shared package.
+
+- **Per-package copy:** each package owns `src/locales/en.json` and exports `<name>Locales` (`authLocales`, `uiLocales`, `listingsLocales`, `profilesLocales`, `destinationsLocales`). The app's own copy is `apps/mobile/src/locales/en.json` (namespace `app`). The namespace is the package name.
+- **Wiring:** `apps/mobile/src/i18n.ts` combines every package's locales with `buildResources` and picks the device language, falling back to English. `_layout.tsx` provides it with `I18nextProvider`.
+- **Using it:** `const { t } = useTranslation('auth')`, then `t('signIn.title')`. Placeholders are `{{name}}` and plurals are `key_one` / `key_other` with `{ count }`. Never build a sentence by joining translated fragments.
+- **Validation:** domain validators stay React-free and return translation keys (for example `validation.email`). Forms translate them with `translateFieldErrors(t, errors, params)`. Each validator's doc comment names the params its keys take.
+- **Tests:** each package has `tests/setup-i18n.ts` that registers real English copy with `initTestI18n`, so tests assert on the actual text.
+- **Adding a language:** add `es.json` (for example) beside each `en.json`, add it to that package's `locales/index.ts`, and it is picked up automatically. Missing keys fall back to English.
+- **Not translated yet:** dates and numbers use `Intl` with `en-GB`; skill tier names come from `@padel/core`; server error messages and user-entered data (venues, names) are shown as they arrive.

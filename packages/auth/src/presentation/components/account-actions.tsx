@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
+import { useTranslation } from '@padel/i18n';
 import { PrimaryButton, SecondaryButton, Spacing } from '@padel/ui';
 
 import type { AuthIntent } from '../../domain/auth-intent';
@@ -15,6 +16,7 @@ type Props = {
 
 /** Create-account and sign-in actions: the one place they are offered, wherever a guest needs an account. */
 export function AccountActions({ intent, onNavigate }: Props) {
+  const { t } = useTranslation('auth');
   const router = useRouter();
   const intents = useOptionalAuthIntent();
 
@@ -26,8 +28,8 @@ export function AccountActions({ intent, onNavigate }: Props) {
 
   return (
     <View style={{ gap: Spacing.three }}>
-      <PrimaryButton title="Create account" onPress={() => go('/sign-up')} />
-      <SecondaryButton title="Sign in" onPress={() => go('/sign-in')} />
+      <PrimaryButton title={t('actions.createAccount')} onPress={() => go('/sign-up')} />
+      <SecondaryButton title={t('actions.signIn')} onPress={() => go('/sign-in')} />
     </View>
   );
 }

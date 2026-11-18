@@ -4,6 +4,7 @@ import { useCallback, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTranslation } from '@padel/i18n';
 import { useSession } from '@padel/auth';
 import { Chip, DateField, Logo, PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
 import { ListingCard, matchesFilters, matchesSearch, useDiscoverListings } from '@padel/listings';
@@ -20,6 +21,7 @@ type Filters = {
 const NO_FILTERS: Filters = { destinationId: null, startDate: null, endDate: null, level: null };
 
 export default function DiscoverScreen() {
+  const { t } = useTranslation('app');
   const { user } = useSession();
   const userId = user?.id;
   const router = useRouter();
@@ -102,24 +104,24 @@ export default function DiscoverScreen() {
   const header = (
     <View style={{ gap: Spacing.three }}>
       <Logo />
-      <ThemedText type="title">Discover</ThemedText>
+      <ThemedText type="title">{t('discover.title')}</ThemedText>
 
       <TextField
         ref={searchInput}
-        label="Search"
+        label={t('discover.searchLabel')}
         value={search}
         onChangeText={setSearch}
-        placeholder="City, destination or venue"
+        placeholder={t('discover.searchPlaceholder')}
         returnKeyType="search"
         autoCapitalize="none"
         autoCorrect={false}
       />
 
       <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">Destination</ThemedText>
+        <ThemedText type="smallBold">{t('discover.destination')}</ThemedText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
           <Chip
-            label="All destinations"
+            label={t('discover.allDestinations')}
             selected={filters.destinationId === null}
             onPress={() => setFilters((f) => ({ ...f, destinationId: null }))}
           />
@@ -136,22 +138,22 @@ export default function DiscoverScreen() {
 
       <DateField
         key={`from-${filterVersion}`}
-        label="From"
+        label={t('discover.from')}
         value={filters.startDate}
         onChange={(startDate) => setFilters((f) => ({ ...f, startDate }))}
       />
       <DateField
         key={`to-${filterVersion}`}
-        label="To"
+        label={t('discover.to')}
         value={filters.endDate}
         onChange={(endDate) => setFilters((f) => ({ ...f, endDate }))}
       />
 
       <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">Level</ThemedText>
+        <ThemedText type="smallBold">{t('discover.level')}</ThemedText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
           <Chip
-            label="All levels"
+            label={t('discover.allLevels')}
             selected={filters.level === null}
             onPress={() => setFilters((f) => ({ ...f, level: null }))}
           />
@@ -186,13 +188,13 @@ export default function DiscoverScreen() {
           ListHeaderComponent={header}
           ListEmptyComponent={
             failed ? (
-              <ThemedText style={{ color: '#C62828' }}>Could not load games. Pull down to retry.</ThemedText>
+              <ThemedText style={{ color: '#C62828' }}>{t('discover.error')}</ThemedText>
             ) : listings === null ? (
               <ActivityIndicator />
             ) : (
               <View style={{ gap: Spacing.three }}>
-                <ThemedText themeColor="textSecondary">No games match your filters.</ThemedText>
-                <PrimaryButton title="Clear filters" onPress={clearFilters} />
+                <ThemedText themeColor="textSecondary">{t('discover.noMatches')}</ThemedText>
+                <PrimaryButton title={t('discover.clearFilters')} onPress={clearFilters} />
               </View>
             )
           }

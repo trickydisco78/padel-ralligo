@@ -1,0 +1,8 @@
+{
+  "destinationPicker": {
+    "label": "Destination",
+    "loadFailed": "Could not load destinations.",
+    "games_one": "{{count}} game",
+    "games_other": "{{count}} games"
+  }
+}

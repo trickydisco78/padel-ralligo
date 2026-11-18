@@ -1,3 +1,4 @@
+import { useTranslation } from '@padel/i18n';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { ThemedText, Colors, Radius, Spacing } from '@padel/ui';
@@ -12,15 +13,16 @@ type Props = {
 };
 
 export function DestinationPicker({ value, onChange, allowClear = false, error }: Props) {
+  const { t } = useTranslation('destinations');
   const { destinations, loading, failed } = useDestinations();
 
   return (
     <View style={{ gap: Spacing.one }}>
-      <ThemedText type="smallBold">Destination</ThemedText>
+      <ThemedText type="smallBold">{t('destinationPicker.label')}</ThemedText>
       {loading ? <ActivityIndicator color={Colors.light.primary} /> : null}
       {failed ? (
         <ThemedText type="small" style={{ color: '#C62828' }}>
-          Could not load destinations.
+          {t('destinationPicker.loadFailed')}
         </ThemedText>
       ) : null}
       <View style={{ gap: Spacing.two }}>
@@ -50,7 +52,7 @@ export function DestinationPicker({ value, onChange, allowClear = false, error }
                 </ThemedText>
               </View>
               <ThemedText type="small" themeColor="textSecondary">
-                {d.openListings} {d.openListings === 1 ? 'game' : 'games'}
+                {t('destinationPicker.games', { count: d.openListings })}
               </ThemedText>
             </Pressable>
           );

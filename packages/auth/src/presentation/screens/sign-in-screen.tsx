@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTranslation } from '@padel/i18n';
 import { PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 import { authService } from '../../composition';
 
 export function SignInScreen() {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +24,8 @@ export function SignInScreen() {
     if (result.ok) return; // the session provider moves the user on
     setError(
       result.reason === 'email_not_confirmed'
-        ? 'Please verify your email first. Check your inbox for the link.'
-        : 'Invalid email or password',
+        ? t('signIn.errors.emailNotConfirmed')
+        : t('signIn.errors.invalidCredentials'),
     );
   }
 
@@ -34,9 +36,9 @@ export function SignInScreen() {
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">Sign in</ThemedText>
+            <ThemedText type="title">{t('signIn.title')}</ThemedText>
             <TextField
-              label="Email"
+              label={t('signIn.email')}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -44,7 +46,7 @@ export function SignInScreen() {
               keyboardType="email-address"
             />
             <TextField
-              label="Password"
+              label={t('signIn.password')}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -55,15 +57,15 @@ export function SignInScreen() {
                 {error}
               </ThemedText>
             ) : null}
-            <PrimaryButton title="Sign in" onPress={submit} disabled={submitting} />
+            <PrimaryButton title={t('signIn.submit')} onPress={submit} disabled={submitting} />
             <Link href="/sign-up" replace>
               <ThemedText type="link" themeColor="primary">
-                New here? Create an account
+                {t('signIn.createAccountLink')}
               </ThemedText>
             </Link>
             <Link href="/">
               <ThemedText type="link" themeColor="textSecondary">
-                Continue browsing
+                {t('signIn.continueBrowsing')}
               </ThemedText>
             </Link>
           </ScrollView>

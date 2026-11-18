@@ -1,0 +1,9 @@
+{
+  "dateField": {
+    "placeholder": "YYYY-MM-DD",
+    "invalidFormat": "Use the format YYYY-MM-DD"
+  },
+  "bottomSheet": {
+    "close": "Close"
+  }
+}

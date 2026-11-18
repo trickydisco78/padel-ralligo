@@ -1,11 +1,17 @@
 import type { FieldErrors, SkillTier } from '@padel/core';
+import { translateFieldErrors, useTranslation } from '@padel/i18n';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
 import { PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
 
-import { validateProfile, type Profile } from '../../domain/profile';
+import {
+  MAX_BIO_LENGTH,
+  MAX_DISPLAY_NAME_LENGTH,
+  MAX_HOME_CITY_LENGTH,
+  MIN_DISPLAY_NAME_LENGTH,
+  validateProfile, type Profile } from '../../domain/profile';
 import { useSaveProfile } from '../hooks/use-profile';
 import { SkillTierPicker } from './skill-tier-picker';
 
@@ -16,6 +22,7 @@ type Props = {
 };
 
 export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
+  const { t } = useTranslation('profiles');
   const { user } = useSession();
   const saveProfile = useSaveProfile();
   const [displayName, setDisplayName] = useState(initial?.displayName ?? '');
@@ -40,31 +47,39 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
       setSaved(true);
       onSaved?.();
     } catch {
-      setErrors({ form: 'Could not save your profile. Please try again.' });
+      setErrors({ form: 'profileForm.saveFailed' });
     } finally {
       setSaving(false);
     }
   }
 
+  // Field errors (and `form`) are translation keys.
+  const messages = translateFieldErrors(t, errors, {
+    nameMin: MIN_DISPLAY_NAME_LENGTH,
+    nameMax: MAX_DISPLAY_NAME_LENGTH,
+    homeCityMax: MAX_HOME_CITY_LENGTH,
+    bioMax: MAX_BIO_LENGTH,
+  });
+
   return (
     <View style={{ gap: Spacing.three }}>
-      <TextField label="Display name" value={displayName} onChangeText={setDisplayName} error={errors.displayName} />
-      <TextField label="Home city (optional)" value={homeCity} onChangeText={setHomeCity} error={errors.homeCity} />
+      <TextField label={t('profileForm.displayName')} value={displayName} onChangeText={setDisplayName} error={messages.displayName} />
+      <TextField label={t('profileForm.homeCity')} value={homeCity} onChangeText={setHomeCity} error={messages.homeCity} />
       <TextField
-        label="Bio (optional)"
+        label={t('profileForm.bio')}
         value={bio}
         onChangeText={setBio}
-        error={errors.bio}
+        error={messages.bio}
         multiline
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
-      <SkillTierPicker value={skillTier} onChange={setSkillTier} error={errors.skillTier} />
+      <SkillTierPicker value={skillTier} onChange={setSkillTier} error={messages.skillTier} />
       {errors.form ? (
         <ThemedText type="small" style={{ color: '#C62828' }}>
-          {errors.form}
+          {messages.form}
         </ThemedText>
       ) : null}
-      {saved ? <ThemedText themeColor="primary">Profile saved</ThemedText> : null}
+      {saved ? <ThemedText themeColor="primary">{t('profileForm.saved')}</ThemedText> : null}
       <PrimaryButton title={submitLabel} onPress={submit} disabled={saving} />
     </View>
   );

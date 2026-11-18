@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ComponentRef, type ReactNode, type RefObject } from 'react';
 import { AccessibilityInfo, Modal, Pressable, View, findNodeHandle } from 'react-native';
 
+import { useTranslation } from '@padel/i18n';
+
 import { ThemedText } from './themed-text';
 import { Colors, Radius, Spacing } from '../theme/tokens';
 
@@ -26,6 +28,7 @@ function focus(target: unknown) {
  * a tap on the backdrop, or the Android back action.
  */
 export function BottomSheet({ visible, title, onDismiss, children, returnFocusRef }: Props) {
+  const { t } = useTranslation('ui');
   const titleRef = useRef<ComponentRef<typeof View>>(null);
   const wasVisible = useRef(false);
 
@@ -76,7 +79,7 @@ export function BottomSheet({ visible, title, onDismiss, children, returnFocusRe
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityLabel={t('bottomSheet.close')}
               onPress={onDismiss}
               hitSlop={8}
               style={{ minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' }}>
