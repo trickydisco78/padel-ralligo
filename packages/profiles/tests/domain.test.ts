@@ -1,49 +1,4 @@
-import { isTripActive, validateTrip, activeTrip } from '../src/domain/trip';
 import { validateProfile } from '../src/domain/profile';
-
-describe('validateTrip', () => {
-  it('accepts a valid trip', () => {
-    expect(
-      validateTrip({ destinationId: 'd1', startDate: '2026-02-15', endDate: '2026-02-22' }),
-    ).toEqual({ ok: true });
-  });
-
-  it('accepts a one-day trip', () => {
-    expect(
-      validateTrip({ destinationId: 'd1', startDate: '2026-02-15', endDate: '2026-02-15' }),
-    ).toEqual({ ok: true });
-  });
-
-  it('rejects an end date before the start date', () => {
-    const result = validateTrip({
-      destinationId: 'd1',
-      startDate: '2026-02-15',
-      endDate: '2026-02-14',
-    });
-    expect(result.ok ? {} : result.errors).toEqual({ endDate: 'validation.endBeforeStart' });
-  });
-
-  it('requires destination and both dates', () => {
-    const result = validateTrip({ destinationId: null, startDate: null, endDate: null });
-    expect(result.ok ? [] : Object.keys(result.errors).sort()).toEqual([
-      'destinationId',
-      'endDate',
-      'startDate',
-    ]);
-    expect(result.ok ? {} : result.errors).toEqual({
-      destinationId: 'validation.destinationRequired',
-      startDate: 'validation.startDateRequired',
-      endDate: 'validation.endDateRequired',
-    });
-  });
-});
-
-describe('isTripActive', () => {
-  it('is active until the end date has passed', () => {
-    expect(isTripActive({ endDate: '2026-02-10' }, '2026-02-10')).toBe(true);
-    expect(isTripActive({ endDate: '2026-02-09' }, '2026-02-10')).toBe(false);
-  });
-});
 
 describe('validateProfile', () => {
   const valid = { displayName: 'Leon', bio: '', skillTier: 'Intermediate' as const };
@@ -94,18 +49,5 @@ describe('validateProfile discoverability', () => {
       homeDestinationId: 'validation.homeDestinationRequired',
     });
     expect(validateProfile({ ...valid, discoverable: true, homeDestinationId: 'd1' })).toEqual({ ok: true });
-  });
-});
-
-describe('activeTrip', () => {
-  const trip = { destinationId: 't', startDate: '2026-02-01', endDate: '2026-02-10' };
-
-  it('keeps a trip until its end date has passed', () => {
-    expect(activeTrip(trip, '2026-02-10')).toEqual(trip);
-    expect(activeTrip(trip, '2026-02-11')).toBeNull();
-  });
-
-  it('returns null when there is no trip', () => {
-    expect(activeTrip(null, '2026-02-10')).toBeNull();
   });
 });

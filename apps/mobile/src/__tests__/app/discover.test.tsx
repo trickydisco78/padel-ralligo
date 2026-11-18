@@ -130,23 +130,6 @@ describe('Discover', () => {
     expect(screen.getByText(/Cat ·/)).toBeTruthy();
   });
 
-  it('opens pre-filtered to the saved trip', async () => {
-    mockState.trip = { destination_id: 'tenerife', start_date: daysFromNow(9), end_date: daysFromNow(15) };
-    await open();
-
-    await waitFor(() => expect(screen.getByText(/Ben ·/)).toBeTruthy());
-    await waitFor(() => expect(shown('Ann ·')).toBeNull());
-    expect(screen.getByRole('button', { name: 'Tenerife' }).props.accessibilityState.selected).toBe(true);
-  });
-
-  it('does not apply a trip whose end date has passed', async () => {
-    mockState.trip = { destination_id: 'tenerife', start_date: daysFromNow(-9), end_date: daysFromNow(-2) };
-    await open();
-
-    await waitFor(() => expect(screen.getByText(/Ann ·/)).toBeTruthy());
-    expect(screen.getByText(/Ben ·/)).toBeTruthy();
-  });
-
   it('shows an error when listings cannot be loaded', async () => {
     mockState.listingsError = { message: 'down' };
     await open();
@@ -161,16 +144,16 @@ describe('Discover', () => {
     expect(screen.getByRole('button', { name: 'Tenerife' }).props.accessibilityState.selected).toBe(true);
   });
 
-  it('prefers the destination in the link over the saved trip', async () => {
+  it('does not pre-fill the filters from a saved trip any more', async () => {
     mockState.trip = { destination_id: 'tenerife', start_date: daysFromNow(9), end_date: daysFromNow(15) };
-    await open('/?destinationId=marbella');
+    await open();
 
     await waitFor(() => expect(screen.getByText(/Ann ·/)).toBeTruthy());
-    await waitFor(() => expect(shown('Ben ·')).toBeNull());
-    expect(screen.getByRole('button', { name: 'Marbella' }).props.accessibilityState.selected).toBe(true);
+    expect(screen.getByText(/Ben ·/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'All destinations' }).props.accessibilityState.selected).toBe(true);
   });
 
-  it('shows all games when there is no destination link and no trip', async () => {
+  it('shows all games when there is no destination link', async () => {
     await open();
     await waitFor(() => expect(screen.getByText(/Ann ·/)).toBeTruthy());
     expect(screen.getByText(/Ben ·/)).toBeTruthy();

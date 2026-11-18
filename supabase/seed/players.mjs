@@ -1,4 +1,4 @@
-// Development-only players for the Find players directory, matching the supplied design.
+// Development-only players for Find players and My trips, matching the supplied design.
 // They are fake accounts that cannot sign in (no password) and use the reserved @seed.invalid
 // email domain, so they are easy to find and remove. Connects with the same database connection
 // string as the RLS tests; the value is never printed.
@@ -22,11 +22,14 @@ const args = new Set(process.argv.slice(2));
 const apply = args.has('--apply');
 const remove = args.has('--remove');
 
+// Every player shares one trip to Málaga, dated relative to today so the data never goes stale.
+// `from` and `to` are days from today. A trip starting 7 days out for 8 days (7 to 14) gives the
+// design's example against a test trip of the same dates: 8, 6, 5 and 4 overlapping days.
 const PLAYERS = [
-  { id: '5eed0000-0000-4000-8000-000000000001', name: 'Jordi Martí', destination: 'Málaga', tier: 'Advanced' },
-  { id: '5eed0000-0000-4000-8000-000000000002', name: 'Hannah Klein', destination: 'Málaga', tier: 'Intermediate' },
-  { id: '5eed0000-0000-4000-8000-000000000003', name: 'Lucía Castro', destination: 'Lisbon', tier: 'Intermediate' },
-  { id: '5eed0000-0000-4000-8000-000000000004', name: 'Diego Ramos', destination: 'Málaga', tier: 'Beginner' },
+  { id: '5eed0000-0000-4000-8000-000000000001', name: 'Jordi Martí', destination: 'Málaga', tier: 'Advanced', trip: { from: 7, to: 14 } },
+  { id: '5eed0000-0000-4000-8000-000000000002', name: 'Hannah Klein', destination: 'Málaga', tier: 'Intermediate', trip: { from: 10, to: 16 } },
+  { id: '5eed0000-0000-4000-8000-000000000003', name: 'Lucía Castro', destination: 'Lisbon', tier: 'Intermediate', trip: { from: 8, to: 13 } },
+  { id: '5eed0000-0000-4000-8000-000000000004', name: 'Diego Ramos', destination: 'Málaga', tier: 'Beginner', trip: { from: 9, to: 12 } },
 ];
 
 const client = new pg.Client({
@@ -45,7 +48,10 @@ async function main() {
   } else {
     for (const player of PLAYERS) {
       const email = `${player.name.split(' ')[0].toLowerCase().normalize('NFD').replace(/[^a-z]/g, '')}@seed.invalid`;
-      console.log(`${apply ? 'Adding' : 'Would add'} ${player.name} (${player.destination}, ${player.tier})`);
+      console.log(
+        `${apply ? 'Adding' : 'Would add'} ${player.name} (${player.destination}, ${player.tier}, ` +
+          `shared trip to Málaga in ${player.trip.from} to ${player.trip.to} days)`,
+      );
       if (!apply) continue;
 
       await client.query(
@@ -65,6 +71,14 @@ async function main() {
         `insert into public.profile_sports (profile_id, sport, skill_tier) values ($1, 'padel', $2)
          on conflict (profile_id, sport) do update set skill_tier = excluded.skill_tier`,
         [player.id, player.tier],
+      );
+      // Trips are replaced on every run, so re-running moves them forward with today's date.
+      await client.query(`delete from public.trips where profile_id = $1`, [player.id]);
+      await client.query(
+        `insert into public.trips (profile_id, destination_id, start_date, end_date, visibility)
+         select $1, d.id, current_date + $2::int, current_date + $3::int, 'members'
+         from public.destinations d where d.name = 'Málaga'`,
+        [player.id, player.trip.from, player.trip.to],
       );
     }
   }

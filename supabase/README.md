@@ -59,10 +59,29 @@ Migrations are additive and are never edited after they have been pushed; add a 
 pnpm exec supabase gen types typescript --linked --schema public > packages/supabase/src/database.types.ts
 ```
 
+### Trips
+
+Members keep several trips (`public.trips`, at most 10 each). A trip is `hidden` unless its owner sets `visibility = 'members'`, and the table is readable and changeable only by its owner: no `anon` grant, owner-only policies. Other members never read it; they only get overlap answers from two functions granted to `authenticated` and revoked from `anon`:
+
+- `my_trips_overview(p_today)`: the caller's upcoming trips with `days` and `overlap_players`.
+- `find_overlapping_players(p_trip_id, p_my_level, p_this_week, p_query, p_today, p_limit, p_offset)`: players who overlap one of the caller's trips. It returns nothing unless the trip id belongs to `auth.uid()`, counts days inclusively, uses one best row per player, and has the same caps as the directory (50 per call, nothing from offset 100).
+- A player counts only if they are listed (`discoverable_at` set, padel tier) **and** the trip is shared **and** the destination is the same **and** the dates overlap. The caller's `p_today` is clamped to within a day of the server's date.
+- `profile_trips` (the old single trip) was copied into `trips` as hidden trips and is now unused. Dropping it is a separate migration that needs the owner's approval.
+- To check a migration before applying it, run `RLS_PRE_SQL=supabase/migrations/<file>.sql pnpm test:rls`: the runner loads the file inside its rolled-back transaction, so nothing changes. The runner also deletes `@seed.invalid` seed players inside that transaction, so the checks do not depend on development seed data.
+
 ## Development seed players
 
 `pnpm seed:players` adds four fake, opted-in players (Jordi M., Hannah K., Lucía C., Diego R.) so the Players list has something to show. They are accounts with no password, so nobody can sign in as them, and they use the reserved `@seed.invalid` email domain. It uses the same connection string as the RLS tests (`supabase/tests/.env.local`), so it needs no secret key.
 
+- Each player also gets a **shared** trip to Málaga with dates relative to today (7 to 14, 10 to 16, 8 to 13 and 9 to 12 days from now), and running the script again moves them forward. To see overlaps for the test account (`tester@test.invalid`), give it a trip of the same dates in the SQL editor:
+
+  ```sql
+  insert into public.trips (profile_id, destination_id, start_date, end_date, visibility)
+  select '7e570000-0000-4000-8000-000000000001', d.id, current_date + 7, current_date + 14, 'members'
+  from public.destinations d where d.name = 'Málaga';
+  ```
+
+  Against that trip the four players overlap by 8, 6, 5 and 4 days. The test account also needs to be listed in Find players only if you want *others* to see it; seeing overlaps needs no listing.
 - `pnpm seed:players` only shows what it would do. Add `-- --apply` to write: `pnpm seed:players -- --apply`. It is safe to run again.
 - `pnpm seed:players -- --remove` shows what would be removed, and `-- --remove --apply` deletes every `@seed.invalid` account together with its profile.
 - The development project is the one the app uses, so seeded players are visible in the running app until removed. Never run it against a production project.

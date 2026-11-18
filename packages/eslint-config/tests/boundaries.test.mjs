@@ -55,7 +55,7 @@ test('the presentation layer cannot import infrastructure but may use the rest',
 });
 
 test('@padel/ui cannot depend on domain packages', async () => {
-  for (const pkg of ['auth', 'destinations', 'listings', 'bookings', 'players', 'profiles']) {
+  for (const pkg of ['auth', 'destinations', 'listings', 'bookings', 'players', 'profiles', 'trips']) {
     await violation('src/components/x.js', `import { x } from '@padel/${pkg}';`, uiBoundaries);
   }
   await allowed('src/components/x.js', "import { x } from '@padel/core';", uiBoundaries);

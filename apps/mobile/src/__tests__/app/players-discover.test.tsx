@@ -4,7 +4,7 @@ import { createQueryClient } from '@padel/query';
 import { QueryTestProvider } from '@padel/query/testing';
 import { fakeSession, mockState, resetMockSupabase, supabase } from '@padel/supabase/testing';
 import { Stack } from 'expo-router';
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import DiscoverScreen from '@/app/(tabs)/discover';
 import { AppShell } from '@/components/app-shell';
@@ -97,7 +97,7 @@ describe('Players | Open matches switch', () => {
   it('shows the players when Players is chosen, and the matches again when switched back', async () => {
     await openPlayers();
     expect(screen.getByRole('tab', { name: 'Players, 2', selected: true })).toBeTruthy();
-    expect(screen.getByText('Players in your destination')).toBeTruthy();
+    expect(screen.getByText('Browse player cards by location. No trip required.')).toBeTruthy();
     expect(screen.queryByText('Leon · Advanced')).toBeNull();
 
     await fireEvent.press(screen.getByRole('tab', { name: /^Open matches/ }));
@@ -111,10 +111,14 @@ describe('Players | Open matches switch', () => {
     expect(screen.getByRole('tab', { name: /^Players/, selected: true })).toBeTruthy();
   });
 
-  it('uses the design heading and a search hint that matches what is searched', async () => {
+  it('uses the design wording for a guest and a search hint that matches what is searched', async () => {
     await openPlayers();
-    expect(screen.getByText('Find your kind of game.')).toBeTruthy();
-    expect(screen.getByPlaceholderText('Search a destination')).toBeTruthy();
+    expect(screen.getByText('Find your next game.')).toBeTruthy();
+    expect(screen.getByText('Explore public players')).toBeTruthy();
+    expect(screen.getByText('Public profile only: area and level. Trip dates stay private.')).toBeTruthy();
+    expect(screen.getByText('Explore near')).toBeTruthy();
+    expect(screen.getByText('Public players')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Search a city')).toBeTruthy();
     await fireEvent.press(screen.getByRole('tab', { name: /^Open matches/ }));
     expect(screen.getByPlaceholderText('City, destination or venue')).toBeTruthy();
   });
@@ -127,11 +131,12 @@ describe('Players | Open matches switch', () => {
 });
 
 describe('player cards', () => {
-  it('show only the name, destination, level and Connect to a guest, and no profile opens', async () => {
+  it('show only the name, destination, sport, level and Sign in to a guest, and no profile opens', async () => {
     await openPlayers();
-    expect(screen.getByText('Málaga · Advanced')).toBeTruthy();
-    expect(screen.getByText('Lisbon · Intermediate')).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: 'Connect' })).toHaveLength(2);
+    expect(screen.getByText('Málaga · Padel · Advanced')).toBeTruthy();
+    expect(screen.getByText('Lisbon · Padel · Intermediate')).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'Sign in' })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Connect' })).toBeNull();
 
     await fireEvent.press(screen.getByText('Jordi M.'));
     expect(screen.getByRole('tab', { name: /^Players/, selected: true })).toBeTruthy();
@@ -199,23 +204,24 @@ describe('states', () => {
 describe('Connect', () => {
   async function connectAsGuest() {
     await openPlayers();
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Connect' })[0]!);
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Sign in' })[0]!);
     await waitFor(() => expect(screen.getByText('Connect with players')).toBeTruthy());
   }
+  const sheet = () => within(screen.getByTestId('bottom-sheet-surface'));
 
   it('asks a guest to sign in and connects nothing', async () => {
     await connectAsGuest();
     expect(screen.getByText('Create a free account or sign in to connect with other players.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Create account' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeTruthy();
+    expect(sheet().getByRole('button', { name: 'Create account' })).toBeTruthy();
+    expect(sheet().getByRole('button', { name: 'Sign in' })).toBeTruthy();
+    expect(sheet().getByRole('button', { name: 'Dismiss' })).toBeTruthy();
     expect(mockState.inserts).toHaveLength(0);
     expect(mockState.upserts).toHaveLength(0);
   });
 
   it('leaves the guest on the Players list when the prompt is dismissed', async () => {
     await connectAsGuest();
-    await fireEvent.press(screen.getByRole('button', { name: 'Dismiss' }));
+    await fireEvent.press(sheet().getByRole('button', { name: 'Dismiss' }));
     await waitFor(() => expect(screen.queryByText('Connect with players')).toBeNull());
     expect(screen.getByRole('tab', { name: /^Players/, selected: true })).toBeTruthy();
     expect(screen.getByText('Jordi M.')).toBeTruthy();
@@ -230,7 +236,7 @@ describe('Connect', () => {
 
   it('returns a guest to the Players list after signing in, with nothing connected', async () => {
     await connectAsGuest();
-    await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
+    await fireEvent.press(sheet().getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(screen.getByLabelText('Email')).toBeTruthy());
 
     supabase.auth.signInWithPassword.mockImplementationOnce(async () => {

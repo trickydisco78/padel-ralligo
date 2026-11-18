@@ -16,6 +16,7 @@ const publicApi = {
   listings: ['.'],
   players: ['.'],
   profiles: ['.'],
+  trips: ['.'],
   ui: ['.'],
   query: ['.', './testing'],
   i18n: ['.', './testing'],
@@ -47,7 +48,7 @@ test('package entry points never re-export infrastructure internals or database 
 });
 
 test('domain packages do not re-export the generated database types', () => {
-  for (const pkg of ['auth', 'destinations', 'listings', 'players', 'profiles']) {
+  for (const pkg of ['auth', 'destinations', 'listings', 'players', 'profiles', 'trips']) {
     assert.doesNotMatch(read(pkg, 'src/index.ts'), /Database/, `@padel/${pkg} exposes database types`);
   }
 });
