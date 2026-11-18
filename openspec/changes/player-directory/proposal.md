@@ -11,7 +11,7 @@ The product is about finding people to play with, but Discover only lists matche
 - Guests can browse the Players list with no account. Guests see no profile page, no user identifier, no trip, no bio and no home city.
 - Players are **opt-in**: a new setting "Show me in Find players", off by default for every existing and new account, plus a **Home destination** choice so a player can be found by place. Both are added to the existing profile form.
 - Read access is a single controlled server function with a hard result cap and no name search for guests. The base tables stay unreadable to the unauthenticated role.
-- **Connect** is shown but not active in this change: a guest gets the contextual sign-in sheet, and a signed-in member sees a disabled button with an explanation, the same pattern as "Join match". A new `connectPlayer` authentication intent returns the guest to the Players list after sign-in.
+- **Connect** is shown but not active in this change: a guest gets the contextual sign-in sheet, and a signed-in member sees a sheet saying "To be developed", the same pattern as "Join match". A new `connectPlayer` authentication intent returns the guest to the Players list after sign-in.
 - Add Málaga and Lisbon to the curated destinations.
 - Initials tiles replace photos: no avatar upload or storage is introduced.
 - All new copy goes in the existing locale JSON.

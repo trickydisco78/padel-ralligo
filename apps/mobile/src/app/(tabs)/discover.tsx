@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '@padel/i18n';
 import { useRequireAuth, useSession } from '@padel/auth';
 import {
+  BottomSheet,
   Chip,
   DateField,
   Logo,
@@ -66,6 +67,7 @@ export default function DiscoverScreen() {
   const [filterVersion, setFilterVersion] = useState(0);
   const [tripHandled, setTripHandled] = useState(false);
   const [view, setView] = useState<DiscoverView>('matches');
+  const [connectSheetOpen, setConnectSheetOpen] = useState(false);
 
   // Reload whenever the tab gains focus, so a listing just posted shows up.
   useFocusEffect(
@@ -262,8 +264,10 @@ export default function DiscoverScreen() {
             ) : (
               <PlayerCard
                 player={item.player}
-                connectDisabled={!!user}
-                onConnect={() => requireAuth({ type: 'connectPlayer' })}
+                // A guest is asked to sign in; a signed-in member sees the placeholder sheet.
+                onConnect={() => {
+                  if (requireAuth({ type: 'connectPlayer' })) setConnectSheetOpen(true);
+                }}
               />
             )
           }
@@ -307,6 +311,12 @@ export default function DiscoverScreen() {
           }
         />
       </SafeAreaView>
+      <BottomSheet
+        visible={connectSheetOpen}
+        title={t('discover.connectSheetTitle')}
+        onDismiss={() => setConnectSheetOpen(false)}>
+        <ThemedText themeColor="textSecondary">{t('discover.connectSheetBody')}</ThemedText>
+      </BottomSheet>
     </ThemedView>
   );
 }

@@ -240,18 +240,46 @@ describe('Connect', () => {
     expect(mockState.inserts).toHaveLength(0);
   });
 
-  it('shows a signed-in member a disabled Connect with an explanation, and sends nothing', async () => {
-    mockState.session = fakeSession('u1');
-    mockState.profile = completeProfile('u1');
-    mockState.players = [player('Jordi M.', 'Málaga', 'Advanced', 1, 'p-1')];
-    await openPlayers();
+  describe('for a signed-in member', () => {
+    beforeEach(() => {
+      mockState.session = fakeSession('u1');
+      mockState.profile = completeProfile('u1');
+      mockState.players = [player('Jordi M.', 'Málaga', 'Advanced', 1, 'p-1')];
+    });
 
-    const connect = screen.getByRole('button', { name: 'Connect' });
-    expect(connect).toHaveProp('accessibilityState', expect.objectContaining({ disabled: true }));
-    expect(connect).toHaveProp('accessibilityHint', "Connecting with players isn't available yet");
+    it('opens a "To be developed" sheet instead of the sign-in prompt, and sends nothing', async () => {
+      await openPlayers();
+      expect(screen.getByRole('button', { name: 'Connect' })).toHaveProp(
+        'accessibilityState',
+        expect.not.objectContaining({ disabled: true }),
+      );
 
-    await fireEvent.press(connect);
-    expect(screen.queryByText('Connect with players')).toBeNull();
-    expect(mockState.inserts).toHaveLength(0);
+      await fireEvent.press(screen.getByRole('button', { name: 'Connect' }));
+      await waitFor(() => expect(screen.getByText('To be developed')).toBeTruthy());
+      expect(screen.getByText('Connect with players')).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Create account' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Sign in' })).toBeNull();
+      expect(mockState.inserts).toHaveLength(0);
+      expect(mockState.upserts).toHaveLength(0);
+    });
+
+    it('closes the sheet with its close control and stays on the list', async () => {
+      await openPlayers();
+      await fireEvent.press(screen.getByRole('button', { name: 'Connect' }));
+      await waitFor(() => expect(screen.getByText('To be developed')).toBeTruthy());
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+      await waitFor(() => expect(screen.queryByText('To be developed')).toBeNull());
+      expect(screen.getByText('Jordi M.')).toBeTruthy();
+    });
+
+    it('closes the sheet on Android back', async () => {
+      await openPlayers();
+      await fireEvent.press(screen.getByRole('button', { name: 'Connect' }));
+      await waitFor(() => expect(screen.getByText('To be developed')).toBeTruthy());
+
+      await act(async () => screen.getByTestId('bottom-sheet-modal').props.onRequestClose());
+      await waitFor(() => expect(screen.queryByText('To be developed')).toBeNull());
+    });
   });
 });

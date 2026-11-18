@@ -41,7 +41,7 @@ Dependencies: 1 first. 2 before 3, 4 and 7 can use real data. 3, 4, 5 and 6 can 
 ## 7. Discover composition (`apps/mobile`)
 
 - [x] 7.1 Add the Players | Open matches switch with counts to Discover, held as `view` state that a route parameter can set, sharing the destination chips, level chips and search field; keep the existing match list and its tests unchanged; verify `discover-guest.test.tsx` still passes and new tests cover the switch, counts, shared filters and that filters survive switching views
-- [x] 7.2 Wire the Players list: guest Connect opens the sheet, signed-in Connect is disabled with its hint, no mutation exists; verify route tests for guest sheet, dismiss stays in place, return after sign-in lands on Players, signed-in disabled
+- [x] 7.2 Wire the Players list: guest Connect opens the sign-in sheet, signed-in Connect opens a "To be developed" sheet, no mutation exists; verify route tests for guest sheet, dismiss stays in place, return after sign-in lands on Players, member sheet and its dismissal
 - [x] 7.3 Update the Discover title block and empty state copy for Players ("Players in your destination", pointer to Profile for signed-in members); verify copy comes from locale JSON and no hardcoded text remains
 
 ## 8. Seed data and docs

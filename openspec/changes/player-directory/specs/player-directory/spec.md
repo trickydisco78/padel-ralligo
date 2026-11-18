@@ -77,18 +77,18 @@ A single request SHALL return at most 50 players, and the app SHALL page no deep
 - **THEN** no further players are returned
 
 ### Requirement: Connect is not yet active
-Each card SHALL show a "Connect" button. For a Guest it SHALL open the sign-in prompt. For a signed-in member it SHALL be visibly disabled with an accessible explanation that connecting is not available yet. No connection SHALL be created.
+Each card SHALL show a "Connect" button. For a Guest it SHALL open the sign-in prompt. For a signed-in member it SHALL open a bottom sheet saying "To be developed". No connection SHALL be created.
 
 #### Scenario: Guest taps Connect
 - **WHEN** a Guest taps "Connect"
 - **THEN** a sheet titled "Connect with players" offers "Create account", "Sign in" and "Dismiss", and the Players list stays as it was if dismissed
 
 #### Scenario: Member taps Connect
-- **WHEN** a signed-in member views a card
-- **THEN** "Connect" is disabled with an accessible hint and nothing is sent
+- **WHEN** a signed-in member taps "Connect"
+- **THEN** a sheet titled "Connect with players" says "To be developed", it can be dismissed with its close control, by tapping outside or with Android back, and nothing is sent
 
 ### Requirement: States and accessibility
-The Players list SHALL show loading, empty and error states, and SHALL expose each card and its "Connect" button to screen readers with a name, a role and the disabled state where it applies.
+The Players list SHALL show loading, empty and error states, and SHALL expose each card and its "Connect" button to screen readers with a name and a role.
 
 #### Scenario: Error
 - **WHEN** the list cannot be loaded
