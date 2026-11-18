@@ -5,4 +5,5 @@ export { useProfile, useProfileComplete } from './presentation/hooks/use-profile
 export { useTrip } from './presentation/hooks/use-trip';
 export { activeTrip } from './domain/trip';
 export type { Profile } from './domain/profile';
+export { profilesLocales } from './locales';
 export type { Trip } from './domain/trip';

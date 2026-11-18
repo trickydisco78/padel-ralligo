@@ -1,3 +1,4 @@
+import { useTranslation } from '@padel/i18n';
 import { Pressable, View } from 'react-native';
 
 import { Card, Chip, ThemedText, Spacing } from '@padel/ui';
@@ -12,8 +13,15 @@ type Props = {
 };
 
 export function ListingCard({ listing, onPress }: Props) {
+  const { t } = useTranslation('listings');
   const from = dateParts(listing.startDate);
-  const spots = `${listing.playersNeeded} ${listing.playersNeeded === 1 ? 'spot' : 'spots'} needed`;
+  const spots = t('common.spotsNeeded', { count: listing.playersNeeded });
+  const range = formatRange(t, listing.startDate, listing.endDate);
+  const when = listing.startTime ? t('common.atTime', { range, time: listing.startTime }) : range;
+  const whenAndVenue = listing.venue ? t('common.withVenue', { summary: when, venue: listing.venue }) : when;
+  const poster = listing.posterSkillTier
+    ? t('common.withSkillTier', { name: listing.posterName, tier: listing.posterSkillTier })
+    : listing.posterName;
 
   const card = (
     <Card style={{ flexDirection: 'row', gap: Spacing.three }}>
@@ -26,18 +34,15 @@ export function ListingCard({ listing, onPress }: Props) {
       <View style={{ flex: 1, gap: Spacing.one }}>
         <ThemedText type="smallBold">{listing.destinationName}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {formatRange(listing.startDate, listing.endDate)}
-          {listing.startTime ? ` at ${listing.startTime}` : ''}
-          {listing.venue ? ` · ${listing.venue}` : ''}
+          {whenAndVenue}
         </ThemedText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip label={listing.levelWanted === 'Any' ? 'Any level' : listing.levelWanted} />
+          <Chip label={listing.levelWanted === 'Any' ? t('common.anyLevel') : listing.levelWanted} />
           <Chip label={spots} />
         </View>
         {listing.description ? <ThemedText type="small">{listing.description}</ThemedText> : null}
         <ThemedText type="small" themeColor="textSecondary">
-          {listing.posterName}
-          {listing.posterSkillTier ? ` · ${listing.posterSkillTier}` : ''}
+          {poster}
         </ThemedText>
       </View>
     </Card>
@@ -48,8 +53,8 @@ export function ListingCard({ listing, onPress }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${listing.destinationName}, ${formatRange(listing.startDate, listing.endDate)}, ${spots}`}
-      accessibilityHint="Opens the match details"
+      accessibilityLabel={t('listingCard.openLabel', { destination: listing.destinationName, when: range, spots })}
+      accessibilityHint={t('listingCard.openHint')}
       onPress={onPress}>
       {card}
     </Pressable>

@@ -2,12 +2,14 @@ import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTranslation } from '@padel/i18n';
 import { useSession, SignInPrompt } from '@padel/auth';
 import { ProfileForm, TripSection, useProfile } from '@padel/profiles';
 import { MyListings } from '@padel/listings';
 import { PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 export default function ProfileScreen() {
+  const { t } = useTranslation('app');
   const { status, user, signOut } = useSession();
   const router = useRouter();
   const userId = user?.id;
@@ -16,8 +18,8 @@ export default function ProfileScreen() {
   if (status === 'signedOut') {
     return (
       <SignInPrompt
-        title="Your padel profile"
-        message="Sign in or create an account to connect with players, manage your games and track your activity."
+        title={t('profile.signInTitle')}
+        message={t('profile.signInMessage')}
         intent={{ type: 'openProfile' }}
       />
     );
@@ -30,12 +32,12 @@ export default function ProfileScreen() {
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four }}>
-            <ThemedText type="title">Profile</ThemedText>
-            {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel="Save profile" />}
+            <ThemedText type="title">{t('profile.title')}</ThemedText>
+            {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel={t('profile.save')} />}
             <TripSection />
             <MyListings />
             <PrimaryButton
-              title="Sign out"
+              title={t('profile.signOut')}
               onPress={async () => {
                 await signOut();
                 router.replace('/');

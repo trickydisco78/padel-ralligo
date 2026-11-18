@@ -1,4 +1,5 @@
 import type { FieldErrors } from '@padel/core';
+import { translateFieldErrors, useTranslation } from '@padel/i18n';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
@@ -7,24 +8,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckRow, PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
 
 import { authService } from '../../composition';
-import { validateSignUp } from '../../domain/sign-up';
+import { MIN_PASSWORD_LENGTH, validateSignUp } from '../../domain/sign-up';
 
 export function SignUpScreen() {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  // Field errors are translation keys; `formError` is a raw message from the server.
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
   async function submit() {
     const result = validateSignUp({ email, password, termsAccepted, ageConfirmed });
     if (!result.ok) {
-      setErrors(result.errors);
+      setFieldErrors(result.errors);
       return;
     }
-    setErrors({});
+    setFieldErrors({});
+    setFormError(null);
     setSubmitting(true);
 
     const outcome = await authService.signUp(email, password);
@@ -33,11 +38,13 @@ export function SignUpScreen() {
     if (outcome.ok) {
       setDone(true);
     } else if (outcome.reason === 'already_registered') {
-      setErrors({ email: 'An account with this email already exists' });
+      setFieldErrors({ email: 'signUp.errors.alreadyRegistered' });
     } else {
-      setErrors({ form: outcome.message });
+      setFormError(outcome.message);
     }
   }
+
+  const errors = translateFieldErrors(t, fieldErrors, { min: MIN_PASSWORD_LENGTH });
 
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -46,21 +53,21 @@ export function SignUpScreen() {
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">Create account</ThemedText>
+            <ThemedText type="title">{t('signUp.title')}</ThemedText>
 
             {done ? (
               <>
                 <ThemedText>
-                  Check your email to verify your account, then sign in.
+                  {t('signUp.checkEmail')}
                 </ThemedText>
                 <Link href="/sign-in" replace asChild>
-                  <PrimaryButton title="Go to sign in" onPress={() => {}} />
+                  <PrimaryButton title={t('signUp.goToSignIn')} onPress={() => {}} />
                 </Link>
               </>
             ) : (
               <>
                 <TextField
-                  label="Email"
+                  label={t('signUp.email')}
                   value={email}
                   onChangeText={setEmail}
                   error={errors.email}
@@ -69,7 +76,7 @@ export function SignUpScreen() {
                   keyboardType="email-address"
                 />
                 <TextField
-                  label="Password"
+                  label={t('signUp.password')}
                   value={password}
                   onChangeText={setPassword}
                   error={errors.password}
@@ -77,31 +84,31 @@ export function SignUpScreen() {
                   autoComplete="new-password"
                 />
                 <CheckRow
-                  label="I accept the terms and privacy policy"
+                  label={t('signUp.terms')}
                   checked={termsAccepted}
                   onChange={setTermsAccepted}
                   error={errors.termsAccepted}
                 />
                 <CheckRow
-                  label="I am 18 or over"
+                  label={t('signUp.ageConfirmed')}
                   checked={ageConfirmed}
                   onChange={setAgeConfirmed}
                   error={errors.ageConfirmed}
                 />
-                {errors.form ? (
+                {formError ? (
                   <ThemedText type="small" style={{ color: '#C62828' }}>
-                    {errors.form}
+                    {formError}
                   </ThemedText>
                 ) : null}
-                <PrimaryButton title="Sign up" onPress={submit} disabled={submitting} />
+                <PrimaryButton title={t('signUp.submit')} onPress={submit} disabled={submitting} />
                 <Link href="/sign-in" replace>
                   <ThemedText type="link" themeColor="primary">
-                    Already have an account? Sign in
+                    {t('signUp.signInLink')}
                   </ThemedText>
                 </Link>
                 <Link href="/">
                   <ThemedText type="link" themeColor="textSecondary">
-                    Continue browsing
+                    {t('signUp.continueBrowsing')}
                   </ThemedText>
                 </Link>
               </>

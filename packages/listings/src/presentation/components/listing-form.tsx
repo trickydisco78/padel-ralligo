@@ -1,4 +1,5 @@
 import { parseTime, toIsoDate, type FieldErrors, type IsoDate } from '@padel/core';
+import { translateFieldErrors, useTranslation } from '@padel/i18n';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -8,6 +9,7 @@ import { DestinationPicker } from '@padel/destinations';
 
 import {
   LEVELS_WANTED,
+  MAX_DESCRIPTION_LENGTH,
   MAX_PLAYERS_NEEDED,
   MIN_PLAYERS_NEEDED,
   validateListing,
@@ -29,6 +31,7 @@ type Props = {
 };
 
 export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted }: Props) {
+  const { t } = useTranslation('listings');
   const { user } = useSession();
   const createListing = useCreateListing();
   const updateListing = useUpdateListing();
@@ -41,15 +44,14 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
   const [levelWanted, setLevelWanted] = useState<LevelWanted>(existing?.levelWanted ?? 'Any');
   const [playersNeeded, setPlayersNeeded] = useState<number | null>(existing?.playersNeeded ?? null);
   const [description, setDescription] = useState(existing?.description ?? '');
-  const [errors, setErrors] = useState<FieldErrors>({});
+  // Field errors are translation keys, translated at render.
+  const [fieldErrors, setErrors] = useState<FieldErrors>({});
   const [posting, setPosting] = useState(false);
   const [posted, setPosted] = useState(false);
 
   if (!user?.emailConfirmed) {
     return (
-      <ThemedText>
-        Verify your email address to post a listing. Check your inbox for the link we sent when you signed up.
-      </ThemedText>
+      <ThemedText>{t('listingForm.verifyEmail')}</ThemedText>
     );
   }
 
@@ -74,7 +76,7 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
       existing && startDate === existing.startDate ? startDate : today,
     );
     const found: FieldErrors = result.ok ? {} : { ...result.errors };
-    if (startTime.trim() !== '' && time === null) found.startTime = 'Use the format HH:MM';
+    if (startTime.trim() !== '' && time === null) found.startTime = 'validation.timeFormat';
     if (Object.keys(found).length > 0 || !destinationId || !startDate || playersNeeded === null || !user) {
       setErrors(found);
       return;
@@ -102,39 +104,45 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
       setPosted(true);
       onPosted?.();
     } catch {
-      setErrors({ form: 'Could not save your listing. Please try again.' });
+      setErrors({ form: 'listingForm.saveFailed' });
     } finally {
       setPosting(false);
     }
   }
 
+  const errors = translateFieldErrors(t, fieldErrors, {
+    min: MIN_PLAYERS_NEEDED,
+    max: MAX_PLAYERS_NEEDED,
+    maxLength: MAX_DESCRIPTION_LENGTH,
+  });
+
   return (
     <View key={formKey} style={{ gap: Spacing.three }}>
       <DestinationPicker value={destinationId} onChange={setDestinationId} error={errors.destinationId} />
-      <DateField label="Start date" value={startDate} onChange={setStartDate} error={errors.startDate} />
-      <DateField label="End date (optional)" value={endDate} onChange={setEndDate} error={errors.endDate} />
+      <DateField label={t('listingForm.startDate')} value={startDate} onChange={setStartDate} error={errors.startDate} />
+      <DateField label={t('listingForm.endDate')} value={endDate} onChange={setEndDate} error={errors.endDate} />
       <TextField
-        label="Start time (optional)"
+        label={t('listingForm.startTime')}
         value={startTime}
         onChangeText={setStartTime}
-        placeholder="HH:MM"
+        placeholder={t('listingForm.startTimePlaceholder')}
         keyboardType="numbers-and-punctuation"
         error={errors.startTime}
       />
-      <TextField label="Venue (optional)" value={venue} onChangeText={setVenue} />
+      <TextField label={t('listingForm.venue')} value={venue} onChangeText={setVenue} />
 
       <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">Level wanted</ThemedText>
+        <ThemedText type="smallBold">{t('listingForm.levelWanted')}</ThemedText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
           {LEVELS_WANTED.map((level) => (
-            <Chip key={level} label={level} selected={level === levelWanted} onPress={() => setLevelWanted(level)} />
+            <Chip key={level} label={level === 'Any' ? t('listingForm.levelAny') : level} selected={level === levelWanted} onPress={() => setLevelWanted(level)} />
           ))}
         </View>
         {errors.levelWanted ? <ThemedText type="small" style={{ color: '#C62828' }}>{errors.levelWanted}</ThemedText> : null}
       </View>
 
       <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">Players needed</ThemedText>
+        <ThemedText type="smallBold">{t('listingForm.playersNeeded')}</ThemedText>
         <View style={{ flexDirection: 'row', gap: Spacing.two }}>
           {PLAYER_COUNTS.map((n) => (
             <Chip key={n} label={String(n)} selected={n === playersNeeded} onPress={() => setPlayersNeeded(n)} />
@@ -144,7 +152,7 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
       </View>
 
       <TextField
-        label="Description (optional)"
+        label={t('listingForm.description')}
         value={description}
         onChangeText={setDescription}
         error={errors.description}
@@ -153,8 +161,8 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
       />
 
       {errors.form ? <ThemedText type="small" style={{ color: '#C62828' }}>{errors.form}</ThemedText> : null}
-      {posted ? <ThemedText themeColor="primary">{existing ? 'Changes saved' : 'Listing posted'}</ThemedText> : null}
-      <PrimaryButton title={existing ? 'Save changes' : 'Post listing'} onPress={submit} disabled={posting} />
+      {posted ? <ThemedText themeColor="primary">{existing ? t('listingForm.saved') : t('listingForm.posted')}</ThemedText> : null}
+      <PrimaryButton title={existing ? t('listingForm.saveChanges') : t('listingForm.postListing')} onPress={submit} disabled={posting} />
     </View>
   );
 }

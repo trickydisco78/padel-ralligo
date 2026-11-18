@@ -1,3 +1,4 @@
+import { useTranslation } from '@padel/i18n';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -33,15 +34,16 @@ function Row({ label, value }: { label: string; value: string }) {
  * that are set. Never a user id, contact detail or participant list.
  */
 export function MatchDetail({ listing, loading, failed, onRetry, onBackToDiscover, footer }: Props) {
-  if (loading) return <ActivityIndicator accessibilityLabel="Loading match" color={Colors.light.primary} />;
+  const { t } = useTranslation('listings');
+  if (loading) return <ActivityIndicator accessibilityLabel={t('matchDetail.loading')} color={Colors.light.primary} />;
 
   if (failed && !listing) {
     return (
       <View style={{ gap: Spacing.three }}>
         <ThemedText accessibilityRole="alert" style={{ color: '#C62828' }}>
-          Could not load this match.
+          {t('matchDetail.loadFailed')}
         </ThemedText>
-        <PrimaryButton title="Try again" onPress={onRetry} />
+        <PrimaryButton title={t('matchDetail.retry')} onPress={onRetry} />
       </View>
     );
   }
@@ -49,16 +51,20 @@ export function MatchDetail({ listing, loading, failed, onRetry, onBackToDiscove
   if (!listing) {
     return (
       <View style={{ gap: Spacing.three }}>
-        <ThemedText type="subtitle">This match is no longer available</ThemedText>
-        <ThemedText themeColor="textSecondary">It may have closed or already been played.</ThemedText>
-        <PrimaryButton title="Back to Discover" onPress={onBackToDiscover} />
+        <ThemedText type="subtitle">{t('matchDetail.unavailableTitle')}</ThemedText>
+        <ThemedText themeColor="textSecondary">{t('matchDetail.unavailableBody')}</ThemedText>
+        <PrimaryButton title={t('matchDetail.backToDiscover')} onPress={onBackToDiscover} />
       </View>
     );
   }
 
-  const spots = `${listing.playersNeeded} ${listing.playersNeeded === 1 ? 'spot' : 'spots'} needed`;
+  const spots = t('common.spotsNeeded', { count: listing.playersNeeded });
   const where = [listing.destinationName, listing.destinationCountry].filter(Boolean).join(', ');
-  const when = `${formatRange(listing.startDate, listing.endDate)}${listing.startTime ? ` at ${listing.startTime}` : ''}`;
+  const range = formatRange(t, listing.startDate, listing.endDate);
+  const when = listing.startTime ? t('common.atTime', { range, time: listing.startTime }) : range;
+  const poster = listing.posterSkillTier
+    ? t('common.withSkillTier', { name: listing.posterName, tier: listing.posterSkillTier })
+    : listing.posterName;
 
   return (
     <View style={{ gap: Spacing.three }}>
@@ -66,17 +72,17 @@ export function MatchDetail({ listing, loading, failed, onRetry, onBackToDiscove
         {listing.destinationName}
       </ThemedText>
       <Card style={{ gap: Spacing.three }}>
-        <Row label="Where" value={where} />
-        {listing.venue ? <Row label="Venue" value={listing.venue} /> : null}
-        <Row label="When" value={when} />
+        <Row label={t('matchDetail.where')} value={where} />
+        {listing.venue ? <Row label={t('matchDetail.venue')} value={listing.venue} /> : null}
+        <Row label={t('matchDetail.when')} value={when} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip label={listing.levelWanted === 'Any' ? 'Any level' : listing.levelWanted} />
+          <Chip label={listing.levelWanted === 'Any' ? t('common.anyLevel') : listing.levelWanted} />
           <Chip label={spots} />
         </View>
-        {listing.description ? <Row label="About this match" value={listing.description} /> : null}
+        {listing.description ? <Row label={t('matchDetail.about')} value={listing.description} /> : null}
         <Row
-          label="Posted by"
-          value={`${listing.posterName}${listing.posterSkillTier ? ` · ${listing.posterSkillTier}` : ''}`}
+          label={t('matchDetail.postedBy')}
+          value={poster}
         />
       </Card>
       {footer}

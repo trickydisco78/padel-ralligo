@@ -1,4 +1,5 @@
 import { toIsoDate, type FieldErrors, type IsoDate } from '@padel/core';
+import { translateFieldErrors, useTranslation } from '@padel/i18n';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -20,6 +21,7 @@ export function TripSection({ today = toIsoDate(new Date()) }: { today?: IsoDate
 }
 
 function TripForm({ userId, initialTrip, today }: { userId: string; initialTrip: Trip | null; today: IsoDate }) {
+  const { t } = useTranslation('profiles');
   const saveTrip = useSaveTrip();
   const clearTrip = useClearTrip();
   const [destinationId, setDestinationId] = useState<string | null>(initialTrip?.destinationId ?? null);
@@ -40,9 +42,9 @@ function TripForm({ userId, initialTrip, today }: { userId: string; initialTrip:
     try {
       await saveTrip.mutateAsync({ userId, trip: { destinationId, startDate, endDate } });
       setEnded(endDate < today);
-      setMessage('Trip saved');
+      setMessage(t('tripSection.saved'));
     } catch {
-      setErrors({ form: 'Could not save your trip. Please try again.' });
+      setErrors({ form: 'tripSection.saveFailed' });
     }
   }
 
@@ -54,30 +56,33 @@ function TripForm({ userId, initialTrip, today }: { userId: string; initialTrip:
       setEndDate(null);
       setEnded(false);
       setErrors({});
-      setMessage('Trip cleared');
+      setMessage(t('tripSection.cleared'));
     } catch {
-      setErrors({ form: 'Could not clear your trip. Please try again.' });
+      setErrors({ form: 'tripSection.clearFailed' });
     }
   }
 
+  // Field errors (and `form`) are translation keys.
+  const messages = translateFieldErrors(t, errors);
+
   return (
     <View style={{ gap: Spacing.three }}>
-      <ThemedText type="subtitle">Your current trip</ThemedText>
+      <ThemedText type="subtitle">{t('tripSection.title')}</ThemedText>
       <ThemedText themeColor="textSecondary">
-        Discover opens filtered to this destination and these dates.
+        {t('tripSection.intro')}
       </ThemedText>
-      {ended ? <ThemedText themeColor="textSecondary">This trip has ended.</ThemedText> : null}
-      <DestinationPicker value={destinationId} onChange={setDestinationId} error={errors.destinationId} />
-      <DateField key={`s-${startDate ?? ''}`} label="Start date" value={startDate} onChange={setStartDate} error={errors.startDate} />
-      <DateField key={`e-${endDate ?? ''}`} label="End date" value={endDate} onChange={setEndDate} error={errors.endDate} />
+      {ended ? <ThemedText themeColor="textSecondary">{t('tripSection.ended')}</ThemedText> : null}
+      <DestinationPicker value={destinationId} onChange={setDestinationId} error={messages.destinationId} />
+      <DateField key={`s-${startDate ?? ''}`} label={t('tripSection.startDate')} value={startDate} onChange={setStartDate} error={messages.startDate} />
+      <DateField key={`e-${endDate ?? ''}`} label={t('tripSection.endDate')} value={endDate} onChange={setEndDate} error={messages.endDate} />
       {errors.form ? (
         <ThemedText type="small" style={{ color: '#C62828' }}>
-          {errors.form}
+          {messages.form}
         </ThemedText>
       ) : null}
       {message ? <ThemedText themeColor="primary">{message}</ThemedText> : null}
-      <PrimaryButton title="Save trip" onPress={save} />
-      <PrimaryButton title="Clear trip" onPress={clear} />
+      <PrimaryButton title={t('tripSection.save')} onPress={save} />
+      <PrimaryButton title={t('tripSection.clear')} onPress={clear} />
     </View>
   );
 }

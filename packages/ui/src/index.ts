@@ -4,6 +4,7 @@ export { CheckRow } from './components/check-row';
 export { Chip } from './components/chip';
 export { DateField } from './components/date-field';
 export { Logo } from './components/logo';
+export { uiLocales } from './locales';
 export { PrimaryButton } from './components/primary-button';
 export { SecondaryButton } from './components/secondary-button';
 export { TextField } from './components/text-field';

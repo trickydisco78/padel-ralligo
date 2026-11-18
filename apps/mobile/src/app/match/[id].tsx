@@ -1,3 +1,4 @@
+import { useTranslation } from '@padel/i18n';
 import { useRequireAuth, useSession } from '@padel/auth';
 import { MatchDetail, useDiscoverListing } from '@padel/listings';
 import { PrimaryButton, Spacing, ThemedText, ThemedView } from '@padel/ui';
@@ -12,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
  * the button disabled, because there is no join feature yet and nothing here writes a join.
  */
 export default function MatchScreen() {
+  const { t } = useTranslation('app');
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { status } = useSession();
@@ -31,12 +33,12 @@ export default function MatchScreen() {
         <ScrollView contentContainerStyle={{ padding: Spacing.three, gap: Spacing.three }}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('match.back')}
             onPress={goBack}
             hitSlop={8}
             style={{ minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }}>
             <ThemedText type="link" themeColor="primary">
-              ‹ Back
+              {t('match.backLink')}
             </ThemedText>
           </Pressable>
 
@@ -50,9 +52,9 @@ export default function MatchScreen() {
               listing ? (
                 <PrimaryButton
                   ref={joinButton}
-                  title="Join match"
+                  title={t('match.join')}
                   disabled={signedIn}
-                  accessibilityHint={signedIn ? 'Joining is not available yet' : undefined}
+                  accessibilityHint={signedIn ? t('match.joinUnavailable') : undefined}
                   onPress={() => requireAuth({ type: 'joinMatch', matchId: listing.id }, { returnFocusRef: joinButton })}
                 />
               ) : null

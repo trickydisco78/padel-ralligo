@@ -12,14 +12,15 @@ export type TripInput = {
   endDate: IsoDate | null;
 };
 
+/** Field errors are translation keys in the `profiles` namespace; none take params. */
 export function validateTrip(input: TripInput): ValidationResult {
   const errors: FieldErrors = {};
 
-  if (!input.destinationId) errors.destinationId = 'Choose a destination';
-  if (!input.startDate) errors.startDate = 'Choose a start date';
-  if (!input.endDate) errors.endDate = 'Choose an end date';
+  if (!input.destinationId) errors.destinationId = 'validation.destinationRequired';
+  if (!input.startDate) errors.startDate = 'validation.startDateRequired';
+  if (!input.endDate) errors.endDate = 'validation.endDateRequired';
   if (input.startDate && input.endDate && input.endDate < input.startDate) {
-    errors.endDate = "End date can't be before the start date";
+    errors.endDate = 'validation.endBeforeStart';
   }
 
   return validationResult(errors);

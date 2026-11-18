@@ -7,5 +7,6 @@ export { AuthIntentProvider, useRequireAuth } from './presentation/auth-intent';
 export { useAuthIntent } from './presentation/auth-intent-context';
 export { parseAuthIntent, isValidMatchId } from './domain/auth-intent';
 export type { AuthIntent, AuthIntentType } from './domain/auth-intent';
+export { authLocales } from './locales';
 export type { AuthUser } from './domain/auth-user';
 export type { SessionStatus } from './domain/session-status';

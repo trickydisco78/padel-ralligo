@@ -5,3 +5,4 @@ export { MyListings } from './presentation/components/my-listings';
 export { useDiscoverListing, useDiscoverListings } from './presentation/hooks/use-listings';
 export { matchesFilters, matchesSearch } from './domain/listing-filters';
 export type { DiscoverListing, LevelWanted, MyListing } from './domain/listing';
+export { listingsLocales } from './locales';

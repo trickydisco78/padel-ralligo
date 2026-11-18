@@ -1,4 +1,5 @@
 import type { IsoDate } from '@padel/core';
+import type { TFunction } from '@padel/i18n';
 
 function utcDate(iso: IsoDate) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -17,9 +18,14 @@ export function dateParts(iso: IsoDate) {
   };
 }
 
-export function formatRange(start: IsoDate, end: IsoDate | null) {
+export function formatRange(t: TFunction, start: IsoDate, end: IsoDate | null) {
   const from = dateParts(start);
   if (!end || end === start) return `${from.weekday} ${from.day} ${from.month}`;
   const to = dateParts(end);
-  return `${from.day} ${from.month} to ${to.day} ${to.month}`;
+  return t('dateRange.multiDay', {
+    fromDay: from.day,
+    fromMonth: from.month,
+    toDay: to.day,
+    toMonth: to.month,
+  });
 }

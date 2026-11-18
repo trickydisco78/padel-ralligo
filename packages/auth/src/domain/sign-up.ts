@@ -11,15 +11,16 @@ export type SignUpInput = {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Field errors are translation keys in the `auth` namespace; `validation.passwordLength` takes `{ min: MIN_PASSWORD_LENGTH }`. */
 export function validateSignUp(input: SignUpInput): ValidationResult {
   const errors: FieldErrors = {};
 
-  if (!EMAIL_PATTERN.test(input.email.trim())) errors.email = 'Enter a valid email address';
+  if (!EMAIL_PATTERN.test(input.email.trim())) errors.email = 'validation.email';
   if (input.password.length < MIN_PASSWORD_LENGTH) {
-    errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
+    errors.password = 'validation.passwordLength';
   }
-  if (!input.termsAccepted) errors.termsAccepted = 'You need to accept the terms';
-  if (!input.ageConfirmed) errors.ageConfirmed = 'You need to confirm you are 18 or over';
+  if (!input.termsAccepted) errors.termsAccepted = 'validation.terms';
+  if (!input.ageConfirmed) errors.ageConfirmed = 'validation.age';
 
   return validationResult(errors);
 }

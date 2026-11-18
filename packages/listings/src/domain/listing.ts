@@ -77,24 +77,29 @@ export type ListingInput = {
   description: string;
 };
 
-/** `today` is passed in so the rule stays pure and testable. */
+/**
+ * `today` is passed in so the rule stays pure and testable.
+ * Field errors are translation keys in the `listings` namespace; `validation.playersRange` takes
+ * `{ min: MIN_PLAYERS_NEEDED, max: MAX_PLAYERS_NEEDED }` and `validation.descriptionLength` takes
+ * `{ maxLength: MAX_DESCRIPTION_LENGTH }`.
+ */
 export function validateListing(input: ListingInput, today: IsoDate): ValidationResult {
   const errors: FieldErrors = {};
 
-  if (!input.destinationId) errors.destinationId = 'Choose a destination';
+  if (!input.destinationId) errors.destinationId = 'validation.destination';
 
   if (!input.startDate) {
-    errors.startDate = 'Choose a start date';
+    errors.startDate = 'validation.startDate';
   } else if (input.startDate < today) {
-    errors.startDate = "Start date can't be in the past";
+    errors.startDate = 'validation.startInPast';
   }
 
   if (input.endDate && input.startDate && input.endDate < input.startDate) {
-    errors.endDate = "End date can't be before the start date";
+    errors.endDate = 'validation.endBeforeStart';
   }
 
   if (!input.levelWanted || !LEVELS_WANTED.includes(input.levelWanted)) {
-    errors.levelWanted = 'Choose a level';
+    errors.levelWanted = 'validation.level';
   }
 
   const players = input.playersNeeded;
@@ -104,11 +109,11 @@ export function validateListing(input: ListingInput, today: IsoDate): Validation
     players < MIN_PLAYERS_NEEDED ||
     players > MAX_PLAYERS_NEEDED
   ) {
-    errors.playersNeeded = `Players needed must be ${MIN_PLAYERS_NEEDED} to ${MAX_PLAYERS_NEEDED}`;
+    errors.playersNeeded = 'validation.playersRange';
   }
 
   if (input.description.length > MAX_DESCRIPTION_LENGTH) {
-    errors.description = `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer`;
+    errors.description = 'validation.descriptionLength';
   }
 
   return validationResult(errors);
