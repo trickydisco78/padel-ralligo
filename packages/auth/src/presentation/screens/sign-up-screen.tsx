@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CheckRow, PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { Checkbox, Button, FormField, ThemedText, ThemedView, spacing } from '@padel/ui';
 
 import { authService } from '../../composition';
 import { MIN_PASSWORD_LENGTH, validateSignUp } from '../../domain/sign-up';
@@ -52,8 +52,8 @@ export function SignUpScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">{t('signUp.title')}</ThemedText>
+            contentContainerStyle={{ padding: spacing.space6, gap: spacing.space4 }}>
+            <ThemedText type="display">{t('signUp.title')}</ThemedText>
 
             {done ? (
               <>
@@ -61,12 +61,12 @@ export function SignUpScreen() {
                   {t('signUp.checkEmail')}
                 </ThemedText>
                 <Link href="/sign-in" replace asChild>
-                  <PrimaryButton title={t('signUp.goToSignIn')} onPress={() => {}} />
+                  <Button title={t('signUp.goToSignIn')} onPress={() => {}} />
                 </Link>
               </>
             ) : (
               <>
-                <TextField
+                <FormField
                   label={t('signUp.email')}
                   value={email}
                   onChangeText={setEmail}
@@ -75,7 +75,7 @@ export function SignUpScreen() {
                   autoComplete="email"
                   keyboardType="email-address"
                 />
-                <TextField
+                <FormField
                   label={t('signUp.password')}
                   value={password}
                   onChangeText={setPassword}
@@ -83,31 +83,31 @@ export function SignUpScreen() {
                   secureTextEntry
                   autoComplete="new-password"
                 />
-                <CheckRow
+                <Checkbox
                   label={t('signUp.terms')}
                   checked={termsAccepted}
                   onChange={setTermsAccepted}
                   error={errors.termsAccepted}
                 />
-                <CheckRow
+                <Checkbox
                   label={t('signUp.ageConfirmed')}
                   checked={ageConfirmed}
                   onChange={setAgeConfirmed}
                   error={errors.ageConfirmed}
                 />
                 {formError ? (
-                  <ThemedText type="small" style={{ color: '#C62828' }}>
+                  <ThemedText type="caption" themeColor="error600">
                     {formError}
                   </ThemedText>
                 ) : null}
-                <PrimaryButton title={t('signUp.submit')} onPress={submit} disabled={submitting} />
+                <Button title={t('signUp.submit')} onPress={submit} disabled={submitting} />
                 <Link href="/sign-in" replace>
-                  <ThemedText type="link" themeColor="primary">
+                  <ThemedText type="label" themeColor="pink700">
                     {t('signUp.signInLink')}
                   </ThemedText>
                 </Link>
                 <Link href="/">
-                  <ThemedText type="link" themeColor="textSecondary">
+                  <ThemedText type="label" themeColor="muted">
                     {t('signUp.continueBrowsing')}
                   </ThemedText>
                 </Link>

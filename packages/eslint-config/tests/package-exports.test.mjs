@@ -12,6 +12,7 @@ const manifest = (pkg) => JSON.parse(read(pkg, 'package.json'));
 /** Packages with one explicit public entry point (plus test helpers where listed). */
 const publicApi = {
   auth: ['.'],
+  bookings: ['.'],
   destinations: ['.'],
   listings: ['.'],
   players: ['.'],

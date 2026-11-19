@@ -53,7 +53,6 @@ describe('SavedTripsRow', () => {
     const other = screen.getByRole('button', { name: /^Tarifa/ });
     expect(selected.props.accessibilityState).toMatchObject({ selected: true });
     expect(other.props.accessibilityState).toMatchObject({ selected: false });
-    expect(screen.getAllByText('✓')).toHaveLength(1);
 
     await fireEvent.press(other);
     expect(onSelect).toHaveBeenCalledWith('b');

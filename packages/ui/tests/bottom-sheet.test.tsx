@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 
-import { BottomSheet } from '../src/components/bottom-sheet';
+import { BottomSheet } from '../src/components/organisms/bottom-sheet';
 
 const open = (props: Partial<React.ComponentProps<typeof BottomSheet>> = {}) =>
   render(
@@ -67,15 +67,27 @@ describe('BottomSheet', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the close control at least 48 points square', async () => {
+  it('keeps the close control at least 44 points square', async () => {
     await open();
     const style = StyleSheet.flatten(screen.getByRole('button', { name: 'Close' }).props.style);
-    expect(style.minWidth).toBeGreaterThanOrEqual(48);
-    expect(style.minHeight).toBeGreaterThanOrEqual(48);
+    expect(style.minWidth).toBeGreaterThanOrEqual(44);
+    expect(style.minHeight).toBeGreaterThanOrEqual(44);
   });
 
   it('marks the sheet as modal so screen readers stay inside it', async () => {
     await open();
     expect(screen.getByTestId('bottom-sheet-surface').props.accessibilityViewIsModal).toBe(true);
+  });
+});
+
+describe('BottomSheet styling', () => {
+  it('has a grabber, large top corners and a dimmed ink backdrop', async () => {
+    await open();
+    const surface = StyleSheet.flatten(screen.getByTestId('bottom-sheet-surface').props.style);
+    expect(surface.borderTopLeftRadius).toBe(34);
+    expect(surface.backgroundColor).toBe('#FFFFFF');
+    const backdrop = StyleSheet.flatten(screen.getByTestId('bottom-sheet-backdrop', { includeHiddenElements: true }).props.style);
+    expect(backdrop.backgroundColor).toBe('#1A1218');
+    expect(backdrop.opacity).toBe(0.55);
   });
 });

@@ -1,4 +1,4 @@
-import { SecondaryButton, Spacing, ThemedText } from '@padel/ui';
+import { Button, spacing, ThemedText } from '@padel/ui';
 import { ActivityIndicator, View } from 'react-native';
 import { useTranslation } from '@padel/i18n';
 
@@ -14,18 +14,18 @@ export function PlayersStatus({ state, onRetry, onClearFilters }: Props) {
 
   if (state === 'loading') {
     return (
-      <View style={{ padding: Spacing.four, alignItems: 'center' }}>
+      <View style={{ padding: spacing.space6, alignItems: 'center' }}>
         <ActivityIndicator accessibilityRole="progressbar" testID="players-loading" />
       </View>
     );
   }
   const empty = state === 'empty';
   return (
-    <View style={{ padding: Spacing.four, alignItems: 'center', gap: Spacing.three }}>
-      <ThemedText type="default" accessibilityRole={empty ? undefined : 'alert'}>
+    <View style={{ padding: spacing.space6, alignItems: 'center', gap: spacing.space4 }}>
+      <ThemedText type="bodyLg" accessibilityRole={empty ? undefined : 'alert'}>
         {t(empty ? 'empty' : 'error')}
       </ThemedText>
-      <SecondaryButton
+      <Button variant="secondary"
         title={t(empty ? 'clearFilters' : 'retry')}
         onPress={() => (empty ? onClearFilters : onRetry)?.()}
       />

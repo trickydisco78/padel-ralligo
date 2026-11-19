@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
-import { Card, Colors, Logo, PrimaryButton, Radius, ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { Card, colors, Logo, Button, radius, ThemedText, ThemedView, spacing } from '@padel/ui';
 import { useDestinations } from '@padel/destinations';
 import { ListingCard, useDiscoverListings } from '@padel/listings';
 
@@ -44,11 +44,11 @@ export default function HomeScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
-          contentContainerStyle={{ padding: Spacing.three, gap: Spacing.four }}>
+          contentContainerStyle={{ padding: spacing.space4, gap: spacing.space6 }}>
           <Logo />
-          <View style={{ gap: Spacing.two }}>
-            <ThemedText type="title">{t('home.title')}</ThemedText>
-            <ThemedText themeColor="textSecondary">
+          <View style={{ gap: spacing.space2 }}>
+            <ThemedText type="display">{t('home.title')}</ThemedText>
+            <ThemedText themeColor="muted">
               {t('home.subtitle')}
             </ThemedText>
           </View>
@@ -60,21 +60,21 @@ export default function HomeScreen() {
             onPress={() => router.push({ pathname: '/discover', params: { focusSearch: '1' } })}
             style={{
               borderWidth: 1,
-              borderColor: Colors.light.border,
-              borderRadius: Radius.button,
-              backgroundColor: Colors.light.backgroundElement,
-              paddingVertical: Spacing.three,
-              paddingHorizontal: Spacing.three,
+              borderColor: colors.line,
+              borderRadius: radius.pill,
+              backgroundColor: colors.surfaceSoft,
+              paddingVertical: spacing.space4,
+              paddingHorizontal: spacing.space4,
               minHeight: 48,
               justifyContent: 'center',
             }}>
-            <ThemedText themeColor="textSecondary">{t('home.searchPlaceholder')}</ThemedText>
+            <ThemedText themeColor="muted">{t('home.searchPlaceholder')}</ThemedText>
           </Pressable>
 
-          <View style={{ gap: Spacing.two }}>
-            <ThemedText type="subtitle">{t('home.destinations')}</ThemedText>
+          <View style={{ gap: spacing.space2 }}>
+            <ThemedText type="headline">{t('home.destinations')}</ThemedText>
             {destinationsFailed && destinations === null ? (
-              <ThemedText style={{ color: '#C62828' }}>{t('home.destinationsError')}</ThemedText>
+              <ThemedText themeColor="error600">{t('home.destinationsError')}</ThemedText>
             ) : destinations === null ? (
               <ActivityIndicator />
             ) : (
@@ -86,14 +86,14 @@ export default function HomeScreen() {
                   onPress={() => router.push({ pathname: '/discover', params: { destinationId: d.id } })}>
                   <Card style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flex: 1 }}>
-                      <ThemedText type="smallBold">{d.name}</ThemedText>
+                      <ThemedText type="label">{d.name}</ThemedText>
                       {d.tagline ? (
-                        <ThemedText type="small" themeColor="textSecondary">
+                        <ThemedText type="caption" themeColor="muted">
                           {d.tagline}
                         </ThemedText>
                       ) : null}
                     </View>
-                    <ThemedText type="small" themeColor="primary">
+                    <ThemedText type="caption" themeColor="pink700">
                       {t('home.openGames', { count: d.openListings })}
                     </ThemedText>
                   </Card>
@@ -102,14 +102,14 @@ export default function HomeScreen() {
             )}
           </View>
 
-          <View style={{ gap: Spacing.three }}>
-            <ThemedText type="subtitle">{t('home.upcoming')}</ThemedText>
+          <View style={{ gap: spacing.space4 }}>
+            <ThemedText type="headline">{t('home.upcoming')}</ThemedText>
             {listingsFailed && listings === null ? (
-              <ThemedText style={{ color: '#C62828' }}>{t('home.gamesError')}</ThemedText>
+              <ThemedText themeColor="error600">{t('home.gamesError')}</ThemedText>
             ) : listings === null ? (
               <ActivityIndicator />
             ) : upcoming.length === 0 ? (
-              <ThemedText themeColor="textSecondary">{t('home.noGames')}</ThemedText>
+              <ThemedText themeColor="muted">{t('home.noGames')}</ThemedText>
             ) : (
               <>
                 {upcoming.map((listing) => (
@@ -119,7 +119,7 @@ export default function HomeScreen() {
                     onPress={() => router.push({ pathname: '/match/[id]', params: { id: listing.id } })}
                   />
                 ))}
-                <PrimaryButton title={t('home.seeAll')} onPress={() => router.push('/discover')} />
+                <Button title={t('home.seeAll')} onPress={() => router.push('/discover')} />
               </>
             )}
           </View>

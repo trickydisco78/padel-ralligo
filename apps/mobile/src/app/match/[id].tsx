@@ -1,7 +1,7 @@
 import { useTranslation } from '@padel/i18n';
 import { useRequireAuth, useSession } from '@padel/auth';
 import { MatchDetail, useDiscoverListing } from '@padel/listings';
-import { PrimaryButton, Spacing, ThemedText, ThemedView } from '@padel/ui';
+import { Button, spacing, ThemedText, ThemedView } from '@padel/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, type ComponentRef } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -30,14 +30,14 @@ export default function MatchScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ padding: Spacing.three, gap: Spacing.three }}>
+        <ScrollView contentContainerStyle={{ padding: spacing.space4, gap: spacing.space4 }}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('match.back')}
             onPress={goBack}
             hitSlop={8}
             style={{ minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }}>
-            <ThemedText type="link" themeColor="primary">
+            <ThemedText type="label" themeColor="pink700">
               {t('match.backLink')}
             </ThemedText>
           </Pressable>
@@ -50,7 +50,7 @@ export default function MatchScreen() {
             onBackToDiscover={() => router.replace('/discover')}
             footer={
               listing ? (
-                <PrimaryButton
+                <Button
                   ref={joinButton}
                   title={t('match.join')}
                   disabled={signedIn}

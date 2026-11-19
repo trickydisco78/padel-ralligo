@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
 import { DestinationPicker } from '@padel/destinations';
-import { CheckRow, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
+import { Button, Checkbox, FormField, HelperText, ThemedText, spacing } from '@padel/ui';
 
 import {
   MAX_BIO_LENGTH,
@@ -65,22 +65,26 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
   });
 
   return (
-    <View style={{ gap: Spacing.three }}>
-      <TextField label={t('profileForm.displayName')} value={displayName} onChangeText={setDisplayName} error={messages.displayName} />
-      <TextField label={t('profileForm.homeCity')} value={homeCity} onChangeText={setHomeCity} error={messages.homeCity} />
-      <TextField
+    <View style={{ gap: spacing.space5 }}>
+      <FormField
+        label={t('profileForm.displayName')}
+        helper={t('profileForm.displayNameHelp')}
+        value={displayName}
+        onChangeText={setDisplayName}
+        error={messages.displayName}
+      />
+      <FormField label={t('profileForm.homeCity')} optional value={homeCity} onChangeText={setHomeCity} error={messages.homeCity} />
+      <FormField
         label={t('profileForm.bio')}
+        optional
         value={bio}
         onChangeText={setBio}
+        count={`${bio.length}/${MAX_BIO_LENGTH}`}
         error={messages.bio}
         multiline
-        style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
       <SkillTierPicker value={skillTier} onChange={setSkillTier} error={messages.skillTier} />
-      <CheckRow label={t('profileForm.discoverable')} checked={discoverable} onChange={setDiscoverable} />
-      <ThemedText type="small" themeColor="textSecondary">
-        {t('profileForm.discoverableHelp')}
-      </ThemedText>
+      <Checkbox label={t('profileForm.discoverable')} hint={t('profileForm.discoverableHelp')} checked={discoverable} onChange={setDiscoverable} />
       <DestinationPicker
         label={t('profileForm.homeDestination')}
         value={homeDestinationId}
@@ -88,13 +92,9 @@ export function ProfileForm({ initial, submitLabel, onSaved }: Props) {
         allowClear
         error={messages.homeDestinationId}
       />
-      {errors.form ? (
-        <ThemedText type="small" style={{ color: '#C62828' }}>
-          {messages.form}
-        </ThemedText>
-      ) : null}
-      {saved ? <ThemedText themeColor="primary">{t('profileForm.saved')}</ThemedText> : null}
-      <PrimaryButton title={submitLabel} onPress={submit} disabled={saving} />
+      {errors.form ? <HelperText error>{messages.form ?? ''}</HelperText> : null}
+      {saved ? <ThemedText themeColor="pink700">{t('profileForm.saved')}</ThemedText> : null}
+      <Button title={submitLabel} onPress={submit} disabled={saving} />
     </View>
   );
 }

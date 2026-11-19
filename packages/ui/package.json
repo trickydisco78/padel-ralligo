@@ -13,16 +13,16 @@
     "test": "jest"
   },
   "dependencies": {
-    "@padel/i18n": "workspace:*",
-    "@padel/core": "workspace:*"
+    "@padel/core": "workspace:*",
+    "@padel/i18n": "workspace:*"
   },
   "peerDependencies": {
-    "@expo/vector-icons": "*",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-safe-area-context": "*",
+    "react-native-svg": "*"
   },
   "devDependencies": {
-    "@expo/vector-icons": "^15.1.1",
     "@padel/eslint-config": "workspace:*",
     "@padel/jest-config": "workspace:*",
     "@padel/typescript-config": "workspace:*",
@@ -36,6 +36,8 @@
     "jest-expo": "~58.0.14",
     "react": "19.3.0",
     "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-svg": "15.16.0",
     "typescript": "~6.0.3"
   }
 }

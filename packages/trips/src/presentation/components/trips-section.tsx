@@ -5,13 +5,12 @@ import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
 import { DestinationPicker } from '@padel/destinations';
-import { CheckRow, DateField, PrimaryButton, SecondaryButton, Spacing, ThemedText } from '@padel/ui';
+import { Checkbox, DateField, Button, spacing, ThemedText } from '@padel/ui';
 
 import { isPastTrip, MAX_TRIPS, validateTrip, type Trip } from '../../domain/trip';
 import { useDeleteTrip, useSaveTrip, useTrips } from '../hooks/use-trips';
 import { TripCard } from './trip-card';
 
-const ERROR_COLOR = '#C62828';
 
 /** The Profile section: the member's trips, with add, edit, delete and the share choice. */
 export function TripsSection({ today = toIsoDate(new Date()) }: { today?: IsoDate }) {
@@ -27,13 +26,13 @@ export function TripsSection({ today = toIsoDate(new Date()) }: { today?: IsoDat
 
   if (!userId) return null;
 
-  const heading = <ThemedText type="subtitle">{t('tripsSection.title')}</ThemedText>;
+  const heading = <ThemedText type="headline">{t('tripsSection.title')}</ThemedText>;
   if (isError) {
     return (
-      <View style={{ gap: Spacing.three }}>
+      <View style={{ gap: spacing.space4 }}>
         {heading}
-        <ThemedText style={{ color: ERROR_COLOR }}>{t('tripsSection.loadFailed')}</ThemedText>
-        <SecondaryButton title={t('tripsSection.retry')} onPress={() => void refetch()} />
+        <ThemedText themeColor="error600">{t('tripsSection.loadFailed')}</ThemedText>
+        <Button variant="secondary" title={t('tripsSection.retry')} onPress={() => void refetch()} />
       </View>
     );
   }
@@ -62,9 +61,9 @@ export function TripsSection({ today = toIsoDate(new Date()) }: { today?: IsoDat
   }
 
   return (
-    <View style={{ gap: Spacing.three }}>
+    <View style={{ gap: spacing.space4 }}>
       {heading}
-      <ThemedText themeColor="textSecondary">{t('tripsSection.intro')}</ThemedText>
+      <ThemedText themeColor="muted">{t('tripsSection.intro')}</ThemedText>
 
       {trips.length === 0 && editing === null ? <ThemedText>{t('tripsSection.empty')}</ThemedText> : null}
       {upcoming.map((trip) => (
@@ -74,8 +73,8 @@ export function TripsSection({ today = toIsoDate(new Date()) }: { today?: IsoDat
         <TripCard key={trip.id} trip={trip} ended onDelete={() => remove(trip)} />
       ))}
 
-      {error ? <ThemedText type="small" style={{ color: ERROR_COLOR }}>{error}</ThemedText> : null}
-      {message ? <ThemedText themeColor="primary">{message}</ThemedText> : null}
+      {error ? <ThemedText type="caption" themeColor="error600">{error}</ThemedText> : null}
+      {message ? <ThemedText themeColor="pink700">{message}</ThemedText> : null}
 
       {editing !== null ? (
         <TripForm
@@ -89,9 +88,9 @@ export function TripsSection({ today = toIsoDate(new Date()) }: { today?: IsoDat
           }}
         />
       ) : atLimit ? (
-        <ThemedText themeColor="textSecondary">{t('validation.limitReached')}</ThemedText>
+        <ThemedText themeColor="muted">{t('validation.limitReached')}</ThemedText>
       ) : (
-        <PrimaryButton title={t('tripsSection.add')} onPress={() => startEditing('new')} />
+        <Button title={t('tripsSection.add')} onPress={() => startEditing('new')} />
       )}
     </View>
   );
@@ -141,8 +140,8 @@ function TripForm({ userId, trip, count, onDone }: FormProps) {
   const messages = translateFieldErrors(t, errors);
 
   return (
-    <View style={{ gap: Spacing.three }}>
-      <ThemedText type="smallBold">{t(trip ? 'tripsSection.formEditTitle' : 'tripsSection.formAddTitle')}</ThemedText>
+    <View style={{ gap: spacing.space4 }}>
+      <ThemedText type="label">{t(trip ? 'tripsSection.formEditTitle' : 'tripsSection.formAddTitle')}</ThemedText>
       <DestinationPicker
         label={t('tripsSection.destination')}
         value={destinationId}
@@ -151,17 +150,17 @@ function TripForm({ userId, trip, count, onDone }: FormProps) {
       />
       <DateField label={t('tripsSection.startDate')} value={startDate} onChange={setStartDate} error={messages.startDate} />
       <DateField label={t('tripsSection.endDate')} value={endDate} onChange={setEndDate} error={messages.endDate} />
-      <CheckRow label={t('tripsSection.share')} checked={shared} onChange={setShared} />
-      <ThemedText type="small" themeColor="textSecondary">
+      <Checkbox label={t('tripsSection.share')} checked={shared} onChange={setShared} />
+      <ThemedText type="caption" themeColor="muted">
         {t('tripsSection.shareHelp')}
       </ThemedText>
       {errors.form ? (
-        <ThemedText type="small" style={{ color: ERROR_COLOR }}>
+        <ThemedText type="caption" themeColor="error600">
           {messages.form}
         </ThemedText>
       ) : null}
-      <PrimaryButton title={t('tripsSection.save')} onPress={save} busy={saveTrip.isPending} />
-      <SecondaryButton title={t('tripsSection.cancel')} onPress={() => onDone(false)} />
+      <Button title={t('tripsSection.save')} onPress={save} busy={saveTrip.isPending} />
+      <Button variant="secondary" title={t('tripsSection.cancel')} onPress={() => onDone(false)} />
     </View>
   );
 }

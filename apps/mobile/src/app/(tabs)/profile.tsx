@@ -7,7 +7,7 @@ import { useSession, SignInPrompt } from '@padel/auth';
 import { ProfileForm, useProfile } from '@padel/profiles';
 import { TripsSection } from '@padel/trips';
 import { MyListings } from '@padel/listings';
-import { PrimaryButton, ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { Button, ThemedText, ThemedView, spacing } from '@padel/ui';
 
 export default function ProfileScreen() {
   const { t } = useTranslation('app');
@@ -32,12 +32,12 @@ export default function ProfileScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four }}>
-            <ThemedText type="title">{t('profile.title')}</ThemedText>
+            contentContainerStyle={{ padding: spacing.space6, gap: spacing.space6 }}>
+            <ThemedText type="display">{t('profile.title')}</ThemedText>
             {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel={t('profile.save')} />}
             <TripsSection />
             <MyListings />
-            <PrimaryButton
+            <Button
               title={t('profile.signOut')}
               onPress={async () => {
                 await signOut();

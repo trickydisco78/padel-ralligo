@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { useAppStatus, type AppStatus } from '@/session/app-status';
-import { ThemedView, Colors } from '@padel/ui';
+import { ThemedView, colors } from '@padel/ui';
 
 /**
  * Chooses which screens exist for the user's session and profile state. Visitors browse the tabs
@@ -21,7 +21,7 @@ export function RootStack() {
   if (status === 'loading') {
     return (
       <ThemedView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={Colors.light.primary} />
+        <ActivityIndicator color={colors.pink500} />
       </ThemedView>
     );
   }

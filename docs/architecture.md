@@ -10,7 +10,7 @@ Background and decisions: `openspec/changes/monorepo-domain-architecture/` (prop
 
 | Package | Owns |
 | --- | --- |
-| `@padel/ui` | Design tokens, theme and reusable components (buttons, chip, card, text and date fields, themed text and view, logo, `BottomSheet`). No domain knowledge. |
+| `@padel/ui` | The Padel Pink design system: generated tokens (colour, Outfit type, spacing, radius, shadows) and shared components grouped as atoms, molecules and organisms (see Design system below). No domain knowledge. |
 | `@padel/supabase` | The one Supabase client, secure session storage, generated database types, and a `/testing` fake client. |
 | `@padel/query` | The shared TanStack Query client (no retries, refetch on mount), a provider, and a `/testing` provider and `render`. |
 | `@padel/core` | Cross-domain primitives only: `IsoDate`, `SkillTier`, `FieldErrors` / `ValidationResult`, date and time helpers. Pure TypeScript. |
@@ -18,6 +18,7 @@ Background and decisions: `openspec/changes/monorepo-domain-architecture/` (prop
 | `@padel/destinations` | Destinations and their open-game counts, `useDestinations`, `DestinationPicker`. |
 | `@padel/profiles` | Profiles, skill tier and saved trips: rules, repositories, hooks, `ProfileForm`, `TripSection`, `ProfileSetupScreen`. |
 | `@padel/listings` | Listings: rules and filters, repository, hooks, `ListingForm`, `ListingCard`, `MyListings`. |
+| `@padel/bookings` | Court booking UI only for now: `SlotPicker` and `BookingBar`. No data layer until a booking feature exists. |
 | `@padel/eslint-config`, `@padel/typescript-config`, `@padel/jest-config` | Shared tooling presets. `@padel/eslint-config/boundaries` enforces the rules below. |
 
 `apps/mobile` owns Expo Router routes, `RootStack` (the route guard), the tab navigator, root providers, and
@@ -41,6 +42,15 @@ ui, supabase, query, core ──► (no other @padel package; ui may use core)
   `infrastructure` may use `domain`; `presentation` may use `application` and `domain` but never
   `infrastructure`. `src/composition.ts` is the one place that wires a Supabase repository into the package.
 - Not every domain has every layer. Add `application/` only when there is logic beyond calling a repository.
+
+## Design system
+
+`@padel/ui` follows the Padel Pink design system (`docs/design-reference.md`). Its components are in `packages/ui/src/components/` under `atoms/` (one element doing one job), `molecules/` (a few atoms as one unit) and `organisms/` (a self-contained section of a screen). A level is built only from the levels below it and never restyles them, and the package's `index.ts` is the only entry point.
+
+- **Shared or domain?** If a component needs a domain concept (a player, a profile, a booking) it belongs in that domain's `presentation/components`, built from `@padel/ui`. If it is generic it goes in `@padel/ui`. Add a shared component only when a second screen needs the same pattern.
+- **Tokens** are generated from `packages/ui/design/tokens.json` by `packages/ui/scripts/generate-tokens.mjs`. Never hard-code a colour, size or font in a component; use `colors`, `spacing`, `radius`, `type`, `fontFamily`, `shadows` and `borderWidth`.
+- **Text** is Outfit with one font family per weight; do not use `fontWeight`.
+- **Icons** are `Icon` (SVG, `react-native-svg`), by name, in a token colour.
 
 ## Guest-first authentication
 
@@ -82,7 +92,7 @@ Two tools, covering different things:
 - **`turbo boundaries`** (package level; `pnpm boundaries`, also run by `pnpm lint`). It reports a package that
   imports something it does not list in its `package.json`, and a file that imports from outside its package.
   Packages are tagged in their own `turbo.json`, and the root `turbo.json` denies edges between tags:
-  `shared` (`ui`, `supabase`, `query`, `core`) may not depend on a domain; `domain-base` (`auth`, `destinations`)
+  `shared` (`ui`, `supabase`, `query`, `core`) may not depend on a domain; `domain-base` (`auth`, `destinations`, `bookings`)
   may not depend on a `domain-feature`; `domain-feature` (`profiles`, `listings`) may not depend on another
   `domain-feature`. It is experimental in Turborepo, and tags work on `package.json` dependencies, not on the
   import graph, so one bad edge can produce several errors.

@@ -1,6 +1,6 @@
 import { SKILL_TIERS, type IsoDate, type SkillTier } from '@padel/core';
 import { useTranslation } from '@padel/i18n';
-import { Chip, DateField, ThemedText, Spacing } from '@padel/ui';
+import { DateField, ThemedText, spacing, Button } from '@padel/ui';
 import { View } from 'react-native';
 
 export type DiscoverFilters = {
@@ -29,19 +29,19 @@ export function DiscoverFilterBlock({ filters, onChange, destinations, showDates
   const { t } = useTranslation('app');
 
   return (
-    <View style={{ gap: Spacing.three }}>
-      <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">{t('discover.exploreNear')}</ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip
-            label={t('discover.allDestinations')}
+    <View style={{ gap: spacing.space4 }}>
+      <View style={{ gap: spacing.space1 }}>
+        <ThemedText type="label">{t('discover.exploreNear')}</ThemedText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.space2 }}>
+          <Button variant="choice"
+            title={t('discover.allDestinations')}
             selected={filters.destinationId === null}
             onPress={() => onChange((f) => ({ ...f, destinationId: null }))}
           />
           {destinations?.map((d) => (
-            <Chip
+            <Button variant="choice"
               key={d.id}
-              label={d.name}
+              title={d.name}
               selected={filters.destinationId === d.id}
               onPress={() => onChange((f) => ({ ...f, destinationId: d.id }))}
             />
@@ -66,18 +66,18 @@ export function DiscoverFilterBlock({ filters, onChange, destinations, showDates
         </>
       ) : null}
 
-      <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">{t('discover.level')}</ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip
-            label={t('discover.allLevels')}
+      <View style={{ gap: spacing.space1 }}>
+        <ThemedText type="label">{t('discover.level')}</ThemedText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.space2 }}>
+          <Button variant="choice"
+            title={t('discover.allLevels')}
             selected={filters.level === null}
             onPress={() => onChange((f) => ({ ...f, level: null }))}
           />
           {SKILL_TIERS.map((tier) => (
-            <Chip
+            <Button variant="choice"
               key={tier}
-              label={tier}
+              title={tier}
               selected={filters.level === tier}
               onPress={() => onChange((f) => ({ ...f, level: tier }))}
             />

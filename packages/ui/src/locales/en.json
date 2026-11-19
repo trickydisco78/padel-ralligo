@@ -5,5 +5,14 @@
   },
   "bottomSheet": {
     "close": "Close"
+  },
+  "formField": {
+    "optional": "Optional"
+  },
+  "searchField": {
+    "clear": "Clear search"
+  },
+  "appBar": {
+    "back": "Back"
   }
 }

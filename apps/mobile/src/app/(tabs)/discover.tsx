@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { formatDateRange, matchesSearchText, toIsoDate } from '@padel/core';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
@@ -18,20 +17,7 @@ import {
   type Player,
 } from '@padel/players';
 import { SavedTripsRow, useTripsOverview } from '@padel/trips';
-import {
-  BottomSheet,
-  Chip,
-  Colors,
-  Logo,
-  NoticeBanner,
-  PrimaryButton,
-  SecondaryButton,
-  SegmentedControl,
-  Spacing,
-  TextField,
-  ThemedText,
-  ThemedView,
-} from '@padel/ui';
+import { Banner, BottomSheet, Button, Icon, Logo, SearchField, SegmentedControl, spacing, ThemedText, ThemedView } from '@padel/ui';
 
 import { DiscoverFilterBlock, NO_FILTERS, type DiscoverFilters } from '@/components/discover-filters';
 import { resolveSelectedTrip } from '@/discover/trip-selection';
@@ -201,16 +187,16 @@ export default function DiscoverScreen() {
   const playersCount = playersList.isLoading ? undefined : playersList.total;
 
   const header = (
-    <View style={{ gap: Spacing.three }}>
+    <View style={{ gap: spacing.space4 }}>
       <Logo />
       <ThemedText
-        type="smallBold"
-        themeColor="primaryDark"
+        type="label"
+        themeColor="pink700"
         style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
         {tripsMode ? t('discover.eyebrowTrips') : t('discover.eyebrowExplore')}
       </ThemedText>
-      <ThemedText type="title">{heading}</ThemedText>
-      <ThemedText themeColor="textSecondary">
+      <ThemedText type="display">{heading}</ThemedText>
+      <ThemedText themeColor="muted">
         {tripsMode ? t('discover.subtitleTrips') : t('discover.subtitleExplore')}
       </ThemedText>
 
@@ -226,33 +212,30 @@ export default function DiscoverScreen() {
             {
               value: 'trips',
               label: t('discover.modeTrips'),
-              icon: <Ionicons name="calendar-outline" size={16} color={Colors.light.textSecondary} />,
+              icon: <Icon name="calendar" size={16} color="muted" />,
             },
             {
               value: 'explore',
               label: t('discover.modeExplore'),
-              icon: <Ionicons name="compass-outline" size={16} color={Colors.light.textSecondary} />,
+              icon: <Icon name="compass" size={16} color="muted" />,
             },
           ]}
         />
       ) : null}
 
       {showSearch ? (
-        <TextField
+        <SearchField
           ref={searchInput}
-          label={t('discover.searchLabel')}
+          accessibilityLabel={t('discover.searchLabel')}
           value={search}
           onChangeText={setSearch}
           placeholder={searchPlaceholder}
-          returnKeyType="search"
-          autoCapitalize="none"
-          autoCorrect={false}
         />
       ) : null}
 
       {tripsMode && trips.length > 0 ? (
-        <View style={{ gap: Spacing.one }}>
-          <ThemedText type="smallBold" themeColor="textSecondary" style={{ textTransform: 'uppercase' }}>
+        <View style={{ gap: spacing.space1 }}>
+          <ThemedText type="label" themeColor="muted" style={{ textTransform: 'uppercase' }}>
             {t('discover.savedTrips')}
           </ThemedText>
           <SavedTripsRow trips={trips} selectedTripId={selectedTrip?.id ?? null} onSelect={setSelectedTripId} />
@@ -282,29 +265,29 @@ export default function DiscoverScreen() {
       )}
 
       {tripsMode && selectedTrip && view === 'players' ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip label={t('discover.thisWeek')} selected={thisWeek} onPress={() => setThisWeek((v) => !v)} />
-          <Chip label={t('discover.myLevel')} selected={myLevel} onPress={() => setMyLevel((v) => !v)} />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.space2 }}>
+          <Button variant="choice" title={t('discover.thisWeek')} selected={thisWeek} onPress={() => setThisWeek((v) => !v)} />
+          <Button variant="choice" title={t('discover.myLevel')} selected={myLevel} onPress={() => setMyLevel((v) => !v)} />
         </View>
       ) : null}
 
       {tripsMode && selectedTrip ? (
-        <NoticeBanner icon={<Ionicons name="calendar-outline" size={16} color={Colors.light.primaryDark} />}>
+        <Banner icon="calendar">
           {t('discover.noticeTrips', {
             destination: selectedTrip.destinationName,
             dates: formatDateRange(selectedTrip.startDate, selectedTrip.endDate),
           })}
-        </NoticeBanner>
+        </Banner>
       ) : null}
       {!tripsMode && view === 'players' ? (
-        <NoticeBanner icon={<Ionicons name="eye-outline" size={16} color={Colors.light.primaryDark} />}>
+        <Banner icon="globe">
           {t('discover.noticeExplore')}
-        </NoticeBanner>
+        </Banner>
       ) : null}
 
       {view === 'players' && (!tripsMode || selectedTrip) ? (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <ThemedText type="subtitle" accessibilityRole="header" style={{ flexShrink: 1 }}>
+          <ThemedText type="headline" accessibilityRole="header" style={{ flexShrink: 1 }}>
             {tripsMode
               ? t('discover.playersIn', { destination: selectedTrip?.destinationName })
               : exploreDestinationName
@@ -312,7 +295,7 @@ export default function DiscoverScreen() {
                 : t('discover.publicPlayers')}
           </ThemedText>
           {playersCount === undefined ? null : (
-            <ThemedText type="smallBold" themeColor="primaryDark">
+            <ThemedText type="label" themeColor="pink700">
               {t(tripsMode ? 'discover.overlapCount' : 'discover.playersCount', { count: playersCount })}
             </ThemedText>
           )}
@@ -326,19 +309,19 @@ export default function DiscoverScreen() {
     <ActivityIndicator />
   ) : emptyTrips ? (
     tripsOverview.failed ? (
-      <View style={{ gap: Spacing.three }}>
-        <ThemedText accessibilityRole="alert" style={{ color: '#C62828' }}>
+      <View style={{ gap: spacing.space4 }}>
+        <ThemedText accessibilityRole="alert" themeColor="error600">
           {t('discover.tripsError')}
         </ThemedText>
-        <SecondaryButton title={t('discover.tripsRetry')} onPress={() => tripsOverview.refetch()} />
+        <Button variant="secondary" title={t('discover.tripsRetry')} onPress={() => tripsOverview.refetch()} />
       </View>
     ) : tripsOverview.isLoading ? (
       <ActivityIndicator />
     ) : (
-      <View style={{ gap: Spacing.three }}>
-        <ThemedText type="smallBold">{t('discover.noTrips')}</ThemedText>
-        <ThemedText themeColor="textSecondary">{t('discover.noTripsHint')}</ThemedText>
-        <PrimaryButton title={t('discover.addTrip')} onPress={() => router.navigate('/profile')} />
+      <View style={{ gap: spacing.space4 }}>
+        <ThemedText type="label">{t('discover.noTrips')}</ThemedText>
+        <ThemedText themeColor="muted">{t('discover.noTripsHint')}</ThemedText>
+        <Button title={t('discover.addTrip')} onPress={() => router.navigate('/profile')} />
       </View>
     )
   ) : view === 'players' ? (
@@ -350,24 +333,24 @@ export default function DiscoverScreen() {
       />
       {!playersList.failed && !playersList.isLoading ? (
         tripsMode ? (
-          <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
+          <ThemedText type="caption" themeColor="muted" style={{ textAlign: 'center' }}>
             {t('discover.noOverlapsHint')}
           </ThemedText>
         ) : user ? (
-          <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
+          <ThemedText type="caption" themeColor="muted" style={{ textAlign: 'center' }}>
             {t('discover.playersEmptyHint')}
           </ThemedText>
         ) : null
       ) : null}
     </View>
   ) : failed ? (
-    <ThemedText style={{ color: '#C62828' }}>{t('discover.error')}</ThemedText>
+    <ThemedText themeColor="error600">{t('discover.error')}</ThemedText>
   ) : listings === null ? (
     <ActivityIndicator />
   ) : (
-    <View style={{ gap: Spacing.three }}>
-      <ThemedText themeColor="textSecondary">{t('discover.noMatches')}</ThemedText>
-      <PrimaryButton title={t('discover.clearFilters')} onPress={clearFilters} />
+    <View style={{ gap: spacing.space4 }}>
+      <ThemedText themeColor="muted">{t('discover.noMatches')}</ThemedText>
+      <Button title={t('discover.clearFilters')} onPress={clearFilters} />
     </View>
   );
 
@@ -406,11 +389,11 @@ export default function DiscoverScreen() {
           }
           keyboardShouldPersistTaps="handled"
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
-          contentContainerStyle={{ padding: Spacing.three, gap: Spacing.three }}
+          contentContainerStyle={{ padding: spacing.space4, gap: spacing.space4 }}
           ListHeaderComponent={header}
           ListFooterComponent={
             view === 'players' && playersList.hasMore ? (
-              <SecondaryButton
+              <Button variant="secondary"
                 title={t('discover.showMore')}
                 onPress={playersList.fetchMore}
                 disabled={playersList.isFetchingMore}
@@ -424,7 +407,7 @@ export default function DiscoverScreen() {
         visible={connectSheetOpen}
         title={t('discover.connectSheetTitle')}
         onDismiss={() => setConnectSheetOpen(false)}>
-        <ThemedText themeColor="textSecondary">{t('discover.connectSheetBody')}</ThemedText>
+        <ThemedText themeColor="muted">{t('discover.connectSheetBody')}</ThemedText>
       </BottomSheet>
     </ThemedView>
   );

@@ -102,7 +102,7 @@ describe('profile form discoverability', () => {
   it('saves with the switch off and no destination, writing a null timestamp', async () => {
     await renderForm();
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'Leon');
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(mockState.upserts).toHaveLength(2));
     expect(profileUpsert()).toMatchObject({ home_destination_id: null, discoverable_at: null });
@@ -111,7 +111,7 @@ describe('profile form discoverability', () => {
   it('asks for a home destination when turned on without one, and saves nothing', async () => {
     await renderForm();
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'Leon');
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Show me in Find players' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
 
@@ -123,7 +123,7 @@ describe('profile form discoverability', () => {
     await renderForm();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Marbella' })).toBeTruthy());
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'Leon');
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Show me in Find players' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Marbella' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));

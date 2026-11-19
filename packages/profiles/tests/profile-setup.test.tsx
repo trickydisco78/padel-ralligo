@@ -32,8 +32,8 @@ describe('profile setup', () => {
   it('rejects a 1-character name and a bio over 300 characters', async () => {
     await render(withSession(<ProfileSetupScreen />));
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'A');
-    await fireEvent.changeText(screen.getByLabelText('Bio (optional)'), 'x'.repeat(301));
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.changeText(screen.getByLabelText('Bio'), 'x'.repeat(301));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await pressSave();
 
     expect(screen.getByText(/Name must be 2 to 40 characters/)).toBeTruthy();
@@ -44,8 +44,8 @@ describe('profile setup', () => {
   it('saves the profile and the padel skill tier for the signed-in user', async () => {
     await render(withSession(<ProfileSetupScreen />));
     await fireEvent.changeText(screen.getByLabelText('Display name'), '  Leon  ');
-    await fireEvent.changeText(screen.getByLabelText('Home city (optional)'), 'Bristol');
-    await fireEvent.press(screen.getByRole('button', { name: 'Advanced' }));
+    await fireEvent.changeText(screen.getByLabelText('Home city'), 'Bristol');
+    await fireEvent.press(screen.getByRole('radio', { name: 'Advanced' }));
     await pressSave();
 
     await waitFor(() => expect(mockState.upserts).toHaveLength(2));
@@ -69,7 +69,7 @@ describe('profile setup', () => {
   it('stores an empty home city as null', async () => {
     await render(withSession(<ProfileSetupScreen />));
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'Leon');
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await pressSave();
 
     await waitFor(() => expect(mockState.upserts).toHaveLength(2));
@@ -80,7 +80,7 @@ describe('profile setup', () => {
     mockState.upsertError = { message: 'boom' };
     await render(withSession(<ProfileSetupScreen />));
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'Leon');
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await pressSave();
 
     await waitFor(() => expect(screen.getByText(/Could not save your profile/)).toBeTruthy());
