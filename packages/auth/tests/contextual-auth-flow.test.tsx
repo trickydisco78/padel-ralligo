@@ -45,7 +45,7 @@ async function openSheet() {
   await renderRouter(routes, { initialUrl: '/' });
   await waitFor(() => expect(screen.getByText('Join match')).toBeTruthy());
   await fireEvent.press(screen.getByText('Join match'));
-  await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+  await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
 }
 
 describe('contextual authentication flow', () => {
@@ -54,7 +54,7 @@ describe('contextual authentication flow', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => expect(screen.getByText('Already have an account? Sign in')).toBeTruthy());
-    expect(screen.queryByText('Join this match')).toBeNull();
+    expect(screen.queryByText('Ask to join this match')).toBeNull();
     expect(screen.getByText('intent: joinMatch')).toBeTruthy();
   });
 

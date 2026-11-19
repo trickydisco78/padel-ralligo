@@ -9,7 +9,12 @@ import { formatRange } from '../format-date';
 import { useCloseListing, useMyListings } from '../hooks/use-listings';
 import { ListingForm } from './listing-form';
 
-export function MyListings() {
+type Props = {
+  /** Opens Manage match for a listing; the screen supplies the navigation so this package stays router-free. */
+  onManage?: (listingId: string) => void;
+};
+
+export function MyListings({ onManage }: Props) {
   const { t } = useTranslation('listings');
   const { user } = useSession();
   const userId = user?.id;
@@ -61,7 +66,14 @@ export function MyListings() {
             </View>
             {l.status === 'open' ? (
               <View style={{ gap: spacing.space2 }}>
-                <Button title={t('myListings.edit', { destination: l.destinationName })} onPress={() => setEditingId(l.id)} />
+                {onManage ? (
+                  <Button
+                    icon="people"
+                    title={t('myListings.manage', { destination: l.destinationName })}
+                    onPress={() => onManage(l.id)}
+                  />
+                ) : null}
+                <Button variant="secondary" title={t('myListings.edit', { destination: l.destinationName })} onPress={() => setEditingId(l.id)} />
                 <Button title={t('myListings.close', { destination: l.destinationName })} onPress={() => close(l.id)} />
               </View>
             ) : null}

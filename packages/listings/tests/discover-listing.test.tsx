@@ -41,6 +41,7 @@ const listing: DiscoverListing = {
   venue: 'Puerto Padel Club',
   levelWanted: 'Intermediate',
   playersNeeded: 2,
+  spotsLeft: 2,
   description: 'Friendly doubles',
   posterName: 'Leon',
   posterSkillTier: 'Advanced',
@@ -105,33 +106,54 @@ describe('MatchDetail', () => {
   it('shows the public fields of a match', async () => {
     await render(<MatchDetail {...props} listing={listing} />);
     expect(screen.getByRole('header', { name: 'Marbella' })).toBeTruthy();
-    expect(screen.getByText('Marbella, Spain')).toBeTruthy();
-    expect(screen.getByText('Puerto Padel Club')).toBeTruthy();
+    expect(screen.getByText('Puerto Padel Club, Marbella, Spain')).toBeTruthy();
     expect(screen.getByText(/18:30/)).toBeTruthy();
     expect(screen.getByText('Intermediate')).toBeTruthy();
-    expect(screen.getByText('2 spots needed')).toBeTruthy();
     expect(screen.getByText('Friendly doubles')).toBeTruthy();
-    expect(screen.getByText('Leon · Advanced')).toBeTruthy();
+    expect(screen.getByText('About this match')).toBeTruthy();
+  });
+
+  it('shows the date tile for the start date', async () => {
+    await render(<MatchDetail {...props} listing={listing} />);
+    expect(screen.getByText('FRI', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('20', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('FEB', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('omits fields that are not set instead of inventing content', async () => {
     await render(
       <MatchDetail {...props} listing={{ ...listing, venue: null, startTime: null, description: '', posterSkillTier: null }} />,
     );
-    expect(screen.queryByText('Venue')).toBeNull();
     expect(screen.queryByText('About this match')).toBeNull();
     expect(screen.queryByText(/ at /)).toBeNull();
-    expect(screen.getByText('Leon')).toBeTruthy();
+    expect(screen.getByText('Marbella, Spain')).toBeTruthy();
   });
 
-  it('says "1 spot needed" in the singular', async () => {
-    await render(<MatchDetail {...props} listing={{ ...listing, playersNeeded: 1 }} />);
-    expect(screen.getByText('1 spot needed')).toBeTruthy();
+  it('shows players progress counting the organiser, from the places left', async () => {
+    await render(<MatchDetail {...props} listing={{ ...listing, playersNeeded: 3, spotsLeft: 2 }} />);
+    expect(screen.getByRole('progressbar', { name: 'Players, 2 of 4' })).toBeTruthy();
+    expect(screen.getByText('2 of 4')).toBeTruthy();
   });
 
-  it('renders the footer under the details', async () => {
-    await render(<MatchDetail {...props} listing={listing} footer={<Text>Join action</Text>} />);
-    expect(screen.getByText('Join action')).toBeTruthy();
+  it('shows a full match as every player in', async () => {
+    await render(<MatchDetail {...props} listing={{ ...listing, playersNeeded: 2, spotsLeft: 0 }} />);
+    expect(screen.getByText('3 of 3')).toBeTruthy();
+  });
+
+  it('renders the banner, organiser and players slots in order', async () => {
+    await render(
+      <MatchDetail
+        {...props}
+        listing={listing}
+        banner={<Text>Banner slot</Text>}
+        organiser={<Text>Organiser slot</Text>}
+        players={<Text>Players slot</Text>}
+      />,
+    );
+    const tree = JSON.stringify(screen.toJSON());
+    const order = ['Banner slot', 'Marbella', 'Organiser slot', 'Players slot'].map((t) => tree.indexOf(t));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
   it('shows a loading indicator and nothing else while loading', async () => {

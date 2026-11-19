@@ -24,7 +24,8 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-safe-area-context": "*"
+    "react-native-safe-area-context": "*",
+    "react-native-svg": "*"
   },
   "devDependencies": {
     "@padel/eslint-config": "workspace:*",
@@ -43,6 +44,7 @@
     "react": "19.3.0",
     "react-native": "0.88.1",
     "react-native-safe-area-context": "~5.11.1",
+    "react-native-svg": "15.16.0",
     "typescript": "~6.0.3"
   }
 }

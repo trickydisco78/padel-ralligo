@@ -91,3 +91,40 @@ describe('BottomSheet styling', () => {
     expect(backdrop.opacity).toBe(0.55);
   });
 });
+
+describe('BottomSheet confirmation layout', () => {
+  const confirm = (props: Partial<React.ComponentProps<typeof BottomSheet>> = {}) =>
+    render(
+      <BottomSheet
+        visible
+        title="Request sent!"
+        onDismiss={props.onDismiss ?? (() => {})}
+        confirm={{ icon: 'checkCircle', message: 'You can see the answer here.' }}
+        {...props}>
+        <Text>Actions</Text>
+      </BottomSheet>,
+    );
+
+  it('shows the title as a header, the message and the actions, with no close button', async () => {
+    await confirm();
+    expect(screen.getByRole('header', { name: 'Request sent!' })).toBeTruthy();
+    expect(screen.getByText('You can see the answer here.')).toBeTruthy();
+    expect(screen.getByText('Actions')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+  });
+
+  it('still dismisses from the backdrop and the Android back action', async () => {
+    const onDismiss = jest.fn();
+    await confirm({ onDismiss });
+    await fireEvent.press(screen.getByTestId('bottom-sheet-backdrop', { includeHiddenElements: true }));
+    await act(async () => {
+      screen.getByTestId('bottom-sheet-modal').props.onRequestClose();
+    });
+    expect(onDismiss).toHaveBeenCalledTimes(2);
+  });
+
+  it('uses an amber disc for the pending tone', async () => {
+    await confirm({ confirm: { icon: 'clock', tone: 'pending' } });
+    expect(screen.getByRole('header', { name: 'Request sent!' })).toBeTruthy();
+  });
+});

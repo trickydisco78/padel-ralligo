@@ -91,8 +91,26 @@
   },
   "match": {
     "back": "Back",
-    "backLink": "‹ Back",
-    "join": "Join match",
-    "joinUnavailable": "Joining is not available yet"
+    "share": "Share",
+    "shareMessage": "Padel match in {{destination}}, {{date}}. {{url}}"
+  },
+  "manage": {
+    "title": "Manage match",
+    "players": "Players",
+    "requests": "Requests",
+    "noRequests": "No requests waiting.",
+    "noPlayers": "No one has joined yet.",
+    "accept": "Accept request",
+    "decline": "Decline request",
+    "level": "Skill level: {{tier}}",
+    "close": "Close match",
+    "closeTitle": "Close this match?",
+    "closeMessage": "It leaves Discover and no more requests can be accepted.",
+    "keepOpen": "Keep match open",
+    "closeConfirm": "Close match",
+    "closeFailed": "Could not close this match. Please try again.",
+    "closedTitle": "This match is closed",
+    "closedBody": "It is no longer shown in Discover.",
+    "loadFailed": "Could not load this match."
   }
 }

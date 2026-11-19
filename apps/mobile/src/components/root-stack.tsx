@@ -31,6 +31,7 @@ export function RootStack() {
       <Stack.Protected guard={status === 'signedOut' || status === 'ready'}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="match/[id]" />
+        <Stack.Screen name="match/[id]/manage" />
       </Stack.Protected>
       <Stack.Protected guard={status === 'signedOut'}>
         <Stack.Screen name="(auth)" />

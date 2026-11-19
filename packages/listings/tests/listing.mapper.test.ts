@@ -63,6 +63,7 @@ describe('toDiscoverListing', () => {
     venue: null,
     level_wanted: 'Advanced',
     players_needed: 3,
+    spots_left: 1,
     description: 'Early game',
     poster_name: 'Leon',
     poster_skill_tier: 'Intermediate',
@@ -80,10 +81,19 @@ describe('toDiscoverListing', () => {
       venue: null,
       levelWanted: 'Advanced',
       playersNeeded: 3,
+      spotsLeft: 1,
       description: 'Early game',
       posterName: 'Leon',
       posterSkillTier: 'Intermediate',
     });
+  });
+
+  it('falls back to players needed when the view gives no places left', () => {
+    expect(toDiscoverListing({ ...row, spots_left: undefined })?.spotsLeft).toBe(3);
+  });
+
+  it('keeps a full match, with no places left', () => {
+    expect(toDiscoverListing({ ...row, spots_left: 0 })?.spotsLeft).toBe(0);
   });
 
   it('defaults missing optional columns', () => {

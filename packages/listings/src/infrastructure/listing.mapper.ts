@@ -55,6 +55,7 @@ export function toDiscoverListing(row: DiscoverRow): DiscoverListing | null {
     venue: row.venue ?? null,
     levelWanted: (row.level_wanted ?? 'Any') as LevelWanted,
     playersNeeded: row.players_needed ?? 0,
+    spotsLeft: row.spots_left ?? row.players_needed ?? 0,
     description: row.description ?? '',
     posterName: row.poster_name ?? 'Player',
     posterSkillTier: (row.poster_skill_tier as SkillTier | null | undefined) ?? null,

@@ -21,6 +21,7 @@
     "organiser": "Match organiser",
     "accept": "Accept {{name}}",
     "decline": "Decline {{name}}",
-    "rowLabel": "{{name}}, {{status}}"
+    "rowLabel": "{{name}}, {{status}}",
+    "review": "Review {{name}}'s request"
   }
 }

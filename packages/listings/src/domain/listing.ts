@@ -59,6 +59,8 @@ export type DiscoverListing = {
   venue: string | null;
   levelWanted: LevelWanted;
   playersNeeded: number;
+  /** Places still open: players needed minus the accepted players. 0 means the match is full. */
+  spotsLeft: number;
   description: string;
   posterName: string;
   posterSkillTier: (typeof SKILL_TIERS)[number] | null;

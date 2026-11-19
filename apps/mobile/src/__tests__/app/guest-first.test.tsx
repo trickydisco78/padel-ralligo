@@ -93,8 +93,8 @@ async function openMatchAsGuest() {
 }
 
 async function joinThenChoose(action: 'Sign in' | 'Create account') {
-  await fireEvent.press(screen.getByRole('button', { name: 'Join match' }));
-  await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+  await fireEvent.press(screen.getByRole('button', { name: 'Request to join' }));
+  await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
   await fireEvent.press(screen.getByRole('button', { name: action }));
 }
 
@@ -107,10 +107,9 @@ async function submitCredentials() {
 describe('match details', () => {
   it('lets a guest open a match from Home without being asked to sign in', async () => {
     await openMatchAsGuest();
-    expect(screen.getByText('Marbella, Spain')).toBeTruthy();
-    expect(screen.getByText('Puerto Padel Club')).toBeTruthy();
-    expect(screen.getByText('2 spots needed')).toBeTruthy();
-    expect(screen.queryByText('Join this match')).toBeNull();
+    expect(screen.getByText('Puerto Padel Club, Marbella, Spain')).toBeTruthy();
+    expect(screen.getByText('1 of 3')).toBeTruthy();
+    expect(screen.queryByText('Ask to join this match')).toBeNull();
   });
 
   it('shows an unavailable match for a closed, past or unknown id', async () => {
@@ -129,11 +128,11 @@ describe('match details', () => {
     expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
   });
 
-  it('asks a guest to sign in when they tap Join match, and joins nothing', async () => {
+  it('asks a guest to sign in when they tap Request to join, and requests nothing', async () => {
     await openMatchAsGuest();
-    await fireEvent.press(screen.getByRole('button', { name: 'Join match' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Request to join' }));
 
-    await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
     expect(screen.getByRole('button', { name: 'Create account' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Dismiss' })).toBeTruthy();
@@ -143,43 +142,46 @@ describe('match details', () => {
 
   it('leaves the guest on the match when the prompt is dismissed', async () => {
     await openMatchAsGuest();
-    await fireEvent.press(screen.getByRole('button', { name: 'Join match' }));
-    await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Request to join' }));
+    await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
 
     await fireEvent.press(screen.getByRole('button', { name: 'Dismiss' }));
-    await waitFor(() => expect(screen.queryByText('Join this match')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Ask to join this match')).toBeNull());
     expect(screen.getByRole('header', { name: 'Marbella' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Join match' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Request to join' })).toBeTruthy();
   });
 
   it('dismisses the prompt on Android back and stays on the match', async () => {
     await openMatchAsGuest();
-    await fireEvent.press(screen.getByRole('button', { name: 'Join match' }));
-    await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Request to join' }));
+    await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
 
     await act(async () => screen.getByTestId('bottom-sheet-modal').props.onRequestClose());
-    await waitFor(() => expect(screen.queryByText('Join this match')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Ask to join this match')).toBeNull());
     expect(screen.getByRole('header', { name: 'Marbella' })).toBeTruthy();
   });
 
-  it('shows a signed-in user a disabled Join match button and no prompt', async () => {
+  it('lets a signed-in member ask for a place, with no sign-in prompt, and confirms it', async () => {
     mockState.session = fakeSession('u1');
     mockState.profile = completeProfile('u1');
     await renderRouter(routes, { initialUrl: '/' });
     await fireEvent.press(await screen.findByText('Open match'));
     await waitFor(() => expect(screen.getByRole('header', { name: 'Marbella' })).toBeTruthy());
 
-    const join = screen.getByRole('button', { name: 'Join match' });
-    expect(join.props.accessibilityState.disabled).toBe(true);
-    expect(join.props.accessibilityHint).toBe('Joining is not available yet');
+    const join = await screen.findByRole('button', { name: 'Request to join' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Request to join' }).props.accessibilityState.disabled).toBe(false));
     await fireEvent.press(join);
-    expect(screen.queryByText('Join this match')).toBeNull();
+    await waitFor(() => expect(screen.getByRole('header', { name: 'Request sent!' })).toBeTruthy());
+    expect(screen.queryByText('Ask to join this match')).toBeNull();
+    expect(mockState.rpcCalls.filter((c) => c.name === 'request_to_join')).toEqual([
+      { name: 'request_to_join', args: { p_listing: 'm1' } },
+    ]);
     expect(mockState.inserts).toHaveLength(0);
   });
 });
 
 describe('returning after authentication', () => {
-  it('takes a guest who signs in back to the match, with Join still needing its own tap', async () => {
+  it('takes a guest who signs in back to the match, with Request to join still needing its own tap', async () => {
     nextSignInSucceeds('u1', completeProfile('u1'));
     await openMatchAsGuest();
     await joinThenChoose('Sign in');
@@ -188,8 +190,9 @@ describe('returning after authentication', () => {
 
     await waitFor(() => expect(screen.getByRole('header', { name: 'Marbella' })).toBeTruthy());
     expect(screen.queryByText('New here? Create an account')).toBeNull();
-    const join = screen.getByRole('button', { name: 'Join match' });
-    expect(join.props.accessibilityState.disabled).toBe(true);
+    const join = screen.getByRole('button', { name: 'Request to join' });
+    expect(join.props.accessibilityState.disabled).toBe(false);
+    expect(mockState.rpcCalls.filter((c) => c.name === 'request_to_join')).toHaveLength(0);
     expect(mockState.inserts).toHaveLength(0);
     expect(mockState.upserts).toHaveLength(0);
   });
@@ -199,7 +202,7 @@ describe('returning after authentication', () => {
     await openMatchAsGuest();
     await joinThenChoose('Sign in');
     await submitCredentials();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Join match' }).props.accessibilityState.disabled).toBe(true));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Request to join' }).props.accessibilityState.disabled).toBe(false));
 
     await act(async () => router.back());
     await waitFor(() => expect(screen.getByText('Home screen')).toBeTruthy());
@@ -237,7 +240,7 @@ describe('returning after authentication', () => {
     await openMatchAsGuest();
     await joinThenChoose('Sign in');
     await submitCredentials();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Join match' }).props.accessibilityState.disabled).toBe(true));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Request to join' }).props.accessibilityState.disabled).toBe(false));
     await act(async () => router.back());
     await waitFor(() => expect(screen.getByText('Home screen')).toBeTruthy());
 
@@ -339,11 +342,11 @@ describe('session and cache hygiene', () => {
     expect(client.getQueryCache().getAll().length).toBeGreaterThan(0);
     const before = client.getQueryCache().getAll().length;
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Join match' }));
-    await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Request to join' }));
+    await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     await submitCredentials();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Join match' }).props.accessibilityState.disabled).toBe(true));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Request to join' }).props.accessibilityState.disabled).toBe(false));
     expect(client.getQueryCache().getAll().length).toBeGreaterThanOrEqual(before);
   });
 });

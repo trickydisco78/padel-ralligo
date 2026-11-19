@@ -183,9 +183,9 @@ describe('AuthPromptSheet', () => {
 
   it('asks a guest to join, with the three actions', async () => {
     await open(join);
-    await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
     expect(
-      screen.getByText('Create a free account or sign in to reserve your place and connect with other players.'),
+      screen.getByText('Create a free account or sign in to ask for a place and connect with other players.'),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Create account' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();
@@ -207,7 +207,7 @@ describe('AuthPromptSheet', () => {
     await open(join);
     await waitFor(() => expect(screen.getByText('pending: joinMatch')).toBeTruthy());
     await fireEvent.press(screen.getByRole('button', { name: 'Dismiss' }));
-    await waitFor(() => expect(screen.queryByText('Join this match')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Ask to join this match')).toBeNull());
     expect(screen.getByText('pending: none')).toBeTruthy();
   });
 
@@ -230,6 +230,6 @@ describe('AuthPromptSheet', () => {
     await waitFor(() => expect(screen.getByText('trigger')).toBeTruthy());
     await act(async () => {});
     await fireEvent.press(screen.getByText('trigger'));
-    expect(screen.queryByText('Join this match')).toBeNull();
+    expect(screen.queryByText('Ask to join this match')).toBeNull();
   });
 });

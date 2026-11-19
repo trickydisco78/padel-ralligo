@@ -1,0 +1,62 @@
+# Design
+
+## Context
+
+See `proposal.md`. Today: `listings` has `poster_id`, `players_needed` (1 to 3, the others the organiser wants) and `status` (`open` or `closed`); `discover_listings` is a public view that hides `poster_id` on purpose, so the client cannot tell a viewer is the organiser; the details screen has a disabled "Join match" and the `joinMatch` auth intent returns a guest to the match without side effects. Tables have row-level security and no `anon` grants; new public or member reads go through functions or views with explicit columns (see `supabase/README.md`). `listings` and `players` are both `domain-feature`, so neither may import the other (`turbo boundaries`). The Padel Pink components `PlayerRow`, `Banner`, `BottomSheet`, `AppBar` (with an overlay variant) and `Button` exist. The screens are specified by a design canvas (<https://claude.ai/artifact/SfUSwPjN1KHwUYk7c7RUgp>, artboards 1 View match details, 2 Request sent, 3 Pending, 4 Accepted, 5 Declined, 6 Withdraw, 7 Manage match, 8 Accept or decline).
+
+## Goals / Non-Goals
+
+**Goals:** a request, withdraw and decide flow; capacity and privacy enforced in the database; the details screen as the one place to see and act.
+**Non-Goals:** notifications, chat, ratings, payments, removing an accepted player, a "My matches" list, level matching, live updates.
+
+## Decisions
+
+1. **One table, written only by functions.** `join_requests (id, listing_id, profile_id, status, created_at, decided_at)` with `status` in `pending | accepted | declined | withdrawn`, unique on `(listing_id, profile_id)`, cascade on delete of the listing or profile. Row-level security is on; `authenticated` can only `select` their own rows; there is no insert, update or delete grant and `anon` has nothing. *Alternative:* RLS insert and update policies. Rejected: capacity, the one-request rule and "only the organiser decides" involve other rows and a lock, which policies cannot do safely, so every write goes through a function.
+2. **Four `SECURITY DEFINER` functions** (`search_path = ''`, `revoke ... from public, anon`, `grant execute to authenticated`), all identifying the caller with `auth.uid()` and never trusting a passed user id:
+   - `request_to_join(p_listing)`: needs `is_email_confirmed()`; rejects the organiser, a closed or past match, a full match, and an existing pending, accepted or declined row; a withdrawn row goes back to `pending`.
+   - `withdraw_join_request(p_listing)`: caller's own pending request, or accepted request while `start_date >= current_date`.
+   - `decide_join_request(p_request, p_accept)`: caller must be the organiser of that request's listing; the request must be pending; accepting needs a place left.
+   - `match_people(p_listing)`: returns the viewer's role and own status, the counts, and the rows the viewer may see (decision 5).
+3. **Capacity and the race.** `decide_join_request` and `request_to_join` first lock the listing row (`select ... from public.listings where id = p for update`), then count accepted rows. Two simultaneous accepts serialise, and the second sees no place left. A trigger on `listings` rejects lowering `players_needed` below the accepted count. *Alternative:* a counter column. Rejected: it can drift; counting under the lock is simple and exact at 3 places.
+4. **"Full" is derived, not a status.** `places_left = players_needed - accepted`. The listing stays `open`, so the organiser's open/closed choice stays theirs and a withdrawal reopens it with no extra step. `discover_listings` gains `spots_left`; `destinations_with_counts` counts only matches with `spots_left > 0`; `listDiscoverable` filters `spots_left > 0`, while `getDiscoverable(id)` still returns a full match so people involved can open it. Hiding full matches in the list is a visibility choice done in the query, not a security boundary; who sees people is enforced in `match_people`. The view change widens public columns by one number, so `tests/rls.mjs` updates its asserted column list on purpose.
+5. **Who sees whom** (decided in `match_people`, which returns display name as first name with last initial, using the directory's formatting, plus skill tier):
+   - organiser: organiser, accepted players and every request (with request id and status);
+   - a member with a request: organiser, accepted players and their own request;
+   - any other member: organiser and accepted players;
+   - guests cannot call it. The app does not call it for a guest.
+   The organiser's own row identifies the viewer's role, since `poster_id` is not in the public view. For the organiser it also returns the number of pending requests. A requester is identified to the organiser by name and skill tier only: no message, home destination, city or contact detail.
+6. **Request lifecycle.** `pending` → `accepted` or `declined` (organiser), `pending` or `accepted` → `withdrawn` (member). `withdrawn` → `pending` on a new request. `declined` is final for that member and match. A request on a match that fills stays pending, shown with "this match is full"; the organiser may decline it. A closed match leaves requests untouched but nothing can be decided. "Past" means `coalesce(end_date, start_date) < current_date` on the server.
+7. **Stable error reasons.** Functions raise exceptions whose message is a code (`email_not_confirmed`, `own_match`, `already_requested`, `declined`, `match_full`, `match_closed`, `match_past`, `not_organiser`, `not_found`, `not_pending`). The repository maps a code to a translation key, so screens say why. Unknown errors show the generic failure message.
+8. **Where the code lives.** Data, hooks and the people and action components go in `@padel/listings` (`domain/join-request.ts`, `infrastructure` calling the functions, `presentation/hooks/use-match-people.ts`, `use-join-request.ts`, `components/match-actions.tsx`). Because `listings` cannot import `players`, `MatchDetail` and the people section take a render function for a person, and `apps/mobile/src/app/match/[id].tsx` passes `@padel/players`' `PlayerRow`. *Alternative:* a new `@padel/matches` package. Rejected: it would also be `domain-feature` and hit the same rule, and it would split one aggregate.
+9. **Match screen, from the designs.** `apps/mobile/src/app/match/[id].tsx` is rebuilt in three layers:
+   - **Hero:** a fixed 250 high pink block with the two decorative circles and the white court motif (an SVG made from `Svg`, `Rect`, `Path`, `Circle`), as `MatchHero` in `@padel/listings` (used on one screen, so it stays out of `@padel/ui` until a second screen needs it). Over it, `AppBar variant="overlay"` with the back button and one action, Share. The design's Favourite button is not built, so the bar's single action fits.
+   - **Sheet:** a white rounded (`radius.xl`) `ScrollView` starting about 214 from the top, so it covers about two thirds of the screen and scrolls when it has more to show; the primary action sits in a footer pinned under it with the bottom safe-area inset. The sheet holds the status `Banner` (when the member has a request), date tile, title, place and time, level badge, the organiser `PlayerRow`, "About this match" if set, and "Players N of M" with the progress bar (organiser plus accepted over players needed plus one). The design's "Doubles" tag and numeric level are not shown: the app has no such data, only the level tier.
+   - **Action area by state:** guest or member with no request → primary "Request to join"; pending → pending `Banner` and secondary "Withdraw request"; accepted → success `Banner` "You're in!" and, while the match is to come, secondary "Withdraw request"; declined → declined `Banner` and primary "Find similar matches" (opens Discover with the destination filter); full and not involved → a notice and no button; organiser → primary "Manage match (N requests)".
+   - **Sheets:** "Request sent!" after a successful request (icon disc, title, "You can see the answer here once <organiser> responds.", Done); "Withdraw request?" (primary "Keep request", secondary "Withdraw"), as the design's guidance says the safe action is primary. `BottomSheet` gains the design's centred layout (grabber, icon disc, centred title and message, stacked actions) as an option, keeping its title, close button, focus return and Android back.
+   - **Not built:** "Open match chat" on Accepted (there is no messaging), the tappable organiser row (there is no player page), and any "you'll be notified" copy.
+   - The people list on the screen is organiser plus accepted players; the organiser's request handling lives on Manage match, not here.
+10. **Refreshing.** Mutations invalidate the match people and listing queries. The screen refetches on focus. There is no live update.
+11. **Intent.** `joinMatch` keeps returning a guest to the match and makes no request, so nothing is joined by surprise. Its copy changes from "reserve your place" to "request a place".
+12. **Manage match route.** `apps/mobile/src/app/match/[id]/manage.tsx` (the `match/[id]` route becomes a folder with `index` and `manage`). It uses `AppBar variant="detail"` titled "Manage match", the date tile and title, tabs "Players (N)" and "Requests (N)" and, below, a "Close match" action. Players lists the organiser (`PlayerRow` organiser, not pressable) and accepted players (`PlayerRow` playing). Requests lists pending requests (`PlayerRow` requesting with accept and decline icon buttons); tapping the row opens the review sheet from the design: initials avatar, name, skill tier, then "Accept request" (primary) and "Decline request" (secondary). Accept and decline in the row and in the sheet call the same mutation. The screen loads `match_people` and the listing; a viewer who is not the organiser (the function says so) is redirected to the match details, so the route leaks nothing. Close reuses the existing close mutation (with a confirm sheet, as for withdrawing) and, once closed, the screen says the match is closed. A full match still opens, which is how an organiser reaches one that Discover now hides; My listings cards get a "Manage requests" action to it.
+13. **Share.** Share uses React Native's `Share.share` with a message built from the destination and date and the link `padel-ralligo://match/<id>` (the app's URL scheme). It works for guests. The link only opens for people who have the app; a web link is a later step once there is a web app. Share is not an auth-gated action.
+14. **Declined, "Find similar matches".** Navigates to `/discover` with the match's destination as a route parameter that Discover applies as its destination filter (the same way `view` is applied and cleared).
+15. **Tests.** `supabase/tests/rls.mjs` is extended (anonymous denied, own rows only, no direct writes, capacity, race via two sequential accepts at capacity, organiser-only decisions, past, closed, self, duplicate, declined). Component, hook and screen tests use the existing fake Supabase client.
+
+## Risks / Trade-offs
+
+- A request can sit unseen because there are no notifications → named as the next change; the My listings entry point and the details screen are the only places to find it.
+- Counting under a row lock is fine at this scale but serialises accepts for one match → acceptable; it is per match.
+- `players_needed` keeps its meaning as the organiser's ask, and "places left" is computed, so an edit that raises it adds places and one that lowers it is blocked below accepted → recorded in the specs.
+- A declined member can never ask again for that match → intentional to avoid pestering; revisit if organisers want to change a decision.
+- A shared link opens only for people who have the app → accepted; a web link comes with a web app.
+- Hiding full matches by query leaves them visible to anyone who has the link → intended; their details show "full".
+
+## Migration Plan
+
+1. One migration creates the table, functions, trigger and view changes; apply it to the dev project, regenerate `@padel/supabase` types, then ship the app.
+2. Existing listings have no requests, so their `spots_left` equals `players_needed` and nothing changes for them.
+3. Rollback: the migration is additive apart from two view replacements and one trigger; a follow-up migration can drop the functions, trigger and table and restore the previous views. No data outside `join_requests` is changed.
+
+## Open Questions
+
+- Whether the organiser should see a count of waiting requests on My listings. Not needed to ship; can be added to the card later.

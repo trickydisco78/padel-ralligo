@@ -39,7 +39,6 @@
     "unavailableBody": "It may have closed or already been played.",
     "backToDiscover": "Back to Discover",
     "where": "Where",
-    "venue": "Venue",
     "when": "When",
     "about": "About this match",
     "postedBy": "Posted by"
@@ -54,7 +53,8 @@
     "closed": "Closed",
     "playersNeeded": "{{count}} needed",
     "edit": "Edit {{destination}} listing",
-    "close": "Close {{destination}} listing"
+    "close": "Close {{destination}} listing",
+    "manage": "Manage requests for {{destination}}"
   },
   "validation": {
     "destination": "Choose a destination",
@@ -65,5 +65,55 @@
     "playersRange": "Players needed must be {{min}} to {{max}}",
     "descriptionLength": "Description must be {{maxLength}} characters or fewer",
     "timeFormat": "Use the format HH:MM"
+  },
+  "playersProgress": {
+    "label": "Players",
+    "value": "{{current}} of {{total}}"
+  },
+  "matchBanner": {
+    "pendingTitle": "Request pending",
+    "pendingBody": "Waiting for {{name}} to confirm your place.",
+    "pendingFull": "Waiting for {{name}}. The match is now full.",
+    "acceptedTitle": "You're in!",
+    "acceptedBody": "Your place has been confirmed.",
+    "declinedTitle": "Request declined",
+    "declinedBody": "{{name}} hasn't approved your request for this match.",
+    "fullTitle": "This match is full",
+    "fullBody": "Every place has been taken."
+  },
+  "matchActions": {
+    "request": "Request to join",
+    "withdraw": "Withdraw request",
+    "findSimilar": "Find similar matches",
+    "manage": "Manage match",
+    "manageCount_one": "Manage match · {{count}} request",
+    "manageCount_other": "Manage match · {{count}} requests"
+  },
+  "matchSheets": {
+    "sentTitle": "Request sent!",
+    "sentMessage": "You can see {{name}}'s answer here once they respond.",
+    "done": "Done",
+    "withdrawTitle": "Withdraw request?",
+    "withdrawMessage": "You'll no longer be considered for this match.",
+    "keep": "Keep request",
+    "withdraw": "Withdraw"
+  },
+  "joinRequests": {
+    "errors": {
+      "not_signed_in": "Sign in to request a place.",
+      "email_not_confirmed": "Verify your email address to request a place. Check your inbox for the link we sent when you signed up.",
+      "profile_incomplete": "Finish your profile to request a place.",
+      "not_found": "This match could not be found.",
+      "own_match": "You can't request a place in your own match.",
+      "match_closed": "This match has been closed.",
+      "match_past": "This match has already started or been played.",
+      "match_full": "This match is full.",
+      "already_requested": "You've already asked for a place in this match.",
+      "declined": "Your request for this match wasn't approved, so you can't ask again.",
+      "not_organiser": "Only the organiser can do that.",
+      "not_pending": "That request has already been dealt with.",
+      "players_below_accepted": "You can't need fewer players than you've already accepted.",
+      "unknown": "Something went wrong. Please try again."
+    }
   }
 }

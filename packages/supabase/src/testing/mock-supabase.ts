@@ -23,6 +23,10 @@ export const mockState = {
   trips: [] as Record<string, unknown>[],
   tripsError: null as unknown,
   tripsOverview: [] as unknown[],
+  /** Rows returned by the match_people function (a header repeated on each row, one row per person). */
+  matchPeople: [] as unknown[],
+  /** Error message (a join error code) returned by request_to_join, withdraw_join_request and decide_join_request. */
+  joinError: null as string | null,
   rpcCalls: [] as { name: string; args: Record<string, unknown> }[],
   listeners: new Set<Listener>(),
 };
@@ -49,6 +53,8 @@ export function resetMockSupabase() {
   mockState.trips = [];
   mockState.tripsError = null;
   mockState.tripsOverview = [];
+  mockState.matchPeople = [];
+  mockState.joinError = null;
   mockState.rpcCalls = [];
   mockState.listeners.clear();
 }
@@ -144,6 +150,14 @@ export const supabase = {
         ? { data: null, error: mockState.tripsError }
         : { data: mockState.tripsOverview, error: null };
     }
+    if (name === 'match_people') {
+      return mockState.joinError
+        ? { data: null, error: { message: mockState.joinError } }
+        : { data: mockState.matchPeople, error: null };
+    }
+    if (name === 'request_to_join' || name === 'withdraw_join_request' || name === 'decide_join_request') {
+      return mockState.joinError ? { data: null, error: { message: mockState.joinError } } : { data: null, error: null };
+    }
     return { data: null, error: { message: `unknown rpc ${name}` } };
   }),
   from: jest.fn((table: string) => table === 'trips' ? tripsTable() : ({
@@ -160,6 +174,17 @@ export const supabase = {
           }
           return { data: table === 'profile_trips' ? mockState.trip : mockState.profile, error: null };
         },
+      }),
+      // `gt` is used to hide full matches: rows with no numeric value for the column are kept.
+      gt: (column: string, limit: number) => ({
+        order: async () => ({
+          data: mockState.listingsError
+            ? null
+            : (mockState.listings as Record<string, unknown>[]).filter(
+                (row) => typeof row[column] !== 'number' || (row[column] as number) > limit,
+              ),
+          error: mockState.listingsError,
+        }),
       }),
       order: async () =>
         table === 'discover_listings'
