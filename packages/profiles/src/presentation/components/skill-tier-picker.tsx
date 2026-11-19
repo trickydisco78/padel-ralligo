@@ -2,7 +2,7 @@ import { SKILL_TIERS, type SkillTier } from '@padel/core';
 import { useTranslation } from '@padel/i18n';
 import { View } from 'react-native';
 
-import { Chip, ThemedText, Spacing } from '@padel/ui';
+import { HelperText, Radio, ThemedText, spacing } from '@padel/ui';
 
 type Props = {
   value: SkillTier | null;
@@ -10,21 +10,18 @@ type Props = {
   error?: string;
 };
 
+/** Choose one skill tier. Radios, not pills: this is a form answer, not a filter. */
 export function SkillTierPicker({ value, onChange, error }: Props) {
   const { t } = useTranslation('profiles');
   return (
-    <View style={{ gap: Spacing.one }}>
-      <ThemedText type="smallBold">{t('skillTierPicker.label')}</ThemedText>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
+    <View accessibilityRole="radiogroup" accessibilityLabel={t('skillTierPicker.label')} style={{ gap: spacing.space1 }}>
+      <ThemedText type="label">{t('skillTierPicker.label')}</ThemedText>
+      <View>
         {SKILL_TIERS.map((tier) => (
-          <Chip key={tier} label={t(`skillTierPicker.tiers.${tier}`)} selected={tier === value} onPress={() => onChange(tier)} />
+          <Radio key={tier} label={t(`skillTierPicker.tiers.${tier}`)} selected={tier === value} onSelect={() => onChange(tier)} />
         ))}
       </View>
-      {error ? (
-        <ThemedText type="small" style={{ color: '#C62828' }}>
-          {error}
-        </ThemedText>
-      ) : null}
+      {error ? <HelperText error>{error}</HelperText> : null}
     </View>
   );
 }

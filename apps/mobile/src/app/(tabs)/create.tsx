@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '@padel/i18n';
 import { useSession, SignInPrompt } from '@padel/auth';
 import { ListingForm } from '@padel/listings';
-import { ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { ThemedText, ThemedView, spacing } from '@padel/ui';
 
 export default function CreateScreen() {
   const { t } = useTranslation('app');
@@ -17,8 +17,8 @@ export default function CreateScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">{t('create.title')}</ThemedText>
+            contentContainerStyle={{ padding: spacing.space6, gap: spacing.space4 }}>
+            <ThemedText type="display">{t('create.title')}</ThemedText>
             <ListingForm />
           </ScrollView>
         </KeyboardAvoidingView>

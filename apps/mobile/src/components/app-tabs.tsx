@@ -1,20 +1,23 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useTranslation } from '@padel/i18n';
-import { Colors } from '@padel/ui';
+import { colors, fontFamily } from '@padel/ui';
 
 export default function AppTabs() {
   const { t } = useTranslation('app');
-  const colors = Colors.light;
-
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      tintColor={colors.primary}
-      indicatorColor={colors.primaryTint}
-      labelStyle={{ selected: { color: colors.primary } }}>
+      backgroundColor={colors.surface}
+      tintColor={colors.pink500}
+      iconColor={{ default: colors.inkSoft, selected: colors.pink500 }}
+      indicatorColor={colors.pink100}
+      rippleColor={colors.pink100}
+      labelStyle={{
+        default: { color: colors.inkSoft, fontFamily: fontFamily[600], fontSize: 12 },
+        selected: { color: colors.pink700, fontFamily: fontFamily[700], fontSize: 12 },
+      }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>{t('tabs.home')}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="house" md="home" />
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md={{ default: 'home', selected: 'home_filled' }} />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="discover">
@@ -24,7 +27,10 @@ export default function AppTabs() {
 
       <NativeTabs.Trigger name="create">
         <NativeTabs.Trigger.Label>{t('tabs.create')}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="plus.circle" md="add_circle" />
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'plus.circle', selected: 'plus.circle.fill' }}
+          md={{ default: 'add_circle_outline', selected: 'add_circle' }}
+        />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="matches">
@@ -34,7 +40,7 @@ export default function AppTabs() {
 
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Label>{t('tabs.profile')}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="person" md="person" />
+        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md={{ default: 'person_outline', selected: 'person' }} />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

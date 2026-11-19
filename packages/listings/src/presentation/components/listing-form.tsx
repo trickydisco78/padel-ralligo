@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useSession } from '@padel/auth';
-import { Chip, DateField, PrimaryButton, TextField, ThemedText, Spacing } from '@padel/ui';
+import { DateField, Button, FormField, ThemedText, spacing } from '@padel/ui';
 import { DestinationPicker } from '@padel/destinations';
 
 import {
@@ -117,11 +117,11 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
   });
 
   return (
-    <View key={formKey} style={{ gap: Spacing.three }}>
+    <View key={formKey} style={{ gap: spacing.space4 }}>
       <DestinationPicker value={destinationId} onChange={setDestinationId} error={errors.destinationId} />
       <DateField label={t('listingForm.startDate')} value={startDate} onChange={setStartDate} error={errors.startDate} />
       <DateField label={t('listingForm.endDate')} value={endDate} onChange={setEndDate} error={errors.endDate} />
-      <TextField
+      <FormField
         label={t('listingForm.startTime')}
         value={startTime}
         onChangeText={setStartTime}
@@ -129,29 +129,29 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
         keyboardType="numbers-and-punctuation"
         error={errors.startTime}
       />
-      <TextField label={t('listingForm.venue')} value={venue} onChangeText={setVenue} />
+      <FormField label={t('listingForm.venue')} value={venue} onChangeText={setVenue} />
 
-      <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">{t('listingForm.levelWanted')}</ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
+      <View style={{ gap: spacing.space1 }}>
+        <ThemedText type="label">{t('listingForm.levelWanted')}</ThemedText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.space2 }}>
           {LEVELS_WANTED.map((level) => (
-            <Chip key={level} label={level === 'Any' ? t('listingForm.levelAny') : level} selected={level === levelWanted} onPress={() => setLevelWanted(level)} />
+            <Button variant="choice" key={level} title={level === 'Any' ? t('listingForm.levelAny') : level} selected={level === levelWanted} onPress={() => setLevelWanted(level)} />
           ))}
         </View>
-        {errors.levelWanted ? <ThemedText type="small" style={{ color: '#C62828' }}>{errors.levelWanted}</ThemedText> : null}
+        {errors.levelWanted ? <ThemedText type="caption" themeColor="error600">{errors.levelWanted}</ThemedText> : null}
       </View>
 
-      <View style={{ gap: Spacing.one }}>
-        <ThemedText type="smallBold">{t('listingForm.playersNeeded')}</ThemedText>
-        <View style={{ flexDirection: 'row', gap: Spacing.two }}>
+      <View style={{ gap: spacing.space1 }}>
+        <ThemedText type="label">{t('listingForm.playersNeeded')}</ThemedText>
+        <View style={{ flexDirection: 'row', gap: spacing.space2 }}>
           {PLAYER_COUNTS.map((n) => (
-            <Chip key={n} label={String(n)} selected={n === playersNeeded} onPress={() => setPlayersNeeded(n)} />
+            <Button variant="choice" key={n} title={String(n)} selected={n === playersNeeded} onPress={() => setPlayersNeeded(n)} />
           ))}
         </View>
-        {errors.playersNeeded ? <ThemedText type="small" style={{ color: '#C62828' }}>{errors.playersNeeded}</ThemedText> : null}
+        {errors.playersNeeded ? <ThemedText type="caption" themeColor="error600">{errors.playersNeeded}</ThemedText> : null}
       </View>
 
-      <TextField
+      <FormField
         label={t('listingForm.description')}
         value={description}
         onChangeText={setDescription}
@@ -160,9 +160,9 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
 
-      {errors.form ? <ThemedText type="small" style={{ color: '#C62828' }}>{errors.form}</ThemedText> : null}
-      {posted ? <ThemedText themeColor="primary">{existing ? t('listingForm.saved') : t('listingForm.posted')}</ThemedText> : null}
-      <PrimaryButton title={existing ? t('listingForm.saveChanges') : t('listingForm.postListing')} onPress={submit} disabled={posting} />
+      {errors.form ? <ThemedText type="caption" themeColor="error600">{errors.form}</ThemedText> : null}
+      {posted ? <ThemedText themeColor="pink700">{existing ? t('listingForm.saved') : t('listingForm.posted')}</ThemedText> : null}
+      <Button title={existing ? t('listingForm.saveChanges') : t('listingForm.postListing')} onPress={submit} disabled={posting} />
     </View>
   );
 }

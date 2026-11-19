@@ -1,7 +1,7 @@
 import { useTranslation } from '@padel/i18n';
 import { Pressable, View } from 'react-native';
 
-import { Card, Chip, ThemedText, Spacing } from '@padel/ui';
+import { Card, ThemedText, spacing, Badge } from '@padel/ui';
 
 import type { DiscoverListing } from '../../domain/listing';
 import { dateParts, formatRange } from '../format-date';
@@ -24,24 +24,24 @@ export function ListingCard({ listing, onPress }: Props) {
     : listing.posterName;
 
   const card = (
-    <Card style={{ flexDirection: 'row', gap: Spacing.three }}>
+    <Card style={{ flexDirection: 'row', gap: spacing.space4 }}>
       <View style={{ alignItems: 'center', minWidth: 48 }}>
-        <ThemedText type="small" themeColor="textSecondary">{from.weekday}</ThemedText>
-        <ThemedText type="subtitle">{from.day}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">{from.month}</ThemedText>
+        <ThemedText type="caption" themeColor="muted">{from.weekday}</ThemedText>
+        <ThemedText type="headline">{from.day}</ThemedText>
+        <ThemedText type="caption" themeColor="muted">{from.month}</ThemedText>
       </View>
 
-      <View style={{ flex: 1, gap: Spacing.one }}>
-        <ThemedText type="smallBold">{listing.destinationName}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
+      <View style={{ flex: 1, gap: spacing.space1 }}>
+        <ThemedText type="label">{listing.destinationName}</ThemedText>
+        <ThemedText type="caption" themeColor="muted">
           {whenAndVenue}
         </ThemedText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
-          <Chip label={listing.levelWanted === 'Any' ? t('common.anyLevel') : listing.levelWanted} />
-          <Chip label={spots} />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.space2 }}>
+          <Badge label={listing.levelWanted === 'Any' ? t('common.anyLevel') : listing.levelWanted} />
+          <Badge label={spots} />
         </View>
-        {listing.description ? <ThemedText type="small">{listing.description}</ThemedText> : null}
-        <ThemedText type="small" themeColor="textSecondary">
+        {listing.description ? <ThemedText type="caption">{listing.description}</ThemedText> : null}
+        <ThemedText type="caption" themeColor="muted">
           {poster}
         </ThemedText>
       </View>

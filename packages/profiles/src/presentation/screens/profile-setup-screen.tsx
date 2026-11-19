@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileForm } from '../components/profile-form';
-import { ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { ThemedText, ThemedView, spacing } from '@padel/ui';
 
 /** Shown after first sign in; saving the profile moves the user on to the tabs. */
 export function ProfileSetupScreen() {
@@ -14,9 +14,9 @@ export function ProfileSetupScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">{t('profileSetup.title')}</ThemedText>
-            <ThemedText themeColor="textSecondary">
+            contentContainerStyle={{ padding: spacing.space6, gap: spacing.space4 }}>
+            <ThemedText type="display">{t('profileSetup.title')}</ThemedText>
+            <ThemedText themeColor="muted">
               {t('profileSetup.intro')}
             </ThemedText>
             <ProfileForm submitLabel={t('profileSetup.submit')} />

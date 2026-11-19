@@ -6,13 +6,14 @@
   },
   "profileForm": {
     "displayName": "Display name",
-    "homeCity": "Home city (optional)",
-    "bio": "Bio (optional)",
+    "homeCity": "Home city",
+    "bio": "Bio",
     "discoverable": "Show me in Find players",
     "discoverableHelp": "Other people can see your first name and last initial, your home destination and your skill tier. You can turn this off at any time.",
     "homeDestination": "Home destination",
     "saved": "Profile saved",
-    "saveFailed": "Could not save your profile. Please try again."
+    "saveFailed": "Could not save your profile. Please try again.",
+    "displayNameHelp": "Shown on your player card"
   },
   "skillTierPicker": {
     "label": "Padel skill level",
@@ -28,5 +29,9 @@
     "bioTooLong": "Bio must be {{bioMax}} characters or fewer",
     "skillTierRequired": "Choose a skill level",
     "homeDestinationRequired": "Choose a home destination to be listed"
+  },
+  "playerCard": {
+    "overline": "Player card",
+    "statsLabel": "Player stats"
   }
 }

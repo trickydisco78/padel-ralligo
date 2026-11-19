@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
-import { ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { ThemedText, ThemedView, spacing } from '@padel/ui';
 
 import type { AuthIntent } from '../../domain/auth-intent';
 import { AccountActions } from './account-actions';
@@ -19,9 +19,9 @@ export function SignInPrompt({ message, title, intent }: Props) {
   const { t } = useTranslation('auth');
   return (
     <ThemedView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: Spacing.four, gap: Spacing.three }}>
-        <ThemedText type="title">{title ?? t('prompt.defaultTitle')}</ThemedText>
-        <ThemedText themeColor="textSecondary">{message}</ThemedText>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: spacing.space6, gap: spacing.space4 }}>
+        <ThemedText type="display">{title ?? t('prompt.defaultTitle')}</ThemedText>
+        <ThemedText themeColor="muted">{message}</ThemedText>
         <AccountActions intent={intent} />
       </SafeAreaView>
     </ThemedView>

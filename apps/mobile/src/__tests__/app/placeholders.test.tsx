@@ -19,6 +19,6 @@ describe('Matches placeholder screen', () => {
       </SessionProvider></QueryTestProvider>,
     );
     await waitFor(() => expect(screen.getByText('Coming soon')).toBeTruthy());
-    expect(screen.getByText('Matches')).toBeTruthy();
+    expect(screen.getByText('My matches')).toBeTruthy();
   });
 });

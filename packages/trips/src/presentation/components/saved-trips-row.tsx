@@ -2,7 +2,7 @@ import { formatDateRange } from '@padel/core';
 import { useTranslation } from '@padel/i18n';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { Colors, Radius, Spacing, ThemedText } from '@padel/ui';
+import { borderWidth, colors, Icon, radius, spacing, ThemedText } from '@padel/ui';
 
 import type { TripOverview } from '../../domain/trip';
 
@@ -17,7 +17,7 @@ export function SavedTripsRow({ trips, selectedTripId, onSelect }: Props) {
   const { t } = useTranslation('trips');
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.two }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.space2 }}>
       {trips.map((trip) => {
         const selected = trip.id === selectedTripId;
         const dates = formatDateRange(trip.startDate, trip.endDate);
@@ -37,25 +37,21 @@ export function SavedTripsRow({ trips, selectedTripId, onSelect }: Props) {
             onPress={() => onSelect(trip.id)}
             style={{
               minWidth: 200,
-              padding: Spacing.three,
-              gap: Spacing.one,
-              borderRadius: Radius.card,
-              borderWidth: selected ? 2 : 1,
-              borderColor: selected ? Colors.light.primary : Colors.light.border,
-              backgroundColor: selected ? Colors.light.primaryTint : Colors.light.backgroundElement,
+              padding: spacing.space4,
+              gap: spacing.space1,
+              borderRadius: radius.lg,
+              borderWidth,
+              borderColor: selected ? colors.pink500 : colors.line,
+              backgroundColor: selected ? colors.pink100 : colors.surfaceSoft,
             }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.two }}>
-              <ThemedText type="smallBold">{trip.destinationName}</ThemedText>
-              {selected ? (
-                <ThemedText type="smallBold" themeColor="primary">
-                  ✓
-                </ThemedText>
-              ) : null}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: spacing.space2 }}>
+              <ThemedText type="label">{trip.destinationName}</ThemedText>
+              {selected ? <Icon name="check" color="pink700" size={18} /> : null}
             </View>
-            <ThemedText type="small" themeColor="textSecondary">
+            <ThemedText type="caption" themeColor="muted">
               {t('savedTrips.place', { country: trip.destinationCountry, dates })}
             </ThemedText>
-            <ThemedText type="small">{summary}</ThemedText>
+            <ThemedText type="caption">{summary}</ThemedText>
           </Pressable>
         );
       })}

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { useTranslation } from '@padel/i18n';
-import { PrimaryButton, SecondaryButton, Spacing } from '@padel/ui';
+import { Button, spacing } from '@padel/ui';
 
 import type { AuthIntent } from '../../domain/auth-intent';
 import { useOptionalAuthIntent } from '../auth-intent-context';
@@ -27,9 +27,9 @@ export function AccountActions({ intent, onNavigate }: Props) {
   }
 
   return (
-    <View style={{ gap: Spacing.three }}>
-      <PrimaryButton title={t('actions.createAccount')} onPress={() => go('/sign-up')} />
-      <SecondaryButton title={t('actions.signIn')} onPress={() => go('/sign-in')} />
+    <View style={{ gap: spacing.space4 }}>
+      <Button title={t('actions.createAccount')} onPress={() => go('/sign-up')} />
+      <Button variant="secondary" title={t('actions.signIn')} onPress={() => go('/sign-in')} />
     </View>
   );
 }

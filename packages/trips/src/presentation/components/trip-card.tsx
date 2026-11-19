@@ -2,7 +2,7 @@ import { formatDateRange } from '@padel/core';
 import { useTranslation } from '@padel/i18n';
 import { Pressable, View } from 'react-native';
 
-import { Card, Spacing, ThemedText } from '@padel/ui';
+import { Card, spacing, ThemedText } from '@padel/ui';
 
 import type { Trip } from '../../domain/trip';
 
@@ -17,7 +17,7 @@ type Props = {
 function Action({ title, label, onPress }: { title: string; label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={8}>
-      <ThemedText type="smallBold" themeColor="primaryDark">
+      <ThemedText type="label" themeColor="pink700">
         {title}
       </ThemedText>
     </Pressable>
@@ -31,14 +31,14 @@ export function TripCard({ trip, ended, onEdit, onDelete }: Props) {
 
   return (
     <Card>
-      <ThemedText type="smallBold">{trip.destinationName}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
+      <ThemedText type="label">{trip.destinationName}</ThemedText>
+      <ThemedText type="caption" themeColor="muted">
         {dates}
       </ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
+      <ThemedText type="caption" themeColor="muted">
         {ended ? t('tripsSection.ended') : sharing}
       </ThemedText>
-      <View style={{ flexDirection: 'row', gap: Spacing.four }}>
+      <View style={{ flexDirection: 'row', gap: spacing.space6 }}>
         {onEdit && !ended ? (
           <Action title={t('tripsSection.edit')} label={t('tripsSection.editLabel', { destination: trip.destinationName })} onPress={onEdit} />
         ) : null}

@@ -1,0 +1,10 @@
+{
+  "slotPicker": {
+    "dateHeading": "Date",
+    "timeHeading": "Start time",
+    "taken": "Taken"
+  },
+  "bookingBar": {
+    "total": "total"
+  }
+}

@@ -14,5 +14,13 @@
   "overlapAll": "All {{count}} days overlap",
   "overlap_one": "{{count}} day overlap",
   "overlap_other": "{{count}} days overlap",
-  "cardLabelOverlap": "{{name}}, {{destination}}, {{dates}}, {{overlap}}, {{tier}}"
+  "cardLabelOverlap": "{{name}}, {{destination}}, {{dates}}, {{overlap}}, {{tier}}",
+  "row": {
+    "playing": "Playing",
+    "requesting": "Requesting to join",
+    "organiser": "Match organiser",
+    "accept": "Accept {{name}}",
+    "decline": "Decline {{name}}",
+    "rowLabel": "{{name}}, {{status}}"
+  }
 }

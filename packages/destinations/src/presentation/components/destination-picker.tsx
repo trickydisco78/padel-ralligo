@@ -1,7 +1,7 @@
 import { useTranslation } from '@padel/i18n';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { ThemedText, Colors, Radius, Spacing } from '@padel/ui';
+import { borderWidth, colors, HelperText, radius, spacing, ThemedText } from '@padel/ui';
 import { useDestinations } from '../hooks/use-destinations';
 
 type Props = {
@@ -19,15 +19,11 @@ export function DestinationPicker({ value, onChange, allowClear = false, error, 
   const { destinations, loading, failed } = useDestinations();
 
   return (
-    <View style={{ gap: Spacing.one }}>
-      <ThemedText type="smallBold">{label ?? t('destinationPicker.label')}</ThemedText>
-      {loading ? <ActivityIndicator color={Colors.light.primary} /> : null}
-      {failed ? (
-        <ThemedText type="small" style={{ color: '#C62828' }}>
-          {t('destinationPicker.loadFailed')}
-        </ThemedText>
-      ) : null}
-      <View style={{ gap: Spacing.two }}>
+    <View style={{ gap: spacing.space1 }}>
+      <ThemedText type="label">{label ?? t('destinationPicker.label')}</ThemedText>
+      {loading ? <ActivityIndicator color={colors.pink500} /> : null}
+      {failed ? <HelperText error>{t('destinationPicker.loadFailed')}</HelperText> : null}
+      <View style={{ gap: spacing.space2 }}>
         {destinations?.map((d) => {
           const selected = d.id === value;
           return (
@@ -41,30 +37,26 @@ export function DestinationPicker({ value, onChange, allowClear = false, error, 
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: Spacing.three,
-                borderRadius: Radius.button,
-                borderWidth: 1,
-                borderColor: selected ? Colors.light.primary : Colors.light.border,
-                backgroundColor: selected ? Colors.light.primaryTint : Colors.light.backgroundElement,
+                padding: spacing.space4,
+                borderRadius: radius.md,
+                borderWidth,
+                borderColor: selected ? colors.pink500 : colors.line,
+                backgroundColor: selected ? colors.pink100 : colors.surfaceSoft,
               }}>
               <View>
-                <ThemedText type="smallBold">{d.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
+                <ThemedText type="label">{d.name}</ThemedText>
+                <ThemedText type="caption" themeColor="muted">
                   {d.country}
                 </ThemedText>
               </View>
-              <ThemedText type="small" themeColor="textSecondary">
+              <ThemedText type="caption" themeColor="muted">
                 {t('destinationPicker.games', { count: d.openListings })}
               </ThemedText>
             </Pressable>
           );
         })}
       </View>
-      {error ? (
-        <ThemedText type="small" style={{ color: '#C62828' }}>
-          {error}
-        </ThemedText>
-      ) : null}
+      {error ? <HelperText error>{error}</HelperText> : null}
     </View>
   );
 }

@@ -4,7 +4,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
-import { PrimaryButton, TextField, ThemedText, ThemedView, Spacing } from '@padel/ui';
+import { Button, FormField, ThemedText, ThemedView, spacing } from '@padel/ui';
 
 import { authService } from '../../composition';
 
@@ -35,9 +35,9 @@ export function SignInScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: Spacing.four, gap: Spacing.three }}>
-            <ThemedText type="title">{t('signIn.title')}</ThemedText>
-            <TextField
+            contentContainerStyle={{ padding: spacing.space6, gap: spacing.space4 }}>
+            <ThemedText type="display">{t('signIn.title')}</ThemedText>
+            <FormField
               label={t('signIn.email')}
               value={email}
               onChangeText={setEmail}
@@ -45,7 +45,7 @@ export function SignInScreen() {
               autoComplete="email"
               keyboardType="email-address"
             />
-            <TextField
+            <FormField
               label={t('signIn.password')}
               value={password}
               onChangeText={setPassword}
@@ -53,18 +53,18 @@ export function SignInScreen() {
               autoComplete="current-password"
             />
             {error ? (
-              <ThemedText type="small" style={{ color: '#C62828' }}>
+              <ThemedText type="caption" themeColor="error600">
                 {error}
               </ThemedText>
             ) : null}
-            <PrimaryButton title={t('signIn.submit')} onPress={submit} disabled={submitting} />
+            <Button title={t('signIn.submit')} onPress={submit} disabled={submitting} />
             <Link href="/sign-up" replace>
-              <ThemedText type="link" themeColor="primary">
+              <ThemedText type="label" themeColor="pink700">
                 {t('signIn.createAccountLink')}
               </ThemedText>
             </Link>
             <Link href="/">
-              <ThemedText type="link" themeColor="textSecondary">
+              <ThemedText type="label" themeColor="muted">
                 {t('signIn.continueBrowsing')}
               </ThemedText>
             </Link>

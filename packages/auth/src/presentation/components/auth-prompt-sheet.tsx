@@ -1,5 +1,5 @@
 import { useTranslation } from '@padel/i18n';
-import { BottomSheet, SecondaryButton, ThemedText } from '@padel/ui';
+import { BottomSheet, Button, ThemedText } from '@padel/ui';
 
 import { useOptionalAuthIntent } from '../auth-intent-context';
 import { copyKeysForIntent } from '../intent-copy';
@@ -21,9 +21,9 @@ export function AuthPromptSheet() {
       title={copy ? t(copy.title) : ''}
       onDismiss={dismissSheet}
       returnFocusRef={returnFocusRef}>
-      <ThemedText themeColor="textSecondary">{copy ? t(copy.body) : null}</ThemedText>
+      <ThemedText themeColor="muted">{copy ? t(copy.body) : null}</ThemedText>
       <AccountActions intent={intent ?? undefined} onNavigate={closeSheet} />
-      <SecondaryButton title={t('actions.dismiss')} onPress={dismissSheet} />
+      <Button variant="secondary" title={t('actions.dismiss')} onPress={dismissSheet} />
     </BottomSheet>
   );
 }

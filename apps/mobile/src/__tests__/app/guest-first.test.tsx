@@ -215,7 +215,7 @@ describe('returning after authentication', () => {
     expect(screen.queryByRole('header', { name: 'Marbella' })).toBeNull();
 
     await fireEvent.changeText(screen.getByLabelText('Display name'), 'Leon');
-    await fireEvent.press(screen.getByRole('button', { name: 'Beginner' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Beginner' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save and continue' }));
 
     await waitFor(() => expect(screen.getByRole('header', { name: 'Marbella' })).toBeTruthy());

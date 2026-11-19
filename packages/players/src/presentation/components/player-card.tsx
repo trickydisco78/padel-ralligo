@@ -1,5 +1,5 @@
 import { formatDateRange, type IsoDate } from '@padel/core';
-import { InitialsTile, SecondaryButton, Spacing, ThemedText, ThemedView } from '@padel/ui';
+import { Avatar, Button, radius, spacing, ThemedText, ThemedView } from '@padel/ui';
 import { View } from 'react-native';
 import { useTranslation } from '@padel/i18n';
 
@@ -39,30 +39,31 @@ export function PlayerCard({ player, onConnect, connectDisabled = false, connect
 
   return (
     <ThemedView
-      type="backgroundElement"
-      style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: 20 }}>
-      <InitialsTile name={player.displayName} />
+      type="surfaceSoft"
+      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.space3, padding: spacing.space4, borderRadius: radius.md }}>
+      <Avatar name={player.displayName} />
       <View
         accessible
         accessibilityLabel={label}
         style={{ flex: 1 }}>
-        <ThemedText type="smallBold">{player.displayName}</ThemedText>
+        <ThemedText type="label">{player.displayName}</ThemedText>
         {overlap ? (
           <>
-            <ThemedText type="small" themeColor="textSecondary">
+            <ThemedText type="caption" themeColor="muted">
               {t('tripLine', { destination: player.destinationName, dates })}
             </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
+            <ThemedText type="caption" themeColor="muted">
               {t('overlapLine', { overlap: overlapText, tier: player.skillTier })}
             </ThemedText>
           </>
         ) : (
-          <ThemedText type="small" themeColor="textSecondary">
+          <ThemedText type="caption" themeColor="muted">
             {t('detail', { destination: player.destinationName, sport, tier: player.skillTier })}
           </ThemedText>
         )}
       </View>
-      <SecondaryButton
+      <Button
+        variant="secondary"
         title={guest ? t('signIn') : t('connect')}
         onPress={() => onConnect?.()}
         disabled={connectDisabled}

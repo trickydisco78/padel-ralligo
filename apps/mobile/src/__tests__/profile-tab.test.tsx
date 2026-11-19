@@ -35,19 +35,19 @@ describe('profile tab', () => {
 
     await waitFor(() => expect(screen.getByDisplayValue('Leon')).toBeTruthy());
     expect(screen.getByDisplayValue('Bristol')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Intermediate' }).props.accessibilityState.selected).toBe(true);
+    expect(screen.getByRole('radio', { name: 'Intermediate' }).props.accessibilityState.checked).toBe(true);
   });
 
   it('replaces the skill tier when a different one is saved', async () => {
     await render(withSession(<ProfileScreen />));
     await waitFor(() => expect(screen.getByDisplayValue('Leon')).toBeTruthy());
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Advanced' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'Advanced' }));
     await pressSave('Save profile');
 
     await waitFor(() => expect(mockState.upserts).toHaveLength(2));
     expect(mockState.upserts[1]!.values).toMatchObject({ skill_tier: 'Advanced' });
     await waitFor(() => expect(screen.getByText('Profile saved')).toBeTruthy());
-    expect(screen.getByRole('button', { name: 'Advanced' }).props.accessibilityState.selected).toBe(true);
+    expect(screen.getByRole('radio', { name: 'Advanced' }).props.accessibilityState.checked).toBe(true);
   });
 });
