@@ -36,7 +36,7 @@ export default function ProfileScreen() {
             <ThemedText type="display">{t('profile.title')}</ThemedText>
             {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel={t('profile.save')} />}
             <TripsSection />
-            <MyListings />
+            <MyListings onManage={(id) => router.push({ pathname: '/match/[id]/manage', params: { id } })} />
             <Button
               title={t('profile.signOut')}
               onPress={async () => {

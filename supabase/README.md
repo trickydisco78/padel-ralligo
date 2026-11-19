@@ -10,11 +10,11 @@ SQL migrations, seed data and security tests for the hosted Supabase project. Th
 | `tests/rls.mjs` | Security checks, run in a transaction that is rolled back |
 | `config.toml` | CLI project settings |
 
-Tables: `destinations` (seeded), `profiles`, `profile_sports`, `profile_trips`, `user_consents`, `listings`. Views: `discover_listings`, `destinations_with_counts`. Anonymous visitors can read the two views (and nothing else); signed-in users can only change their own rows.
+Tables: `destinations` (seeded), `profiles`, `profile_sports`, `profile_trips`, `trips`, `user_consents`, `listings`, `join_requests`. Views: `discover_listings`, `destinations_with_counts`. Anonymous visitors can read the two views (and nothing else); signed-in users can only change their own rows.
 
 ## Anonymous access
 
-The app can be browsed without an account. The two views run with the owner's rights (`security_invoker = false`) and are granted to `anon`; the tables have no `anon` grants, so profiles, trips, consents and raw listings stay unreadable. Anonymous requests see only open, current listings and these columns: destination, dates, start time, venue, level wanted, players needed, description, poster display name and skill tier (plus destination counts). `poster_id` is deliberately not exposed. Adding a column to either view widens public access, so `tests/rls.mjs` asserts the exact column list; update it only on purpose.
+The app can be browsed without an account. The two views run with the owner's rights (`security_invoker = false`) and are granted to `anon`; the tables have no `anon` grants, so profiles, trips, consents and raw listings stay unreadable. Anonymous requests see only open, current listings and these columns: destination, dates, start time, venue, level wanted, players needed, places left (`spots_left`), description, poster display name and skill tier (plus destination counts, which skip full matches). `poster_id` is deliberately not exposed. Adding a column to either view widens public access, so `tests/rls.mjs` asserts the exact column list; update it only on purpose.
 
 Guests also open a single match by id (the match details screen). That is one more read of `discover_listings` with an `id` filter, so closed, past and unknown ids simply return no row and there is no new policy, view or migration. The app talks to the database with the publishable key as `anon`; never put a secret or `service_role` key in it, and never widen a table policy to serve guests: new guest reads go through a view with an explicit column list.
 
@@ -28,11 +28,23 @@ Guests and members can browse a list of players through one function, `public.se
 - **Boundary:** a profile row is still readable by every signed-in user whatever the opt-in. The opt-in controls the directory only. Revisit this before connections ship.
 - `tests/rls.mjs` asserts the columns, the opt-in rules, the caps, and that `search_players` is the only non-trigger function `anon` can execute. Any new public function needs the same `revoke ... from public, anon` and an entry here.
 
+### Join requests
+
+A member asks for a place in a match and the organiser accepts or declines. Everything is in `20261119120000_join_requests.sql`.
+
+- **`join_requests`** (`listing_id`, `profile_id`, `status` of `pending | accepted | declined | withdrawn`, unique per member and match). Row-level security lets a member select their own rows only. Signed-in users hold **no insert, update or delete grant**, and `anon` holds nothing.
+- **Writes are four `SECURITY DEFINER` functions** (fixed `search_path`, revoked from `public` and `anon`, executable by signed-in users): `request_to_join(listing)`, `withdraw_join_request(listing)`, `decide_join_request(request, accept)` and `match_people(listing)`. They identify the caller with `auth.uid()` and never trust a passed user id. Each write locks the listing row first, then counts accepted players, so two accepts for the last place serialise and exactly one wins.
+- **Rules enforced there:** a verified email and a profile to request; not your own match; open, current and not full; one request per member (a withdrawn one can be reopened, a declined one cannot); only the organiser decides, only on a pending request in an open, current match; accepting needs a place left; an accepted player can withdraw only before the start date.
+- **Errors are stable codes** in the exception message (`email_not_confirmed`, `own_match`, `already_requested`, `declined`, `match_full`, `match_closed`, `match_past`, `not_organiser`, `not_pending`, `not_found`, `not_signed_in`, `profile_incomplete`, and `players_below_accepted` from the trigger below). The app translates them.
+- **"Full" is derived**: places left = `players_needed` minus accepted players. A trigger stops a poster lowering `players_needed` below the accepted count. `discover_listings` gains `spots_left` and still returns a full match (so people involved can open it); `destinations_with_counts` skips full matches; the app's list queries hide them.
+- **Who sees whom (`match_people`):** every signed-in caller gets the organiser and the accepted players as first name plus last initial and skill tier. The organiser also gets each pending request (with its id) and the pending count. A requester gets their own status in `own_status` and nobody else's request. No email, user id, home destination, city or message is returned. Guests cannot call it.
+- `tests/rls.mjs` covers anonymous denial, own rows only, no direct writes, privileges, each rule, capacity, the last place, the trigger and who sees whom. The player directory checks currently also report a dev profile named "Test P." that is listed in the dev project; they fail with or without this migration and are unrelated.
+
 Decided boundaries for who can read what:
 
 - **Poster display name and skill tier are public** (through `discover_listings`). Nothing else about a poster is.
 - **`profiles` is readable by every signed-in user** (including bio and home city) and by nobody else. Anonymous requests cannot read it. This is deliberate, and `tests/rls.mjs` asserts both halves.
-- **Writes always need a signed-in user**, and posting also needs a verified email. There are no joins, participants or messages tables yet, so there is nothing to protect there; when they are added, their policies and tests come with them.
+- **Writes always need a signed-in user**, and posting or requesting a place also needs a verified email. There is no messages table yet; when it is added, its policies and tests come with it.
 - **Drafts and other statuses** do not exist (a listing is `open` or `closed`). The public view only returns `open` listings, so adding a status later would not expose it by default. It would be its own change, with a migration and tests.
 
 ## One-time setup

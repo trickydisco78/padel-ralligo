@@ -187,8 +187,8 @@ describe('navigation context while signing in', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: /Tenerife, .*2 spots needed/ }));
     await waitFor(() => expect(screen.getByRole('header', { name: 'Tenerife' })).toBeTruthy());
-    await fireEvent.press(screen.getByRole('button', { name: 'Join match' }));
-    await waitFor(() => expect(screen.getByText('Join this match')).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Request to join' }));
+    await waitFor(() => expect(screen.getByText('Ask to join this match')).toBeTruthy());
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(screen.getByText('New here? Create an account')).toBeTruthy());
 

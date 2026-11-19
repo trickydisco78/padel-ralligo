@@ -12,6 +12,7 @@
     "test:rls": "node --env-file=supabase/tests/.env.local supabase/tests/rls.mjs",
     "seed:players": "node --env-file=supabase/tests/.env.local supabase/seed/players.mjs",
     "seed:matches": "node --env-file=supabase/tests/.env.local supabase/seed/matches.mjs",
+    "seed:testers": "node --env-file=supabase/tests/.env.local supabase/seed/join-requests.mjs",
     "boundaries": "turbo boundaries"
   },
   "devDependencies": {

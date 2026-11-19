@@ -40,4 +40,21 @@ describe('PlayerRow', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Alex M., Match organiser' }));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  it('a requesting row can be opened to review without touching accept or decline', async () => {
+    const onPress = jest.fn();
+    const onAccept = jest.fn();
+    await render(<PlayerRow name="David K." status="requesting" onPress={onPress} onAccept={onAccept} onDecline={() => {}} />);
+    await fireEvent.press(screen.getByRole('button', { name: "Review David K.'s request" }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onAccept).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Accept David K.' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Decline David K.' })).toBeTruthy();
+  });
+
+  it('a requesting row with no onPress is not a review button', async () => {
+    await render(<PlayerRow name="David K." status="requesting" onAccept={() => {}} onDecline={() => {}} />);
+    expect(screen.queryByRole('button', { name: /^Review/ })).toBeNull();
+    expect(screen.getByLabelText('David K., Requesting to join')).toBeOnTheScreen();
+  });
 });

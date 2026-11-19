@@ -82,6 +82,16 @@ describe('createSupabaseListingRepository', () => {
     expect(listings.map((l) => l.id)).toEqual(['l1']);
   });
 
+  it('hides a full match from the list but still returns it by id', async () => {
+    const base = { destination_id: 'm', start_date: '2026-02-21', level_wanted: 'Any', players_needed: 2 };
+    mockState.listings = [
+      { ...base, id: 'open', spots_left: 1 },
+      { ...base, id: 'full', spots_left: 0 },
+    ];
+    expect((await repository.listDiscoverable()).map((l) => l.id)).toEqual(['open']);
+    expect((await repository.getDiscoverable('full'))?.spotsLeft).toBe(0);
+  });
+
   it('throws when discovery fails', async () => {
     mockState.listingsError = { message: 'down' };
     await expect(repository.listDiscoverable()).rejects.toEqual({ message: 'down' });

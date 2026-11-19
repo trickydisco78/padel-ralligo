@@ -17,7 +17,7 @@ Background and decisions: `openspec/changes/monorepo-domain-architecture/` (prop
 | `@padel/auth` | Authentication: session provider and `useSession`, sign-in and sign-up screens, sign-up validation, and guest-first prompting: the typed `AuthIntent`, an in-memory `AuthIntentProvider`, `useRequireAuth`, the contextual `AuthPromptSheet`, and `AccountActions` / `SignInPrompt` (the one place Create account and Sign in are offered). |
 | `@padel/destinations` | Destinations and their open-game counts, `useDestinations`, `DestinationPicker`. |
 | `@padel/profiles` | Profiles, skill tier and saved trips: rules, repositories, hooks, `ProfileForm`, `TripSection`, `ProfileSetupScreen`. |
-| `@padel/listings` | Listings: rules and filters, repository, hooks, `ListingForm`, `ListingCard`, `MyListings`. |
+| `@padel/listings` | Listings and join requests: rules and filters, repositories, hooks, `ListingForm`, `ListingCard`, `MyListings`, and the match screen pieces (`MatchHero`, `MatchDetail`, `MatchStatusBanner`, `MatchActions`). |
 | `@padel/bookings` | Court booking UI only for now: `SlotPicker` and `BookingBar`. No data layer until a booking feature exists. |
 | `@padel/eslint-config`, `@padel/typescript-config`, `@padel/jest-config` | Shared tooling presets. `@padel/eslint-config/boundaries` enforces the rules below. |
 
@@ -51,6 +51,16 @@ ui, supabase, query, core ──► (no other @padel package; ui may use core)
 - **Tokens** are generated from `packages/ui/design/tokens.json` by `packages/ui/scripts/generate-tokens.mjs`. Never hard-code a colour, size or font in a component; use `colors`, `spacing`, `radius`, `type`, `fontFamily`, `shadows` and `borderWidth`.
 - **Text** is Outfit with one font family per weight; do not use `fontWeight`.
 - **Icons** are `Icon` (SVG, `react-native-svg`), by name, in a token colour.
+
+## Join requests
+
+A member asks for a place in a match and the organiser accepts or declines. The data, hooks and match screen pieces are in `@padel/listings`; `PlayerRow` is in `@padel/players`; the app composes them.
+
+- **Database, not screens.** `public.join_requests` has no client write grant. Four `SECURITY DEFINER` functions (`request_to_join`, `withdraw_join_request`, `decide_join_request`, `match_people`) check the caller, the match and its capacity, lock the listing row before counting accepted players, and fail with stable codes (`match_full`, `own_match`, `already_requested`, ...) that the app translates. Details and the full rule list are in `supabase/README.md`.
+- **"Full" is derived**: places left is `players_needed` minus accepted players, exposed as `spots_left`. Full matches leave the Discover list, Home and the destination counts but still open by id.
+- **Who sees whom** is decided in `match_people`, not in the app: members see the organiser and accepted players (first name plus last initial, skill tier); the organiser also sees pending requests; a requester sees only their own status; guests never call it. `useMatchPeople` is keyed by user and disabled for guests.
+- **Why the app composes `PlayerRow`.** `listings` and `players` are both `domain-feature`, so neither may import the other. `@padel/listings` exposes data and components with slots (`MatchDetail` takes the organiser and players as nodes), and `apps/mobile/src/app/match/[id].tsx` and `match/[id]/manage.tsx` pass `PlayerRow` in.
+- **Screens.** `match/[id]` is the hero, an overlay `AppBar` (back and Share), the white sheet and a pinned action area: Request to join, Withdraw request, Find similar matches, or Manage match for the organiser. `match/[id]/manage` is the organiser's Players and Requests tabs, a review sheet and Close match; anyone else is redirected to the details. There is no notification or live update: screens refetch when they regain focus.
 
 ## Guest-first authentication
 

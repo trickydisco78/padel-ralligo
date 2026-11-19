@@ -3,7 +3,7 @@ import { AccessibilityInfo, Modal, Pressable, View, findNodeHandle } from 'react
 
 import { useTranslation } from '@padel/i18n';
 
-import { Icon } from '../atoms/icon';
+import { Icon, type IconName } from '../atoms/icon';
 import { ThemedText } from '../atoms/themed-text';
 import { colors, radius, spacing } from '../../theme/tokens';
 
@@ -13,6 +13,16 @@ type Props = {
   title: string;
   onDismiss: () => void;
   children: ReactNode;
+  /**
+   * The design's confirmation layout: a centred icon disc, the title, a short message and the actions
+   * (the children) stacked below. There is no close button; the actions and the backdrop dismiss it.
+   */
+  confirm?: {
+    icon: IconName;
+    /** `brand` is pink; `pending` is amber, for a "think again" moment. */
+    tone?: 'brand' | 'pending';
+    message?: string;
+  };
   /** The control that opened the sheet. Screen-reader focus returns to it on close, where the platform allows. */
   returnFocusRef?: RefObject<unknown>;
 };
@@ -28,7 +38,7 @@ function focus(target: unknown) {
  * A modal sheet anchored to the bottom of the screen. Dismissed from the labelled close control,
  * a tap on the backdrop, or the Android back action.
  */
-export function BottomSheet({ visible, title, onDismiss, children, returnFocusRef }: Props) {
+export function BottomSheet({ visible, title, onDismiss, children, confirm, returnFocusRef }: Props) {
   const { t } = useTranslation('ui');
   const titleRef = useRef<ComponentRef<typeof View>>(null);
   const wasVisible = useRef(false);
@@ -80,20 +90,48 @@ export function BottomSheet({ visible, title, onDismiss, children, returnFocusRe
             importantForAccessibility="no-hide-descendants"
             style={{ alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong }}
           />
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.space2 }}>
-            <View ref={titleRef} accessible accessibilityRole="header" accessibilityLabel={title} style={{ flex: 1 }}>
-              <ThemedText type="headline">{title}</ThemedText>
+          {confirm ? (
+            <View style={{ alignItems: 'center', paddingTop: spacing.space5 }}>
+              <View
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: 48,
+                  backgroundColor: confirm.tone === 'pending' ? colors.amber100 : colors.pink100,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Icon name={confirm.icon} color={confirm.tone === 'pending' ? 'amber600' : 'pink500'} size={56} />
+              </View>
+              <View ref={titleRef} accessible accessibilityRole="header" accessibilityLabel={title} style={{ marginTop: spacing.space5 }}>
+                <ThemedText type="display" style={{ textAlign: 'center' }}>
+                  {title}
+                </ThemedText>
+              </View>
+              {confirm.message ? (
+                <ThemedText type="bodyLg" themeColor="inkSoft" style={{ textAlign: 'center', marginTop: spacing.space2, maxWidth: 300 }}>
+                  {confirm.message}
+                </ThemedText>
+              ) : null}
             </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('bottomSheet.close')}
-              onPress={onDismiss}
-              hitSlop={8}
-              style={{ minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="close" color="inkSoft" size={22} />
-            </Pressable>
-          </View>
-          {children}
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.space2 }}>
+              <View ref={titleRef} accessible accessibilityRole="header" accessibilityLabel={title} style={{ flex: 1 }}>
+                <ThemedText type="headline">{title}</ThemedText>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('bottomSheet.close')}
+                onPress={onDismiss}
+                hitSlop={8}
+                style={{ minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="close" color="inkSoft" size={22} />
+              </Pressable>
+            </View>
+          )}
+          {confirm ? <View style={{ gap: spacing.space3, marginTop: spacing.space2 }}>{children}</View> : children}
         </View>
       </View>
     </Modal>

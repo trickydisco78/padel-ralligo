@@ -5,7 +5,7 @@ import { toDiscoverListing, toListingColumns, toMyListing } from './listing.mapp
 
 /** The only columns a visitor can read; the view has no user ids, emails or private fields. */
 const DISCOVER_COLUMNS =
-  'id, destination_id, destination_name, destination_country, start_date, end_date, start_time, venue, level_wanted, players_needed, description, poster_name, poster_skill_tier';
+  'id, destination_id, destination_name, destination_country, start_date, end_date, start_time, venue, level_wanted, players_needed, spots_left, description, poster_name, poster_skill_tier';
 
 /** Postgres error code for a value that is not valid for its type, such as a malformed uuid. */
 const INVALID_TEXT_REPRESENTATION = '22P02';
@@ -40,8 +40,12 @@ export function createSupabaseListingRepository(client: TypedSupabaseClient): Li
     },
 
     async listDiscoverable() {
-      // The view already hides closed and past listings.
-      const { data, error } = await client.from('discover_listings').select(DISCOVER_COLUMNS).order('start_date');
+      // The view already hides closed and past listings; full matches (no places left) are hidden here.
+      const { data, error } = await client
+        .from('discover_listings')
+        .select(DISCOVER_COLUMNS)
+        .gt('spots_left', 0)
+        .order('start_date');
       if (error) throw error;
       return (data ?? []).flatMap((row) => toDiscoverListing(row) ?? []);
     },

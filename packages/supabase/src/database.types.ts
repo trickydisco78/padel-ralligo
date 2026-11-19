@@ -35,6 +35,55 @@ export type Database = {
         }
         Relationships: []
       }
+      join_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          id: string
+          listing_id: string
+          profile_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          listing_id: string
+          profile_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          listing_id?: string
+          profile_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "join_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "discover_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "join_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "join_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           created_at: string
@@ -328,6 +377,7 @@ export type Database = {
           players_needed: number | null
           poster_name: string | null
           poster_skill_tier: string | null
+          spots_left: number | null
           start_date: string | null
           start_time: string | null
           venue: string | null
@@ -351,6 +401,10 @@ export type Database = {
       }
     }
     Functions: {
+      decide_join_request: {
+        Args: { p_accept: boolean; p_request: string }
+        Returns: undefined
+      }
       find_overlapping_players: {
         Args: {
           p_limit?: number
@@ -374,6 +428,21 @@ export type Database = {
         }[]
       }
       is_email_confirmed: { Args: never; Returns: boolean }
+      match_people: {
+        Args: { p_listing: string }
+        Returns: {
+          accepted_count: number
+          own_status: string
+          pending_count: number
+          person_kind: string
+          person_name: string
+          players_needed: number
+          request_id: string
+          request_status: string
+          skill_tier: string
+          viewer_role: string
+        }[]
+      }
       my_trips_overview: {
         Args: { p_today?: string }
         Returns: {
@@ -388,6 +457,8 @@ export type Database = {
           visibility: string
         }[]
       }
+      public_name_of: { Args: { p_name: string }; Returns: string }
+      request_to_join: { Args: { p_listing: string }; Returns: undefined }
       search_players: {
         Args: {
           p_destination_id?: string
@@ -405,6 +476,7 @@ export type Database = {
           total_count: number
         }[]
       }
+      withdraw_join_request: { Args: { p_listing: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

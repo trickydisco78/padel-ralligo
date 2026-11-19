@@ -15,7 +15,7 @@ type Props = {
 export function ListingCard({ listing, onPress }: Props) {
   const { t } = useTranslation('listings');
   const from = dateParts(listing.startDate);
-  const spots = t('common.spotsNeeded', { count: listing.playersNeeded });
+  const spots = t('common.spotsNeeded', { count: listing.spotsLeft });
   const range = formatRange(t, listing.startDate, listing.endDate);
   const when = listing.startTime ? t('common.atTime', { range, time: listing.startTime }) : range;
   const whenAndVenue = listing.venue ? t('common.withVenue', { summary: when, venue: listing.venue }) : when;

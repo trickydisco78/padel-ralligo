@@ -38,10 +38,10 @@ beforeEach(() => {
   ];
 });
 
-const renderIt = () =>
+const renderIt = (onManage?: (id: string) => void) =>
   render(
     <QueryTestProvider><SessionProvider>
-      <MyListings />
+      <MyListings onManage={onManage} />
     </SessionProvider></QueryTestProvider>,
   );
 
@@ -94,6 +94,36 @@ describe('MyListings', () => {
       values: { venue: 'New Club', players_needed: 2, level_wanted: 'Any' },
     });
     expect(screen.queryByRole('button', { name: 'Save changes' })).toBeNull();
+  });
+
+  it('opens Manage match for an open listing, and not for a closed one', async () => {
+    const onManage = jest.fn();
+    mockState.myListings = [dbRow('1'), dbRow('2', { status: 'closed' })];
+    await renderIt(onManage);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Manage requests for Marbella' })).toHaveLength(1));
+    await fireEvent.press(screen.getByRole('button', { name: 'Manage requests for Marbella' }));
+    expect(onManage).toHaveBeenCalledWith('1');
+  });
+
+  it('has no Manage requests button when the screen gives no way to open it', async () => {
+    mockState.myListings = [dbRow('1')];
+    await renderIt();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Marbella listing' })).toBeTruthy());
+    expect(screen.queryByRole('button', { name: /^Manage requests/ })).toBeNull();
+  });
+
+  it('says why an edit is refused when players needed drops below the accepted players', async () => {
+    mockState.myListings = [dbRow('1', { players_needed: 3 })];
+    mockState.updateError = { message: 'players_below_accepted' };
+    await renderIt();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Marbella listing' })).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Edit Marbella listing' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save changes' })).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() =>
+      expect(screen.getByText("You can't need fewer players than you've already accepted.")).toBeTruthy(),
+    );
+    expect(screen.queryByText(/Could not save your listing/)).toBeNull();
   });
 
   it('rejects an edit with invalid values and does not save', async () => {

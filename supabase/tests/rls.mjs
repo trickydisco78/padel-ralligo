@@ -63,6 +63,23 @@ async function check(name, expect, fn) {
   console.log(`${good ? 'PASS' : 'FAIL'}  ${name}${good ? '' : `  (got ${outcome}: ${detail})`}`);
 }
 
+/** Like check(), but passes only when the call fails with exactly this error code (the message). */
+async function checkCode(name, code, fn) {
+  await client.query('savepoint s');
+  let got = 'no error';
+  try {
+    await fn();
+  } catch (error) {
+    got = error.message;
+  }
+  await client.query('rollback to savepoint s');
+  await client.query('reset role');
+  const good = got === code;
+  if (good) passed += 1;
+  else failed += 1;
+  console.log(`${good ? 'PASS' : 'FAIL'}  ${name}${good ? '' : `  (wanted ${code}, got ${got})`}`);
+}
+
 // Synchronous on purpose: callers do not await it, and a failed assertion must throw inside the check.
 const expectRows = (n) => (res) => {
   if (res.rowCount !== n) throw new Error(`expected ${n} rows, got ${res.rowCount}`);
@@ -150,7 +167,7 @@ async function main() {
     discover_listings: [
       'id', 'destination_id', 'destination_name', 'destination_country', 'start_date', 'end_date',
       'start_time', 'venue', 'level_wanted', 'players_needed', 'description', 'created_at',
-      'poster_name', 'poster_skill_tier',
+      'poster_name', 'poster_skill_tier', 'spots_left',
     ],
     destinations_with_counts: ['id', 'name', 'country', 'tagline', 'open_listings'],
   };
@@ -651,6 +668,268 @@ async function main() {
     if (second.rowCount !== 50) throw new Error(`second page ${second.rowCount}`);
     if (beyond.rowCount !== 0) throw new Error(`offset 100 returned ${beyond.rowCount}`);
     if (negative.rowCount !== 0) throw new Error(`negative limit returned ${negative.rowCount}`);
+  });
+
+
+  // --- join requests ---
+  const jo = '00000000-0000-4000-8000-000000000005'; // verified, Intermediate, "Jordi Martí"
+  const kai = '00000000-0000-4000-8000-000000000006'; // verified, Beginner
+  const lou = '00000000-0000-4000-8000-000000000007'; // verified, Advanced
+  for (const [id, name, tier] of [[jo, 'Jordi Martí', 'Intermediate'], [kai, 'Kai', 'Beginner'], [lou, 'Lou', 'Advanced']]) {
+    await user(id, true);
+    await client.query(`insert into public.profiles (id, display_name) values ($1, $2)`, [id, name]);
+    await client.query(`insert into public.profile_sports (profile_id, skill_tier) values ($1, $2)`, [id, tier]);
+  }
+  const rpc = async (userId, fn, ...args) => {
+    await asRole('authenticated', userId);
+    return client.query(`select * from public.${fn}(${args.map((_, i) => `$${i + 1}`).join(', ')})`, args);
+  };
+  // Fixture reads run as the database owner, whatever role the previous step left behind.
+  const reqStatus = async (listingId, profileId) =>
+    (await client.query('reset role'), await client.query(`select status from public.join_requests where listing_id = $1 and profile_id = $2`, [listingId, profileId])).rows[0]?.status;
+  const requestId = async (listingId, profileId) =>
+    (await client.query('reset role'), await client.query(`select id from public.join_requests where listing_id = $1 and profile_id = $2`, [listingId, profileId])).rows[0].id;
+  const spotsLeft = async (listingId) =>
+    (await client.query(`select spots_left from public.discover_listings where id = $1`, [listingId])).rows[0]?.spots_left;
+
+  await check('anon cannot read join requests', 'deny', async () => {
+    await asRole('anon');
+    return client.query('select * from public.join_requests');
+  });
+  await check('anon cannot call request_to_join, withdraw, decide or match_people', 'ok', async () => {
+    const r = await client.query(
+      `select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace and n.nspname = 'public'
+       where p.proname in ('request_to_join', 'withdraw_join_request', 'decide_join_request', 'match_people', 'public_name_of', 'reject_players_below_accepted')
+         and (has_function_privilege('anon', p.oid, 'EXECUTE') or has_function_privilege('public', p.oid, 'EXECUTE'))`);
+    if (r.rowCount !== 0) throw new Error(`anon can execute: ${r.rows.map((x) => x.proname).join(', ')}`);
+  });
+  await check('signed-in users can execute the four functions and not the helpers', 'ok', async () => {
+    const r = await client.query(
+      `select p.proname, has_function_privilege('authenticated', p.oid, 'EXECUTE') as can
+       from pg_proc p join pg_namespace n on n.oid = p.pronamespace and n.nspname = 'public'
+       where p.proname in ('request_to_join', 'withdraw_join_request', 'decide_join_request', 'match_people', 'public_name_of', 'reject_players_below_accepted')`);
+    const can = r.rows.filter((x) => x.can).map((x) => x.proname).sort().join(',');
+    if (can !== 'decide_join_request,match_people,request_to_join,withdraw_join_request') throw new Error(`authenticated can execute: ${can}`);
+  });
+  await check('signed-in users hold only select on join_requests', 'ok', async () => {
+    const r = await client.query(
+      `select p.privilege from (values ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE')) as p(privilege)
+       where has_table_privilege('authenticated', 'public.join_requests', p.privilege)`);
+    if (r.rows.map((x) => x.privilege).join(',') !== 'SELECT') throw new Error(`privileges: ${r.rows.map((x) => x.privilege)}`);
+  });
+
+  await check('a verified member requests a place and sees only their own row', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await asRole('authenticated', ids.b);
+    expectRows(1)(await client.query('select * from public.join_requests'));
+    if ((await reqStatus(aListing.id, ids.b)) !== 'pending') throw new Error('not pending');
+  });
+  await check("another member cannot read someone else's request", 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await asRole('authenticated', ids.d);
+    expectRows(0)(await client.query('select * from public.join_requests'));
+  });
+  for (const sql of [
+    `insert into public.join_requests (listing_id, profile_id) values ('${aListing.id}', '${ids.b}')`,
+    `update public.join_requests set status = 'accepted'`,
+    `delete from public.join_requests`,
+  ]) {
+    await check(`direct write rejected: ${sql.split(' ').slice(0, 3).join(' ')}`, 'deny', async () => {
+      await rpc(ids.b, 'request_to_join', aListing.id);
+      await asRole('authenticated', ids.b);
+      return client.query(sql);
+    });
+  }
+
+  await checkCode('the organiser cannot request their own match', 'own_match', () => rpc(ids.a, 'request_to_join', aListing.id));
+  await checkCode('an unverified email cannot request', 'email_not_confirmed', () => rpc(ids.c, 'request_to_join', aListing.id));
+  await checkCode('an unknown match is not found', 'not_found', () => rpc(ids.b, 'request_to_join', '00000000-0000-4000-8000-0000000000ff'));
+  await checkCode('a second request is refused', 'already_requested', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.b, 'request_to_join', aListing.id);
+  });
+  await checkCode('a closed match takes no request', 'match_closed', async () => {
+    await client.query(`update public.listings set status = 'closed' where id = $1`, [aListing.id]);
+    await rpc(ids.b, 'request_to_join', aListing.id);
+  });
+  await checkCode('a past match takes no request', 'match_past', async () => {
+    await client.query('reset role');
+    await client.query(`alter table public.listings disable trigger listings_reject_past_start_date`);
+    await client.query(`update public.listings set start_date = current_date - 3, end_date = current_date - 2 where id = $1`, [aListing.id]);
+    await rpc(ids.b, 'request_to_join', aListing.id);
+  });
+
+  await checkCode('only the organiser can decide', 'not_organiser', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.d, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+  });
+  await checkCode('the requester cannot accept their own request', 'not_organiser', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.b, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+  });
+  await check('the organiser accepts, the place is taken and the people function shows it', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+    if ((await reqStatus(aListing.id, ids.b)) !== 'accepted') throw new Error('not accepted');
+    if ((await spotsLeft(aListing.id)) !== 1) throw new Error(`spots_left ${await spotsLeft(aListing.id)}`);
+  });
+  await checkCode('a decided request cannot be decided again', 'not_pending', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    const id = await requestId(aListing.id, ids.b);
+    await rpc(ids.a, 'decide_join_request', id, true);
+    await rpc(ids.a, 'decide_join_request', id, false);
+  });
+  await checkCode('a closed match cannot have requests decided', 'match_closed', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await client.query('reset role');
+    await client.query(`update public.listings set status = 'closed' where id = $1`, [aListing.id]);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+  });
+
+  const fillMatch = async () => {
+    for (const who of [ids.b, jo]) {
+      await rpc(who, 'request_to_join', aListing.id);
+      await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, who), true);
+    }
+  };
+  await checkCode('a third accept is refused when both places are taken', 'match_full', async () => {
+    await fillMatch();
+    await client.query('reset role');
+    await client.query(`delete from public.join_requests where listing_id = $1 and profile_id = $2`, [aListing.id, kai]);
+    // kai asked while a place was free; the match filled afterwards
+    await client.query(`insert into public.join_requests (listing_id, profile_id) values ($1, $2)`, [aListing.id, kai]);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, kai), true);
+  });
+  await checkCode('a full match takes no new request', 'match_full', async () => {
+    await fillMatch();
+    await rpc(kai, 'request_to_join', aListing.id);
+  });
+  await check('last place: two pending requests, one accept succeeds, the other is refused as full', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(jo, 'request_to_join', aListing.id);
+    await rpc(kai, 'request_to_join', aListing.id);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, jo), true);
+    await client.query('savepoint last');
+    let refused = false;
+    try {
+      await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, kai), true);
+    } catch (error) {
+      refused = error.message === 'match_full';
+      await client.query('rollback to savepoint last');
+    }
+    if (!refused) throw new Error('over-accepted');
+    await client.query('reset role');
+    const n = (await client.query(`select count(*)::int as n from public.join_requests where listing_id = $1 and status = 'accepted'`, [aListing.id])).rows[0].n;
+    if (n !== 2) throw new Error(`accepted ${n}`);
+  });
+  await check('the organiser can still decline a request on a full match', 'ok', async () => {
+    await fillMatch();
+    await client.query('reset role');
+    await client.query(`insert into public.join_requests (listing_id, profile_id) values ($1, $2)`, [aListing.id, kai]);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, kai), false);
+    if ((await reqStatus(aListing.id, kai)) !== 'declined') throw new Error('not declined');
+  });
+  await check('a full match leaves the destination count but stays readable by id', 'ok', async () => {
+    const before = (await client.query(`select open_listings from public.destinations_with_counts where id = $1`, [dest.id])).rows[0].open_listings;
+    await fillMatch();
+    await asRole('anon');
+    const after = (await client.query(`select open_listings from public.destinations_with_counts where id = $1`, [dest.id])).rows[0].open_listings;
+    if (after !== before - 1) throw new Error(`count ${before} -> ${after}`);
+    const row = await client.query(`select spots_left from public.discover_listings where id = $1`, [aListing.id]);
+    if (row.rowCount !== 1 || row.rows[0].spots_left !== 0) throw new Error('full match not readable with 0 spots');
+  });
+  await check('a withdrawal frees the place and the match returns to the count', 'ok', async () => {
+    await fillMatch();
+    await rpc(ids.b, 'withdraw_join_request', aListing.id);
+    if ((await reqStatus(aListing.id, ids.b)) !== 'withdrawn') throw new Error('not withdrawn');
+    if ((await spotsLeft(aListing.id)) !== 1) throw new Error(`spots_left ${await spotsLeft(aListing.id)}`);
+  });
+
+  await checkCode('a declined member cannot ask again', 'declined', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), false);
+    await rpc(ids.b, 'request_to_join', aListing.id);
+  });
+  await check('a withdrawn member can ask again', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.b, 'withdraw_join_request', aListing.id);
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    if ((await reqStatus(aListing.id, ids.b)) !== 'pending') throw new Error('not pending again');
+  });
+  await checkCode('withdrawing with no request is not found', 'not_found', () => rpc(ids.d, 'withdraw_join_request', aListing.id));
+  await checkCode('withdrawing twice is refused', 'not_pending', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.b, 'withdraw_join_request', aListing.id);
+    await rpc(ids.b, 'withdraw_join_request', aListing.id);
+  });
+  await checkCode('an accepted player cannot withdraw once the match has started', 'match_past', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+    await client.query('reset role');
+    await client.query(`alter table public.listings disable trigger listings_reject_past_start_date`);
+    await client.query(`update public.listings set start_date = current_date - 1, end_date = current_date + 5 where id = $1`, [aListing.id]);
+    await rpc(ids.b, 'withdraw_join_request', aListing.id);
+  });
+
+  await checkCode('players needed cannot drop below the accepted players', 'players_below_accepted', async () => {
+    await fillMatch();
+    await asRole('authenticated', ids.a);
+    await client.query(`update public.listings set players_needed = 1 where id = $1`, [aListing.id]);
+  });
+  await check('players needed can go up, and down to the accepted count', 'ok', async () => {
+    await fillMatch();
+    await asRole('authenticated', ids.a);
+    await client.query(`update public.listings set players_needed = 3 where id = $1`, [aListing.id]);
+    await client.query(`update public.listings set players_needed = 2 where id = $1`, [aListing.id]);
+  });
+
+  await check('match_people returns exactly the permitted columns and no email or id of a person', 'ok', async () => {
+    const r = await rpc(ids.b, 'match_people', aListing.id);
+    const got = r.fields.map((f) => f.name).sort().join(',');
+    const want = 'accepted_count,own_status,pending_count,person_kind,person_name,players_needed,request_id,request_status,skill_tier,viewer_role';
+    if (got !== want) throw new Error(`columns differ: ${got}`);
+  });
+  await check('anon cannot call match_people', 'deny', async () => {
+    await asRole('anon');
+    return client.query('select * from public.match_people($1)', [aListing.id]);
+  });
+  await check('match_people for the organiser: role, pending count, requests and first name plus initial', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(jo, 'request_to_join', aListing.id);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+    const r = await rpc(ids.a, 'match_people', aListing.id);
+    const first = r.rows[0];
+    if (first.viewer_role !== 'organiser' || first.pending_count !== 1 || first.accepted_count !== 1) throw new Error(JSON.stringify(first));
+    const kinds = r.rows.map((x) => x.person_kind).join(',');
+    if (kinds !== 'organiser,player,request') throw new Error(`kinds ${kinds}`);
+    const request = r.rows.find((x) => x.person_kind === 'request');
+    if (request.person_name !== 'Jordi M.' || request.skill_tier !== 'Intermediate' || !request.request_id) throw new Error(JSON.stringify(request));
+  });
+  await check('match_people for another member shows organiser and accepted players, never a pending request', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(jo, 'request_to_join', aListing.id);
+    await rpc(ids.a, 'decide_join_request', await requestId(aListing.id, ids.b), true);
+    const r = await rpc(ids.d, 'match_people', aListing.id);
+    if (r.rows[0].viewer_role !== 'member' || r.rows[0].own_status !== null || r.rows[0].pending_count !== null) throw new Error(JSON.stringify(r.rows[0]));
+    if (r.rows.map((x) => x.person_kind).join(',') !== 'organiser,player') throw new Error('wrong people');
+    if (r.rows.some((x) => x.request_id !== null)) throw new Error('request id exposed');
+  });
+  await check('match_people tells a requester their own status and nothing about other requests', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await rpc(jo, 'request_to_join', aListing.id);
+    const r = await rpc(ids.b, 'match_people', aListing.id);
+    if (r.rows[0].viewer_role !== 'requester' || r.rows[0].own_status !== 'pending') throw new Error(JSON.stringify(r.rows[0]));
+    if (r.rows.some((x) => x.person_kind === 'request')) throw new Error('request exposed');
+  });
+  await check('match_people for an unknown match returns nothing', 'ok', async () => {
+    expectRows(0)(await rpc(ids.b, 'match_people', '00000000-0000-4000-8000-0000000000ff'));
+  });
+  await check('deleting a listing removes its requests', 'ok', async () => {
+    await rpc(ids.b, 'request_to_join', aListing.id);
+    await client.query('reset role');
+    await client.query(`delete from public.listings where id = $1`, [aListing.id]);
+    expectRows(0)(await client.query(`select 1 from public.join_requests where listing_id = $1`, [aListing.id]));
   });
 
   // --- no sensitive columns exposed ---

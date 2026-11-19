@@ -16,6 +16,7 @@ import {
   type LevelWanted,
   type MyListing,
 } from '../../domain/listing';
+import { joinErrorCode } from '../../domain/join-request';
 import { useCreateListing, useUpdateListing } from '../hooks/use-listings';
 
 const PLAYER_COUNTS = Array.from(
@@ -103,8 +104,13 @@ export function ListingForm({ today = toIsoDate(new Date()), existing, onPosted 
       }
       setPosted(true);
       onPosted?.();
-    } catch {
-      setErrors({ form: 'listingForm.saveFailed' });
+    } catch (error) {
+      // The database refuses to lower the players needed below the accepted players.
+      setErrors(
+        joinErrorCode(error) === 'players_below_accepted'
+          ? { playersNeeded: 'joinRequests.errors.players_below_accepted' }
+          : { form: 'listingForm.saveFailed' },
+      );
     } finally {
       setPosting(false);
     }

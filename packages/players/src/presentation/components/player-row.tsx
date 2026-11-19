@@ -12,7 +12,10 @@ type Props = {
   onAccept?: () => void;
   /** Requesting only. */
   onDecline?: () => void;
-  /** Organiser only: shows a chevron and makes the row pressable. */
+  /**
+   * Organiser: shows a chevron and makes the whole row pressable.
+   * Requesting: makes the name and status pressable (to review the request) beside the accept and decline buttons.
+   */
   onPress?: () => void;
 };
 
@@ -25,6 +28,18 @@ export function PlayerRow({ name, status, onAccept, onDecline, onPress }: Props)
   const statusText = t(`row.${status}`);
   const requesting = status === 'requesting';
 
+  const main = (
+    <>
+      <Avatar name={name} size="sm" />
+      <View style={{ flex: 1 }} accessible={!(requesting && onPress)} accessibilityLabel={t('row.rowLabel', { name, status: statusText })}>
+        <Text numberOfLines={1} style={{ color: colors.ink, fontFamily: fontFamily[700], fontSize: 17, lineHeight: 22 }}>
+          {name}
+        </Text>
+        <Text style={{ color: colors.muted, fontFamily: fontFamily[500], fontSize: 14, lineHeight: 18 }}>{statusText}</Text>
+      </View>
+    </>
+  );
+
   const content = (
     <>
       {status === 'playing' ? (
@@ -34,13 +49,18 @@ export function PlayerRow({ name, status, onAccept, onDecline, onPress }: Props)
         </View>
       ) : null}
       {requesting ? <Icon name="clock" color="pink700" size={22} /> : null}
-      <Avatar name={name} size="sm" />
-      <View style={{ flex: 1 }} accessible accessibilityLabel={t('row.rowLabel', { name, status: statusText })}>
-        <Text numberOfLines={1} style={{ color: colors.ink, fontFamily: fontFamily[700], fontSize: 17, lineHeight: 22 }}>
-          {name}
-        </Text>
-        <Text style={{ color: colors.muted, fontFamily: fontFamily[500], fontSize: 14, lineHeight: 18 }}>{statusText}</Text>
-      </View>
+      {requesting && onPress ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('row.review', { name })}
+          accessibilityHint={statusText}
+          onPress={onPress}
+          style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.space3, minHeight: 44 }}>
+          {main}
+        </Pressable>
+      ) : (
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.space3 }}>{main}</View>
+      )}
       {requesting ? (
         <>
           <IconButton
