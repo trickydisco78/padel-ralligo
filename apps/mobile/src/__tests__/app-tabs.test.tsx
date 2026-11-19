@@ -14,7 +14,7 @@ describe('tab bar', () => {
 
     expect(screen.getByText('index screen')).toBeTruthy();
     const tree = JSON.stringify(screen.toJSON());
-    const labels = ['Home', 'Discover', 'Create', 'Matches', 'Profile'];
+    const labels = ['Home', 'Discover', 'Create', 'My matches', 'Profile'];
     const positions = labels.map((l) => tree.indexOf(`"${l}"`));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
