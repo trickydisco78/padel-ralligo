@@ -59,6 +59,8 @@ Decided boundaries for who can read what:
 
 ## Applying migrations
 
+CI validates migrations on every pull request and applies them to the dev project after merge to `main`; see [docs/database-delivery.md](../docs/database-delivery.md). To apply by hand:
+
 ```bash
 pnpm exec supabase db push --dry-run   # see what would be applied
 pnpm exec supabase db push --linked    # apply to the linked project

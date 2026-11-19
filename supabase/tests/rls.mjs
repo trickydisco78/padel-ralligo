@@ -16,7 +16,8 @@ if (!url) {
 
 const client = new pg.Client({
   connectionString: url.replace(/[?&]sslmode=[^&]*/, ''),
-  ssl: { rejectUnauthorized: false },
+  // The hosted project needs TLS; the local CI database does not support it.
+  ssl: /@(127\.0\.0\.1|localhost)[:/]/.test(url) ? false : { rejectUnauthorized: false },
 });
 
 const ids = {

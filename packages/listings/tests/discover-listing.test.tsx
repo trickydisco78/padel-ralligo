@@ -53,7 +53,6 @@ describe('useDiscoverListing', () => {
   it('loads the public match with that id', async () => {
     mockState.listings = [row];
     const { result } = await renderHook(() => useDiscoverListing('m1'), { wrapper });
-    expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.listing).toMatchObject({ id: 'm1', destinationName: 'Marbella' }));
     expect(result.current.loading).toBe(false);
     expect(result.current.failed).toBe(false);

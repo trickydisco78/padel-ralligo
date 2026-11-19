@@ -6,3 +6,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Local test notes with throwaway dev credentials
+*.local.md
