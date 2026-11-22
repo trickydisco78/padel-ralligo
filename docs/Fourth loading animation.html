@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fourth loading animation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#F3EFF3;--ink:#1A1218;--muted:#5A4E56;--line:#E4DBE1;--card:#FFFFFF;--accent:#B8004A;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;--bg:#150F17;--ink:#F6EEF3;--muted:#C7BAC2;--line:#3A2F3E;--card:#211A24;--accent:#FF8FBA}
+}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#150F17;--ink:#F6EEF3;--muted:#C7BAC2;--line:#3A2F3E;--card:#211A24;--accent:#FF8FBA}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Outfit',system-ui,-apple-system,'Segoe UI',sans-serif}
+button{font-family:inherit;cursor:pointer}
+.page{max-width:760px;margin:0 auto;padding:20px 16px 32px;display:flex;flex-direction:column;align-items:center;gap:16px}
+h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-0.02em;text-align:center}
+.lede{margin:0;font-size:14px;line-height:20px;color:var(--muted);text-align:center;max-width:480px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center}
+.group{display:flex;gap:6px;padding:4px;border:1.5px solid var(--line);border-radius:999px;background:var(--card)}
+.group button{min-height:44px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--ink);font-size:14px;font-weight:600}
+.group button[aria-pressed="true"]{background:#E6005C;color:#fff;font-weight:700}
+.replay{min-height:44px;padding:0 22px;border-radius:999px;border:0;background:#E6005C;color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.fitbox{position:relative}
+.stagewrap{position:absolute;left:0;top:0;transform-origin:top left}
+.stage{--s:1;--fill:#1A1218;--fillball:#FFFFFF;position:relative;width:390px;height:844px;border-radius:46px;overflow:hidden;background:#E6005C;box-shadow:0 30px 60px rgba(26,18,24,.28);display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:20px;font-family:'Outfit',system-ui,sans-serif}
+.stage[data-variant="white"]{--fill:#FFFFFF;--fillball:#E6005C}
+.mark{display:block;width:200px;height:200px;overflow:visible}
+.mark *{transform-box:fill-box;transform-origin:center}
+.ln{fill:none;stroke:#fff;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1}
+.ball{fill:#fff}
+.opening{fill:#FFE3EE}
+.cell{fill:var(--fill)}
+.ball4{fill:var(--fillball)}
+.word{margin-top:16px;font-size:46px;line-height:52px;font-weight:800;letter-spacing:-0.04em;color:#fff}
+.word span{color:#FFE3EE}
+.status{font-size:13px;font-weight:600;color:var(--muted);text-align:center;min-height:18px}
+
+/* ---- the animation: same timeline as the React Native version (0 - 2500 ms) ---- */
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes vanish{from{transform:scale(1)}to{transform:scale(0)}}
+@keyframes grow{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.play .opening{animation:pop calc(250ms*var(--s)) cubic-bezier(.34,1.56,.64,1) both,vanish calc(200ms*var(--s)) ease-in calc(700ms*var(--s)) forwards}
+.play .net-l,.play .net-r{animation:draw calc(500ms*var(--s)) cubic-bezier(.22,.61,.36,1) calc(150ms*var(--s)) both}
+.play .mid-u,.play .mid-d{animation:draw calc(400ms*var(--s)) cubic-bezier(.22,.61,.36,1) calc(400ms*var(--s)) both}
+.play .outline{animation:draw calc(600ms*var(--s)) cubic-bezier(.22,.61,.36,1) calc(600ms*var(--s)) both}
+.play .b1{animation:pop calc(300ms*var(--s)) cubic-bezier(.34,1.56,.64,1) calc(1100ms*var(--s)) both}
+.play .b2{animation:pop calc(300ms*var(--s)) cubic-bezier(.34,1.56,.64,1) calc(1250ms*var(--s)) both}
+.play .b3{animation:pop calc(300ms*var(--s)) cubic-bezier(.34,1.56,.64,1) calc(1400ms*var(--s)) both}
+.play .cell{animation:grow calc(350ms*var(--s)) cubic-bezier(.22,.61,.36,1) calc(1700ms*var(--s)) both}
+.play .ball4{animation:pop calc(300ms*var(--s)) cubic-bezier(.34,1.56,.64,1) calc(2000ms*var(--s)) both,pulse calc(1000ms*var(--s)) ease-in-out calc(3300ms*var(--s)) infinite}
+.play .word{animation:rise calc(500ms*var(--s)) ease-out calc(2200ms*var(--s)) both}
+.opening{transform:scale(0)}
+@media (prefers-reduced-motion: reduce){
+  .play .opening,.play .ln,.play .ball,.play .cell,.play .ball4,.play .word{animation:none!important}
+  .opening{transform:scale(0)}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <div>
+    <h1>Fourth loading animation</h1>
+    <p class="lede" style="margin-top:6px">The court draws itself, three balls arrive, then the fourth square fills and the name rises in. After that the last ball pulses until the app is ready.</p>
+  </div>
+  <div class="controls">
+    <button class="replay" id="replay"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4.5h4.5"/></svg>Replay</button>
+    <div class="group" role="group" aria-label="Square colour">
+      <button aria-pressed="true" data-variant="ink">Black square</button>
+      <button aria-pressed="false" data-variant="white">White square</button>
+    </div>
+    <div class="group" role="group" aria-label="Speed">
+      <button aria-pressed="true" data-speed="1">1×</button>
+      <button aria-pressed="false" data-speed="2">½×</button>
+      <button aria-pressed="false" data-speed="4">¼×</button>
+    </div>
+  </div>
+  <div class="status" id="status" aria-live="polite"></div>
+  <div class="fitbox" id="fitbox">
+    <div class="stagewrap" id="wrap">
+      <div class="stage play" id="stage" data-variant="ink" role="img" aria-label="Fourth logo animating in on a pink screen">
+        <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+          <rect class="cell" x="52" y="52" width="28" height="28" rx="2"/>
+          <rect class="ln outline" x="18" y="18" width="64" height="64" rx="4" pathLength="1"/>
+          <path class="ln net-l" d="M50 50H8" pathLength="1"/>
+          <path class="ln net-r" d="M50 50H92" pathLength="1"/>
+          <path class="ln mid-u" d="M50 50V18" pathLength="1"/>
+          <path class="ln mid-d" d="M50 50V82" pathLength="1"/>
+          <circle class="opening" cx="50" cy="50" r="6"/>
+          <circle class="ball b1" cx="28" cy="28" r="4.5"/>
+          <circle class="ball b2" cx="72" cy="28" r="4.5"/>
+          <circle class="ball b3" cx="28" cy="72" r="4.5"/>
+          <circle class="ball4" cx="72" cy="72" r="4.5"/>
+        </svg>
+        <div class="word">fourth<span>.</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+(function(){
+  var stage=document.getElementById('stage'),wrap=document.getElementById('wrap'),fit=document.getElementById('fitbox'),status=document.getElementById('status');
+  function replay(){
+    stage.classList.remove('play');
+    void stage.offsetWidth;
+    stage.classList.add('play');
+    var s=+getComputedStyle(stage).getPropertyValue('--s')||1;
+    status.textContent='Playing';
+    clearTimeout(replay.t);
+    replay.t=setTimeout(function(){status.textContent='Intro done. The last ball pulses until the app is ready.';},2500*s);
+  }
+  document.getElementById('replay').addEventListener('click',replay);
+  document.querySelector('[aria-label="Square colour"]').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    stage.setAttribute('data-variant',b.dataset.variant);
+    [].forEach.call(this.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed',x===b);});
+    replay();
+  });
+  document.querySelector('[aria-label="Speed"]').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    stage.style.setProperty('--s',b.dataset.speed);
+    [].forEach.call(this.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed',x===b);});
+    replay();
+  });
+  function size(){
+    var s=Math.min(1,(window.innerHeight-230)/844,(window.innerWidth-32)/390);
+    s=Math.max(0.35,s);
+    wrap.style.transform='scale('+s+')';fit.style.width=(390*s)+'px';fit.style.height=(844*s)+'px';
+  }
+  window.addEventListener('resize',size);
+  size();replay();
+})();
+</script>
+</body>
+</html>

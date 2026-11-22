@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Fourth",
+    "slug": "fourth",
+    "icon": "./assets/icon.png",
+    "backgroundColor": "#E6005C",
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#E6005C",
+          "image": "./assets/splash-blank.png",
+          "imageWidth": 100
+        }
+      ]
+    ],
+    "ios": { "supportsTablet": false },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E6005C"
+      }
+    },
+    "web": { "favicon": "./assets/favicon.png" }
+  }
+}
