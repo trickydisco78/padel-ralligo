@@ -91,6 +91,12 @@ describe('Home', () => {
     expect(screen.queryByText(/Create an account/)).toBeNull();
   });
 
+  it('has no old wordmark above the heading', async () => {
+    await open();
+    await waitFor(() => expect(screen.getByText('Find your next padel game')).toBeTruthy());
+    expect(screen.queryByLabelText('Ralligo')).toBeNull();
+  });
+
   it('opens Discover ready for a search from the search entry', async () => {
     await open();
     await fireEvent.press(await screen.findByRole('button', { name: 'Search for a city or destination' }));

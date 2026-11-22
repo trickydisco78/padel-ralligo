@@ -26,3 +26,13 @@ export async function markIntroSeen(): Promise<void> {
     // Ignore: the worst case is seeing the full intro once more.
   }
 }
+
+/** Clears the flag so the next launch plays the full intro again. For the developer tools only. */
+export async function resetIntroSeen(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await SecureStore.deleteItemAsync(KEY);
+  } catch {
+    // Ignore: the intro just stays seen.
+  }
+}

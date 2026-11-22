@@ -1,5 +1,5 @@
 {
-  "name": "padel-ralligo",
+  "name": "fourth",
   "private": true,
   "scripts": {
     "build": "turbo run build",

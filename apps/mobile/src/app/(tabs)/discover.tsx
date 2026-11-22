@@ -17,7 +17,7 @@ import {
   type Player,
 } from '@padel/players';
 import { SavedTripsRow, useTripsOverview } from '@padel/trips';
-import { Banner, BottomSheet, Button, Icon, Logo, SearchField, SegmentedControl, spacing, ThemedText, ThemedView } from '@padel/ui';
+import { Banner, BottomSheet, Button, Icon, SearchField, SegmentedControl, spacing, ThemedText, ThemedView } from '@padel/ui';
 
 import { DiscoverFilterBlock, NO_FILTERS, type DiscoverFilters } from '@/components/discover-filters';
 import { resolveSelectedTrip } from '@/discover/trip-selection';
@@ -188,7 +188,6 @@ export default function DiscoverScreen() {
 
   const header = (
     <View style={{ gap: spacing.space4 }}>
-      <Logo />
       <ThemedText
         type="label"
         themeColor="pink700"
