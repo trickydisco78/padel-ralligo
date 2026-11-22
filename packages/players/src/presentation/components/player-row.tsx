@@ -12,6 +12,8 @@ type Props = {
   onAccept?: () => void;
   /** Requesting only. */
   onDecline?: () => void;
+  /** Requesting only: a decision on this request is in flight, so accept and decline are disabled. */
+  busy?: boolean;
   /**
    * Organiser: shows a chevron and makes the whole row pressable.
    * Requesting: makes the name and status pressable (to review the request) beside the accept and decline buttons.
@@ -23,7 +25,7 @@ type Props = {
  * One person in a match list: avatar, name and status, and for a request the accept and decline buttons.
  * Every state has an icon and a text label as well as a colour.
  */
-export function PlayerRow({ name, status, onAccept, onDecline, onPress }: Props) {
+export function PlayerRow({ name, status, onAccept, onDecline, busy = false, onPress }: Props) {
   const { t } = useTranslation('players');
   const statusText = t(`row.${status}`);
   const requesting = status === 'requesting';
@@ -68,6 +70,7 @@ export function PlayerRow({ name, status, onAccept, onDecline, onPress }: Props)
             variant="brand"
             iconStrokeWidth={2.8}
             accessibilityLabel={t('row.accept', { name })}
+            disabled={busy}
             onPress={() => onAccept?.()}
           />
           <IconButton
@@ -75,6 +78,7 @@ export function PlayerRow({ name, status, onAccept, onDecline, onPress }: Props)
             variant="ink"
             iconStrokeWidth={2.8}
             accessibilityLabel={t('row.decline', { name })}
+            disabled={busy}
             onPress={() => onDecline?.()}
           />
         </>

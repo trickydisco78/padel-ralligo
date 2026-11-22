@@ -1,14 +1,7 @@
 import { formatDateRange } from '@padel/core';
 import { useTranslation } from '@padel/i18n';
 import { useSession } from '@padel/auth';
-import {
-  joinErrorCode,
-  useCloseListing,
-  useDecideRequest,
-  useDiscoverListing,
-  useMatchPeople,
-  type MatchPerson,
-} from '@padel/listings';
+import { useManageMatch } from '@padel/listings';
 import { PlayerRow } from '@padel/players';
 import {
   AppBar,
@@ -23,12 +16,10 @@ import {
   ThemedView,
 } from '@padel/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 import { useRefetchOnFocus } from '@/hooks/use-refetch-on-focus';
-
-type Tab = 'players' | 'requests';
 
 /**
  * The organiser's view of their own match: who is playing and who is waiting, with accept and decline,
@@ -41,56 +32,29 @@ export default function ManageMatchScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { status, user } = useSession();
-  const signedIn = status === 'signedIn';
-  const { listing, loading: listingLoading, refetch: refetchListing } = useDiscoverListing(id);
-  const { people, loading: peopleLoading, failed, refetch } = useMatchPeople(id, signedIn ? user?.id : undefined);
-  const decide = useDecideRequest();
-  const closeListing = useCloseListing();
-  const [tab, setTab] = useState<Tab>('requests');
-  const [reviewing, setReviewing] = useState<MatchPerson | null>(null);
-  const [closeOpen, setCloseOpen] = useState(false);
-  const [errorKey, setErrorKey] = useState<string | null>(null);
+  const { view, listing, organiser, players, requests, state, isDeciding, events, refresh, retry } = useManageMatch({
+    listingId: id,
+    session: status,
+    userId: user?.id,
+  });
+  const { tab, overlay, error } = state;
+  const reviewing = overlay.kind === 'reviewing' ? overlay.person : null;
+  const closing = overlay.kind === 'confirmingClose' ? overlay : null;
 
-  useRefetchOnFocus(refetch);
-  useRefetchOnFocus(refetchListing);
+  useRefetchOnFocus(refresh);
 
-  const notOrganiser = status !== 'loading' && (!signedIn || (people !== undefined && people?.viewerRole !== 'organiser'));
   useEffect(() => {
-    if (notOrganiser && id) router.replace({ pathname: '/match/[id]', params: { id } });
-  }, [notOrganiser, id, router]);
+    if (view === 'forbidden' && id) router.replace({ pathname: '/match/[id]', params: { id } });
+  }, [view, id, router]);
 
   function goBack() {
     if (router.canGoBack()) router.back();
     else router.replace('/discover');
   }
 
-  async function decideRequest(person: MatchPerson, accept: boolean) {
-    if (!person.requestId) return;
-    setErrorKey(null);
-    try {
-      await decide.mutateAsync({ requestId: person.requestId, accept });
-      setReviewing(null);
-    } catch (error) {
-      setReviewing(null);
-      setErrorKey(`joinRequests.errors.${joinErrorCode(error)}`);
-    }
-  }
-
-  async function closeMatch() {
-    setErrorKey(null);
-    try {
-      await closeListing.mutateAsync(id);
-      setCloseOpen(false);
-    } catch {
-      setCloseOpen(false);
-      setErrorKey('manage-close-failed');
-    }
-  }
-
   const bar = <AppBar variant="detail" title={t('manage.title')} onBack={goBack} backLabel={t('match.back')} />;
-  const waiting = listingLoading || peopleLoading || notOrganiser || status === 'loading';
 
-  if (waiting) {
+  if (view === 'loading' || view === 'forbidden') {
     return (
       <ThemedView style={{ flex: 1 }}>
         {bar}
@@ -101,7 +65,7 @@ export default function ManageMatchScreen() {
     );
   }
 
-  if (failed || !people) {
+  if (view === 'error') {
     return (
       <ThemedView style={{ flex: 1 }}>
         {bar}
@@ -109,13 +73,13 @@ export default function ManageMatchScreen() {
           <ThemedText accessibilityRole="alert" themeColor="error600">
             {t('manage.loadFailed')}
           </ThemedText>
-          <Button title={tl('matchDetail.retry')} onPress={() => refetch()} />
+          <Button title={tl('matchDetail.retry')} onPress={retry} />
         </View>
       </ThemedView>
     );
   }
 
-  if (!listing) {
+  if (view === 'closed' || !listing) {
     return (
       <ThemedView style={{ flex: 1 }}>
         {bar}
@@ -129,10 +93,6 @@ export default function ManageMatchScreen() {
       </ThemedView>
     );
   }
-
-  const organiser = people.people.find((p) => p.kind === 'organiser');
-  const players = people.people.filter((p) => p.kind === 'player');
-  const requests = people.people.filter((p) => p.kind === 'request');
 
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -151,15 +111,17 @@ export default function ManageMatchScreen() {
         <SegmentedControl
           accessibilityLabel={t('manage.title')}
           value={tab}
-          onChange={setTab}
+          onChange={events.selectTab}
           options={[
             { value: 'players', label: t('manage.players'), count: 1 + players.length },
             { value: 'requests', label: t('manage.requests'), count: requests.length },
           ]}
         />
 
-        {errorKey ? (
-          <HelperText error>{errorKey === 'manage-close-failed' ? t('manage.closeFailed') : tl(errorKey)}</HelperText>
+        {error ? (
+          <HelperText error>
+            {error.kind === 'close' ? t('manage.closeFailed') : tl(`joinRequests.errors.${error.code}`)}
+          </HelperText>
         ) : null}
 
         {tab === 'players' ? (
@@ -177,9 +139,10 @@ export default function ManageMatchScreen() {
                 key={person.requestId ?? person.name}
                 name={person.name}
                 status="requesting"
-                onPress={() => setReviewing(person)}
-                onAccept={() => decideRequest(person, true)}
-                onDecline={() => decideRequest(person, false)}
+                onPress={() => events.openReview(person)}
+                onAccept={() => events.accept(person)}
+                onDecline={() => events.decline(person)}
+                busy={isDeciding(person)}
               />
             ))}
             {requests.length === 0 ? <ThemedText themeColor="muted">{t('manage.noRequests')}</ThemedText> : null}
@@ -187,11 +150,11 @@ export default function ManageMatchScreen() {
         )}
 
         <View style={{ marginTop: spacing.space4 }}>
-          <Button variant="secondary" title={t('manage.close')} onPress={() => setCloseOpen(true)} />
+          <Button variant="secondary" title={t('manage.close')} onPress={events.requestClose} />
         </View>
       </ScrollView>
 
-      <BottomSheet visible={reviewing !== null} title={reviewing?.name ?? ''} onDismiss={() => setReviewing(null)}>
+      <BottomSheet visible={reviewing !== null} title={reviewing?.name ?? ''} onDismiss={events.dismissReview}>
         {reviewing ? (
           <View style={{ gap: spacing.space4 }}>
             <View style={{ alignItems: 'center', gap: spacing.space2 }}>
@@ -201,13 +164,13 @@ export default function ManageMatchScreen() {
               ) : null}
             </View>
             <View style={{ gap: spacing.space3 }}>
-              <Button title={t('manage.accept')} busy={decide.isPending} disabled={decide.isPending} onPress={() => decideRequest(reviewing, true)} />
+              <Button title={t('manage.accept')} busy={isDeciding(reviewing)} disabled={isDeciding(reviewing)} onPress={() => events.accept(reviewing)} />
               <Button
                 variant="secondary"
                 title={t('manage.decline')}
-                busy={decide.isPending}
-                disabled={decide.isPending}
-                onPress={() => decideRequest(reviewing, false)}
+                busy={isDeciding(reviewing)}
+                disabled={isDeciding(reviewing)}
+                onPress={() => events.decline(reviewing)}
               />
             </View>
           </View>
@@ -215,17 +178,17 @@ export default function ManageMatchScreen() {
       </BottomSheet>
 
       <BottomSheet
-        visible={closeOpen}
+        visible={closing !== null}
         title={t('manage.closeTitle')}
         confirm={{ icon: 'clock', tone: 'pending', message: t('manage.closeMessage') }}
-        onDismiss={() => setCloseOpen(false)}>
-        <Button title={t('manage.keepOpen')} onPress={() => setCloseOpen(false)} />
+        onDismiss={events.dismissClose}>
+        <Button title={t('manage.keepOpen')} onPress={events.dismissClose} />
         <Button
           variant="secondary"
           title={t('manage.closeConfirm')}
-          busy={closeListing.isPending}
-          disabled={closeListing.isPending}
-          onPress={closeMatch}
+          busy={closing?.busy}
+          disabled={closing?.busy}
+          onPress={events.confirmClose}
         />
       </BottomSheet>
     </ThemedView>

@@ -27,6 +27,8 @@ export const mockState = {
   matchPeople: [] as unknown[],
   /** Error message (a join error code) returned by request_to_join, withdraw_join_request and decide_join_request. */
   joinError: null as string | null,
+  /** When set, request_to_join, withdraw_join_request and decide_join_request wait for it, so a test can hold one in flight. */
+  joinGate: null as Promise<void> | null,
   rpcCalls: [] as { name: string; args: Record<string, unknown> }[],
   listeners: new Set<Listener>(),
 };
@@ -55,6 +57,7 @@ export function resetMockSupabase() {
   mockState.tripsOverview = [];
   mockState.matchPeople = [];
   mockState.joinError = null;
+  mockState.joinGate = null;
   mockState.rpcCalls = [];
   mockState.listeners.clear();
 }
@@ -156,6 +159,7 @@ export const supabase = {
         : { data: mockState.matchPeople, error: null };
     }
     if (name === 'request_to_join' || name === 'withdraw_join_request' || name === 'decide_join_request') {
+      await mockState.joinGate;
       return mockState.joinError ? { data: null, error: { message: mockState.joinError } } : { data: null, error: null };
     }
     return { data: null, error: { message: `unknown rpc ${name}` } };

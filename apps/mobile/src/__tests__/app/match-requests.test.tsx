@@ -242,6 +242,55 @@ describe('Manage match', () => {
     await waitFor(() => expect(screen.queryByRole('header', { name: 'David K.' })).toBeNull());
   });
 
+  describe('while a decision is in flight', () => {
+    const twoRequests = withHeader('organiser', null, 0, 2, [
+      organiserRow,
+      person('request', 'David K.', 'Beginner', 'r1'),
+      person('request', 'Anna P.', 'Advanced', 'r2'),
+    ]);
+    let release!: () => void;
+    // Awaiting fireEvent.press would wait on the held request, so press inside act and move on.
+    const tap = (element: Parameters<typeof fireEvent.press>[0]) =>
+      act(async () => {
+        void fireEvent.press(element);
+      });
+    beforeEach(() => {
+      mockState.joinGate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+    });
+
+    it('sends one decision however many times the row button is tapped', async () => {
+      signedInAs(twoRequests);
+      await openManage();
+      const accept = await screen.findByRole('button', { name: 'Accept David K.' });
+      await tap(accept);
+      await tap(screen.getByRole('button', { name: 'Accept David K.' }));
+      await tap(screen.getByRole('button', { name: 'Decline David K.' }));
+      expect(calls('decide_join_request')).toEqual([{ name: 'decide_join_request', args: { p_request: 'r1', p_accept: true } }]);
+      await act(async () => release());
+    });
+
+    it('disables only the buttons of the request being decided', async () => {
+      signedInAs(twoRequests);
+      await openManage();
+      await tap(await screen.findByRole('button', { name: 'Accept David K.' }));
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Accept David K.' }).props.accessibilityState.disabled).toBe(true));
+      expect(screen.getByRole('button', { name: 'Decline David K.' }).props.accessibilityState.disabled).toBe(true);
+      expect(screen.getByRole('button', { name: 'Accept Anna P.' }).props.accessibilityState.disabled).toBe(false);
+      expect(screen.getByRole('button', { name: 'Decline Anna P.' }).props.accessibilityState.disabled).toBe(false);
+      await act(async () => release());
+    });
+
+    it('re-enables the buttons once the decision has resolved', async () => {
+      signedInAs(twoRequests);
+      await openManage();
+      await tap(await screen.findByRole('button', { name: 'Accept David K.' }));
+      await act(async () => release());
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Accept Anna P.' }).props.accessibilityState.disabled).toBe(false));
+    });
+  });
+
   it('says why a decision failed', async () => {
     signedInAs(organiserPeople);
     await openManage();
