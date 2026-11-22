@@ -1,6 +1,6 @@
 export { ListingCard } from './presentation/components/listing-card';
 export { ListingForm } from './presentation/components/listing-form';
-export { MatchActions, type MatchViewer } from './presentation/components/match-actions';
+export { MatchActions } from './presentation/components/match-actions';
 export { MatchDetail } from './presentation/components/match-detail';
 export { MATCH_HERO_HEIGHT, MatchHero } from './presentation/components/match-hero';
 export { MatchStatusBanner } from './presentation/components/match-status-banner';
@@ -28,4 +28,8 @@ export type {
   PersonKind,
   ViewerRole,
 } from './domain/join-request';
+export { matchActionFor, type MatchAction, type MatchViewer } from './domain/match-action';
+export { manageViewFor, type ManageView } from './domain/manage-view';
+export type { ManageError, ManageOverlay, ManageTab } from './domain/manage-match-state';
+export { useManageMatch } from './presentation/hooks/use-manage-match';
 export { listingsLocales } from './locales';

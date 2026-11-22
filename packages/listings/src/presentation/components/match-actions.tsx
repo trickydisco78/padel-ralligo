@@ -1,14 +1,18 @@
 import { toIsoDate } from '@padel/core';
 import { useTranslation } from '@padel/i18n';
 import { BottomSheet, Button, HelperText, spacing } from '@padel/ui';
-import { useState, type ComponentProps, type ReactNode } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { View } from 'react-native';
 
 import { joinErrorCode, type JoinStatus } from '../../domain/join-request';
 import type { DiscoverListing } from '../../domain/listing';
+import { matchActionFor, type MatchViewer } from '../../domain/match-action';
 import { useRequestToJoin, useWithdrawRequest } from '../hooks/use-join-requests';
 
-export type MatchViewer = 'guest' | 'loading' | 'organiser' | 'requester' | 'member';
+export type { MatchViewer };
+
+/** Which confirmation sheet is open; at most one is. */
+type MatchSheet = 'none' | 'requestSent' | 'confirmWithdraw';
 
 type Props = {
   listing: DiscoverListing;
@@ -47,8 +51,7 @@ export function MatchActions({
   const { t } = useTranslation('listings');
   const request = useRequestToJoin();
   const withdraw = useWithdrawRequest();
-  const [sentOpen, setSentOpen] = useState(false);
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [sheet, setSheet] = useState<MatchSheet>('none');
   const [errorKey, setErrorKey] = useState<string | null>(null);
 
   const full = listing.spotsLeft <= 0;
@@ -58,7 +61,7 @@ export function MatchActions({
     setErrorKey(null);
     try {
       await request.mutateAsync(listing.id);
-      setSentOpen(true);
+      setSheet('requestSent');
     } catch (error) {
       setErrorKey(`joinRequests.errors.${joinErrorCode(error)}`);
     }
@@ -68,61 +71,65 @@ export function MatchActions({
     setErrorKey(null);
     try {
       await withdraw.mutateAsync(listing.id);
-      setWithdrawOpen(false);
+      setSheet('none');
     } catch (error) {
-      setWithdrawOpen(false);
+      setSheet('none');
       setErrorKey(`joinRequests.errors.${joinErrorCode(error)}`);
     }
   }
 
-  let action: ReactNode = null;
-  if (viewer === 'organiser') {
-    action = (
-      <Button
-        title={pendingCount > 0 ? t('matchActions.manageCount', { count: pendingCount }) : t('matchActions.manage')}
-        icon="people"
-        onPress={onManage}
-      />
-    );
-  } else if (viewer === 'loading') {
-    action = <Button title={t('matchActions.request')} disabled onPress={() => {}} />;
-  } else if (ownStatus === 'pending' || (ownStatus === 'accepted' && !started)) {
-    action = <Button variant="secondary" title={t('matchActions.withdraw')} onPress={() => setWithdrawOpen(true)} />;
-  } else if (ownStatus === 'declined') {
-    action = <Button title={t('matchActions.findSimilar')} icon="search" onPress={onFindSimilar} />;
-  } else if (ownStatus === 'accepted') {
-    action = null;
-  } else if (!full) {
-    action = (
-      <Button
-        ref={requestButtonRef}
-        title={t('matchActions.request')}
-        busy={request.isPending}
-        disabled={request.isPending}
-        onPress={viewer === 'guest' ? onGuestRequest : sendRequest}
-      />
-    );
+  const action = matchActionFor({ viewer, ownStatus, full, started });
+
+  function renderAction() {
+    switch (action) {
+      case 'manage':
+        return (
+          <Button
+            title={pendingCount > 0 ? t('matchActions.manageCount', { count: pendingCount }) : t('matchActions.manage')}
+            icon="people"
+            onPress={onManage}
+          />
+        );
+      case 'loading':
+        return <Button title={t('matchActions.request')} disabled onPress={() => {}} />;
+      case 'withdraw':
+        return <Button variant="secondary" title={t('matchActions.withdraw')} onPress={() => setSheet('confirmWithdraw')} />;
+      case 'findSimilar':
+        return <Button title={t('matchActions.findSimilar')} icon="search" onPress={onFindSimilar} />;
+      case 'request':
+        return (
+          <Button
+            ref={requestButtonRef}
+            title={t('matchActions.request')}
+            busy={request.isPending}
+            disabled={request.isPending}
+            onPress={viewer === 'guest' ? onGuestRequest : sendRequest}
+          />
+        );
+      case 'none':
+        return null;
+    }
   }
 
   return (
     <View style={{ gap: spacing.space3 }}>
       {errorKey ? <HelperText error>{t(errorKey)}</HelperText> : null}
-      {action}
+      {renderAction()}
 
       <BottomSheet
-        visible={sentOpen}
+        visible={sheet === 'requestSent'}
         title={t('matchSheets.sentTitle')}
         confirm={{ icon: 'checkCircle', message: t('matchSheets.sentMessage', { name: organiserName }) }}
-        onDismiss={() => setSentOpen(false)}>
-        <Button title={t('matchSheets.done')} onPress={() => setSentOpen(false)} />
+        onDismiss={() => setSheet('none')}>
+        <Button title={t('matchSheets.done')} onPress={() => setSheet('none')} />
       </BottomSheet>
 
       <BottomSheet
-        visible={withdrawOpen}
+        visible={sheet === 'confirmWithdraw'}
         title={t('matchSheets.withdrawTitle')}
         confirm={{ icon: 'clock', tone: 'pending', message: t('matchSheets.withdrawMessage') }}
-        onDismiss={() => setWithdrawOpen(false)}>
-        <Button title={t('matchSheets.keep')} onPress={() => setWithdrawOpen(false)} />
+        onDismiss={() => setSheet('none')}>
+        <Button title={t('matchSheets.keep')} onPress={() => setSheet('none')} />
         <Button
           variant="secondary"
           title={t('matchSheets.withdraw')}

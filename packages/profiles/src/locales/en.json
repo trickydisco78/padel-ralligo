@@ -1,7 +1,7 @@
 {
   "profileSetup": {
     "title": "Set up your profile",
-    "intro": "Other players see your name, city, bio and skill level.",
+    "intro": "Other players see your name, city and skill level.",
     "submit": "Save and continue"
   },
   "profileForm": {
@@ -13,7 +13,8 @@
     "homeDestination": "Home destination",
     "saved": "Profile saved",
     "saveFailed": "Could not save your profile. Please try again.",
-    "displayNameHelp": "Shown on your player card"
+    "displayNameHelp": "Shown on your player card",
+    "cancel": "Cancel"
   },
   "skillTierPicker": {
     "label": "Padel skill level",
@@ -33,5 +34,10 @@
   "playerCard": {
     "overline": "Player card",
     "statsLabel": "Player stats"
+  },
+  "profileView": {
+    "about": "About",
+    "edit": "Edit profile",
+    "addBio": "Add a bio"
   }
 }
