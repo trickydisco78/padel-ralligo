@@ -73,6 +73,12 @@ describe('Discover', () => {
     expect(screen.getByText('Ben · Intermediate')).toBeTruthy();
   });
 
+  it('has no old wordmark above the heading', async () => {
+    await open();
+    await waitFor(() => expect(screen.getByText('Friendly doubles')).toBeTruthy());
+    expect(screen.queryByLabelText('Ralligo')).toBeNull();
+  });
+
   it('keeps the order the data comes in, soonest first', async () => {
     mockState.listings = [row('a', { poster_name: 'First' }), row('b', { poster_name: 'Second' })];
     await open();

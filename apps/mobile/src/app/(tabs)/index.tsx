@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
-import { Card, colors, Logo, Button, radius, ThemedText, ThemedView, spacing } from '@padel/ui';
+import { Card, colors, Button, radius, ThemedText, ThemedView, spacing } from '@padel/ui';
 import { useDestinations } from '@padel/destinations';
 import { ListingCard, useDiscoverListings } from '@padel/listings';
 
@@ -45,7 +45,6 @@ export default function HomeScreen() {
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           contentContainerStyle={{ padding: spacing.space4, gap: spacing.space6 }}>
-          <Logo />
           <View style={{ gap: spacing.space2 }}>
             <ThemedText type="display">{t('home.title')}</ThemedText>
             <ThemedText themeColor="muted">
