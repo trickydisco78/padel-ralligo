@@ -38,6 +38,7 @@
   "profileView": {
     "about": "About",
     "edit": "Edit profile",
-    "addBio": "Add a bio"
+    "addBio": "Add a bio",
+    "yourLevel": "Your level"
   }
 }

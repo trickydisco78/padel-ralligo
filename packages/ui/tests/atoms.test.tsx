@@ -171,6 +171,27 @@ describe('Avatar', () => {
   });
 });
 
+describe('Avatar hero size', () => {
+  it('is a round 104 point circle with a 5 point white ring and large pink300 initials', async () => {
+    await render(<Avatar name="Alex Morgan" labelled size="hero" />);
+    const avatar = screen.getByRole('image', { name: 'Alex Morgan' });
+    expect(flat(avatar)).toMatchObject({
+      width: 104,
+      height: 104,
+      borderRadius: 52,
+      borderWidth: 5,
+      borderColor: colors.surface,
+      backgroundColor: colors.ink,
+    });
+    expect(StyleSheet.flatten(screen.getByText('AM').props.style)).toMatchObject({ color: colors.pink300, fontSize: 38 });
+  });
+
+  it('is hidden from screen readers unless labelled, like the other sizes', async () => {
+    await render(<Avatar name="Alex Morgan" size="hero" />);
+    expect(screen.queryByText('AM')).toBeNull();
+  });
+});
+
 describe('Input', () => {
   it('shows a pink border and ring only while focused', async () => {
     await render(<Input accessibilityLabel="Name" />);

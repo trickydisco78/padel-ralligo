@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import type { Profile } from '../src/domain/profile';
-import { ProfileView } from '../src/presentation/components/profile-view';
+import { HERO_AVATAR_OVERLAP, ProfileView } from '../src/presentation/components/profile-view';
 
 const profile: Profile = {
   displayName: 'Alex Morgan',
@@ -13,25 +14,38 @@ const profile: Profile = {
 };
 
 describe('ProfileView', () => {
-  it('shows the name, skill tier, home place and bio as text, not as fields', async () => {
+  it('shows the initials avatar, the name as a heading and the tier and city on one line', async () => {
     await render(<ProfileView profile={profile} onEdit={jest.fn()} />);
     expect(screen.getByRole('header', { name: 'Alex Morgan' })).toBeOnTheScreen();
-    expect(screen.getByText('INTERMEDIATE')).toBeOnTheScreen();
-    expect(screen.getByText('Málaga')).toBeOnTheScreen();
+    expect(screen.getByText('AM', { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByText('Intermediate · Málaga')).toBeOnTheScreen();
     expect(screen.getByText('Friendly doubles after work.')).toBeOnTheScreen();
     expect(screen.queryByLabelText('Display name')).toBeNull();
   });
 
-  it('leaves out an empty bio and home place', async () => {
-    await render(<ProfileView profile={{ ...profile, homeCity: '', bio: '' }} onEdit={jest.fn()} />);
+  it('shows the skill tier on a level card captioned Your level', async () => {
+    await render(<ProfileView profile={profile} onEdit={jest.fn()} />);
+    expect(screen.getByText('Your level')).toBeOnTheScreen();
+    expect(screen.getByText('Intermediate')).toBeOnTheScreen();
+  });
+
+  it('leaves out a missing home city, bio and level card without placeholders', async () => {
+    await render(<ProfileView profile={{ ...profile, homeCity: '', bio: '', skillTier: null }} onEdit={jest.fn()} />);
     expect(screen.getByRole('header', { name: 'Alex Morgan' })).toBeOnTheScreen();
-    expect(screen.queryByText('Málaga')).toBeNull();
+    expect(screen.queryByText(/·/)).toBeNull();
+    expect(screen.queryByText('Your level')).toBeNull();
     expect(screen.queryByText('About')).toBeNull();
   });
 
-  it('shows only the name when there is no skill tier yet', async () => {
+  it('shows only the city on the line when there is no skill tier', async () => {
     await render(<ProfileView profile={{ ...profile, skillTier: null }} onEdit={jest.fn()} />);
-    expect(screen.queryByText('INTERMEDIATE')).toBeNull();
+    expect(screen.getByText('Málaga')).toBeOnTheScreen();
+    expect(screen.queryByText('Your level')).toBeNull();
+  });
+
+  it('shows the About section with the bio', async () => {
+    await render(<ProfileView profile={profile} onEdit={jest.fn()} />);
+    expect(screen.getByRole('header', { name: 'About' })).toBeOnTheScreen();
   });
 
   it('asks to edit with the Edit profile button', async () => {
@@ -51,5 +65,16 @@ describe('ProfileView', () => {
   it('does not offer to add a bio when there is one', async () => {
     await render(<ProfileView profile={profile} onEdit={jest.fn()} />);
     expect(screen.queryByRole('button', { name: 'Add a bio' })).toBeNull();
+  });
+
+  it('lets a long name wrap, and starts it below the avatar, so large text never hides it', async () => {
+    await render(<ProfileView profile={{ ...profile, displayName: 'Alexandra Montgomery-Featherstonehaugh' }} onEdit={jest.fn()} />);
+    const name = screen.getByRole('header', { name: 'Alexandra Montgomery-Featherstonehaugh' });
+    expect(name.props.numberOfLines).toBeUndefined();
+    const style = StyleSheet.flatten(name.props.style) as { height?: number; maxHeight?: number };
+    expect(style.height).toBeUndefined();
+    expect(style.maxHeight).toBeUndefined();
+    const sheet = screen.getByTestId('profile-sheet');
+    expect((StyleSheet.flatten(sheet.props.style) as { paddingTop: number }).paddingTop).toBeGreaterThanOrEqual(HERO_AVATAR_OVERLAP);
   });
 });

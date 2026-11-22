@@ -52,11 +52,16 @@ describe('profile tab', () => {
   it('lands on the profile as text, with an Edit profile button and no form', async () => {
     await openProfile();
     expect(screen.getByRole('header', { name: 'Leon' })).toBeTruthy();
-    expect(screen.getByText('Bristol')).toBeTruthy();
+    expect(screen.getByText('Intermediate · Bristol')).toBeTruthy();
+    expect(screen.getByText('Your level')).toBeTruthy();
     expect(screen.getByText('Padel fan')).toBeTruthy();
-    expect(screen.getByText('INTERMEDIATE')).toBeTruthy();
     expect(screen.queryByDisplayValue('Leon')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Save profile' })).toBeNull();
+  });
+
+  it('keeps trips, listings and sign out below the profile', async () => {
+    await openProfile();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeTruthy();
   });
 
   it('opens the form with the saved values and a Cancel button when Edit profile is chosen', async () => {
@@ -82,8 +87,8 @@ describe('profile tab', () => {
 
     await waitFor(() => expect(mockState.upserts).toHaveLength(2));
     expect(mockState.upserts[1]!.values).toMatchObject({ skill_tier: 'Advanced' });
-    await waitFor(() => expect(screen.getByText('ADVANCED')).toBeTruthy());
-    expect(screen.queryByText('INTERMEDIATE')).toBeNull();
+    await waitFor(() => expect(screen.getByText('Advanced · Bristol')).toBeTruthy());
+    expect(screen.queryByText('Intermediate · Bristol')).toBeNull();
     expect(screen.queryByDisplayValue('Leon')).toBeNull();
   });
 
