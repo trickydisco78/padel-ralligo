@@ -112,5 +112,8 @@
     "closedTitle": "This match is closed",
     "closedBody": "It is no longer shown in Discover.",
     "loadFailed": "Could not load this match."
+  },
+  "launch": {
+    "loading": "Fourth, loading"
   }
 }

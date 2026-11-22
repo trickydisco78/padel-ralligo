@@ -8,7 +8,6 @@ import {
 } from '@expo-google-fonts/outfit';
 import { DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
 
 import { I18nextProvider } from '@padel/i18n';
 import { QueryProvider } from '@padel/query';
@@ -17,7 +16,8 @@ import { AppShell } from '@/components/app-shell';
 import { i18n } from '@/i18n';
 import { colors } from '@padel/ui';
 
-// Keep the splash screen up until Outfit is loaded, so no text shows in a fallback font.
+// Keep the native splash up until Outfit is loaded, so no text shows in a fallback font. The launch screen
+// (`LaunchSplash`, inside the app shell) hides it once it is on screen.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Visitors start on the tabs; the auth screens are opened from them, never the other way round.
@@ -44,10 +44,6 @@ export default function RootLayout() {
     Outfit_800ExtraBold,
   });
   const ready = fontsLoaded || Boolean(fontError);
-
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
 
   // Fall back to the system font if loading fails rather than blocking the app.
   if (!ready) return null;
