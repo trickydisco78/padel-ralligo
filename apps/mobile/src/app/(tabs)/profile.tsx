@@ -1,10 +1,11 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
 import { useSession, SignInPrompt } from '@padel/auth';
-import { ProfileForm, useProfile } from '@padel/profiles';
+import { ProfileForm, ProfileView, useProfileScreen } from '@padel/profiles';
 import { TripsSection } from '@padel/trips';
 import { MyListings } from '@padel/listings';
 import { Button, ThemedText, ThemedView, spacing } from '@padel/ui';
@@ -14,9 +15,13 @@ export default function ProfileScreen() {
   const { status, user, signOut } = useSession();
   const router = useRouter();
   const userId = user?.id;
-  const { data: profile, isPending } = useProfile(userId);
+  const { view, profile, mode, events } = useProfileScreen(userId, status);
 
-  if (status === 'signedOut') {
+  // Tabs stay mounted, so leaving one does not reset it; come back to the view, not a half-edited form.
+  const { leave } = events;
+  useFocusEffect(useCallback(() => leave, [leave]));
+
+  if (view === 'guest') {
     return (
       <SignInPrompt
         title={t('profile.signInTitle')}
@@ -34,7 +39,19 @@ export default function ProfileScreen() {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ padding: spacing.space6, gap: spacing.space6 }}>
             <ThemedText type="display">{t('profile.title')}</ThemedText>
-            {isPending ? null : <ProfileForm key={userId} initial={profile ?? null} submitLabel={t('profile.save')} />}
+            {view !== 'ready' ? null : mode === 'editing' ? (
+              <ProfileForm
+                key={userId}
+                initial={profile}
+                submitLabel={t('profile.save')}
+                onSaved={events.saved}
+                onCancel={events.cancelEdit}
+              />
+            ) : profile ? (
+              <ProfileView profile={profile} onEdit={events.startEdit} />
+            ) : (
+              <ProfileForm key={userId} initial={null} submitLabel={t('profile.save')} />
+            )}
             <TripsSection />
             <MyListings onManage={(id) => router.push({ pathname: '/match/[id]/manage', params: { id } })} />
             <Button
