@@ -61,6 +61,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "native:ios:prebuild": "expo prebuild --platform ios --clean",
+    "native:ios:device": "expo run:ios --device --configuration Release",
+    "eas:ios:simulator": "npx eas-cli build --platform ios --profile preview",
+    "eas:ios:install": "npx eas-cli build:run --platform ios",
     "lint": "expo lint",
     "check-types": "tsc --noEmit",
     "test": "jest"
