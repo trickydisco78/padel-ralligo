@@ -8,6 +8,7 @@ import { useSession, SignInPrompt } from '@padel/auth';
 import { ProfileForm, ProfileView, useProfileScreen } from '@padel/profiles';
 import { TripsSection } from '@padel/trips';
 import { MyListings } from '@padel/listings';
+import { DevTools } from '@/dev/dev-tools';
 import { BottomTabInset, Button, ThemedText, ThemedView, spacing } from '@padel/ui';
 
 export default function ProfileScreen() {
@@ -61,6 +62,7 @@ export default function ProfileScreen() {
           <View style={{ padding: spacing.space6, gap: spacing.space6 }}>
             <TripsSection />
             <MyListings onManage={(id) => router.push({ pathname: '/match/[id]/manage', params: { id } })} />
+            <DevTools />
             <Button
               title={t('profile.signOut')}
               onPress={async () => {

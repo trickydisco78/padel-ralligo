@@ -82,6 +82,11 @@
   "matches": {
     "signInMessage": "Sign in to see your matches and messages."
   },
+  "dev": {
+    "title": "Developer",
+    "replayIntro": "Replay launch intro",
+    "replayIntroDone": "Done. Close the app and open it again to see the full launch intro."
+  },
   "profile": {
     "signInTitle": "Your padel profile",
     "signInMessage": "Sign in or create an account to connect with players, manage your games and track your activity.",

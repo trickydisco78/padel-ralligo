@@ -3,4 +3,5 @@
 jest.mock('@/splash/intro-seen', () => ({
   readIntroSeen: jest.fn(async () => true),
   markIntroSeen: jest.fn(async () => {}),
+  resetIntroSeen: jest.fn(async () => {}),
 }));
