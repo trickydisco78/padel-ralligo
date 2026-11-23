@@ -1,7 +1,7 @@
 import { toIsoDate } from '@padel/core';
 import { Slot, useLocalSearchParams } from 'expo-router';
-import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
-import { Text } from 'react-native';
+import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { StyleSheet, Text } from 'react-native';
 
 import HomeScreen from '@/app/(tabs)/index';
 import { QueryTestProvider } from '@padel/query/testing';
@@ -89,6 +89,49 @@ describe('Home', () => {
     expect(screen.queryByRole('button', { name: 'Sign in' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Create account' })).toBeNull();
     expect(screen.queryByText(/Create an account/)).toBeNull();
+  });
+
+  describe('collapsing heading', () => {
+    const title = 'Find your next padel game';
+    const headingSize = () => StyleSheet.flatten(screen.getByRole('header', { name: title }).props.style).fontSize;
+    const scrollTo = (y: number) =>
+      fireEvent.scroll(screen.getByTestId('home-scroll'), { nativeEvent: { contentOffset: { y } } });
+
+    it('shows one large heading with the subtitle at the top', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: title })).toBeTruthy());
+      expect(screen.getAllByText(title)).toHaveLength(1);
+      expect(screen.getByText('Meet players at your level, at home or on holiday.')).toBeTruthy();
+      expect(headingSize()).toBe(44);
+    });
+
+    it('shrinks the heading but keeps it on screen once the content scrolls', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: title })).toBeTruthy());
+      await act(async () => {
+        scrollTo(100);
+      });
+      expect(screen.getByRole('header', { name: title })).toBeTruthy();
+      expect(headingSize()).toBe(24);
+    });
+
+    it('grows back when the content is scrolled to the top again', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: title })).toBeTruthy());
+      await act(async () => {
+        scrollTo(100);
+      });
+      await act(async () => {
+        scrollTo(0);
+      });
+      expect(headingSize()).toBe(44);
+    });
+
+    it('still has pull to refresh on the scrolling content', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: title })).toBeTruthy());
+      expect(screen.getByTestId('home-scroll').props.refreshControl).toBeTruthy();
+    });
   });
 
   it('has no old wordmark above the heading', async () => {

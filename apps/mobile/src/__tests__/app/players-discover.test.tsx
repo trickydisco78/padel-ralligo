@@ -114,7 +114,7 @@ describe('Players | Open matches switch', () => {
   it('uses the design wording for a guest and a search hint that matches what is searched', async () => {
     await openPlayers();
     expect(screen.getByText('Find your next game.')).toBeTruthy();
-    expect(screen.getByText('Explore public players')).toBeTruthy();
+    expect(screen.getByText('Browse player cards by location. No trip required.')).toBeTruthy();
     expect(screen.getByText('Public profile only: area and level. Trip dates stay private.')).toBeTruthy();
     expect(screen.getByText('Explore near')).toBeTruthy();
     expect(screen.getByText('Public players')).toBeTruthy();

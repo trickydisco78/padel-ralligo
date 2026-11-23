@@ -4,9 +4,11 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@padel/i18n';
-import { Card, colors, Button, radius, ThemedText, ThemedView, spacing } from '@padel/ui';
+import { AppBar, Card, colors, Button, radius, ThemedText, ThemedView, spacing } from '@padel/ui';
 import { useDestinations } from '@padel/destinations';
 import { ListingCard, useDiscoverListings } from '@padel/listings';
+
+import { useCollapsingHeader } from '@/hooks/use-collapsing-header';
 
 const UPCOMING_GAMES = 5;
 
@@ -16,6 +18,7 @@ export default function HomeScreen() {
   const { destinations, failed: destinationsFailed, refetch: refetchDestinations } = useDestinations();
   const { listings, failed: listingsFailed, refetch: refetchListings } = useDiscoverListings();
   const [refreshing, setRefreshing] = useState(false);
+  const { scrollY, onScroll, scrollEventThrottle } = useCollapsingHeader();
 
   const load = useCallback(async () => {
     await Promise.all([
@@ -41,17 +44,15 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <AppBar title={t('home.title')} subtitle={t('home.subtitle')} scrollY={scrollY} />
+      {/* The bar pads for the status bar itself, so the safe area here covers the sides and bottom only. */}
+      <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
         <ScrollView
+          testID="home-scroll"
+          onScroll={onScroll}
+          scrollEventThrottle={scrollEventThrottle}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           contentContainerStyle={{ padding: spacing.space4, gap: spacing.space6 }}>
-          <View style={{ gap: spacing.space2 }}>
-            <ThemedText type="display">{t('home.title')}</ThemedText>
-            <ThemedText themeColor="muted">
-              {t('home.subtitle')}
-            </ThemedText>
-          </View>
-
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('home.searchLabel')}

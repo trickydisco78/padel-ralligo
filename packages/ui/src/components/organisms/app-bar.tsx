@@ -91,7 +91,8 @@ export function AppBar({ title, variant = 'large', subtitle, scrollY, onBack, ba
         <View style={{ flex: 1 }}>
           <Animated.Text
             accessibilityRole="header"
-            numberOfLines={1}
+            // Two lines: a 44 point title does not fit one on a phone. Collapsed it is 24 points and fits one.
+            numberOfLines={2}
             style={{
               color: colors.ink,
               fontFamily: fontFamily[800],

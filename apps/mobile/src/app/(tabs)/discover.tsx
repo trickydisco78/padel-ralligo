@@ -17,10 +17,11 @@ import {
   type Player,
 } from '@padel/players';
 import { SavedTripsRow, useTripsOverview } from '@padel/trips';
-import { Banner, BottomSheet, Button, Icon, SearchField, SegmentedControl, spacing, ThemedText, ThemedView } from '@padel/ui';
+import { AppBar, Banner, BottomSheet, Button, Icon, SearchField, SegmentedControl, spacing, ThemedText, ThemedView } from '@padel/ui';
 
 import { DiscoverFilterBlock, NO_FILTERS, type DiscoverFilters } from '@/components/discover-filters';
 import { resolveSelectedTrip } from '@/discover/trip-selection';
+import { useCollapsingHeader } from '@/hooks/use-collapsing-header';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 type DiscoverView = 'players' | 'matches';
@@ -59,6 +60,7 @@ export default function DiscoverScreen() {
   const [filterVersion, setFilterVersion] = useState(0);
   // Null until the user picks a side; My trips defaults to Players, Explore places to Open matches.
   const [chosenView, setChosenView] = useState<DiscoverView | null>(null);
+  const { scrollY, onScroll, scrollEventThrottle } = useCollapsingHeader();
   const [chosenMode, setChosenMode] = useState<DiscoverMode | null>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [thisWeek, setThisWeek] = useState(false);
@@ -188,17 +190,6 @@ export default function DiscoverScreen() {
 
   const header = (
     <View style={{ gap: spacing.space4 }}>
-      <ThemedText
-        type="label"
-        themeColor="pink700"
-        style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
-        {tripsMode ? t('discover.eyebrowTrips') : t('discover.eyebrowExplore')}
-      </ThemedText>
-      <ThemedText type="display">{heading}</ThemedText>
-      <ThemedText themeColor="muted">
-        {tripsMode ? t('discover.subtitleTrips') : t('discover.subtitleExplore')}
-      </ThemedText>
-
       {user ? (
         <SegmentedControl
           accessibilityLabel={t('discover.modeSwitchLabel')}
@@ -355,8 +346,17 @@ export default function DiscoverScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <AppBar
+        title={heading}
+        subtitle={tripsMode ? t('discover.subtitleTrips') : t('discover.subtitleExplore')}
+        scrollY={scrollY}
+      />
+      {/* The bar pads for the status bar itself, so the safe area here covers the sides and bottom only. */}
+      <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
         <FlatList
+          testID="discover-list"
+          onScroll={onScroll}
+          scrollEventThrottle={scrollEventThrottle}
           data={rows}
           keyExtractor={(row) => row.key}
           renderItem={({ item }) =>

@@ -120,7 +120,6 @@ describe('modes', () => {
   it('opens a member with an upcoming trip on My trips', async () => {
     await openDiscover();
     await waitFor(() => expect(screen.getByRole('tab', { name: /^My trips/, selected: true })).toBeTruthy());
-    expect(screen.getByText('Players for your trips')).toBeTruthy();
     expect(screen.getByText('Choose one of your saved trips to see who overlaps.')).toBeTruthy();
     expect(screen.getByRole('header', { name: 'Players in Málaga' })).toBeTruthy();
     await waitFor(() => expect(screen.getByText('3 players overlap')).toBeTruthy());
@@ -161,7 +160,7 @@ describe('modes', () => {
     mockState.tripsOverview = [];
     await openDiscover();
     await waitFor(() => expect(screen.getByRole('tab', { name: /^Explore places/, selected: true })).toBeTruthy());
-    expect(screen.getByText('Explore public players')).toBeTruthy();
+    expect(screen.getByText('Browse player cards by location. No trip required.')).toBeTruthy();
     expect(screen.getByText('Explore near')).toBeTruthy();
   });
 });

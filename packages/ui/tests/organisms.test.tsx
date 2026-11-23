@@ -45,6 +45,11 @@ describe('AppBar', () => {
     expect(StyleSheet.flatten(screen.getByRole('header', { name: 'Games' }).props.style).fontSize).toBe(24);
   });
 
+  it('lets a long large title wrap to two lines instead of cutting it off', async () => {
+    await inApp(<AppBar title="Find your next padel game" />);
+    expect(screen.getByRole('header', { name: 'Find your next padel game' }).props.numberOfLines).toBe(2);
+  });
+
   it('detail has a soft back button and a centred title', async () => {
     const onBack = jest.fn();
     await inApp(<AppBar variant="detail" title="Edit profile" onBack={onBack} />);
