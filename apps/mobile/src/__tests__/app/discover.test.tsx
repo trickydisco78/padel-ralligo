@@ -1,6 +1,7 @@
 import { toIsoDate } from '@padel/core';
 import { Slot } from 'expo-router';
-import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { StyleSheet } from 'react-native';
 
 import DiscoverScreen from '@/app/(tabs)/discover';
 import { QueryTestProvider } from '@padel/query/testing';
@@ -71,6 +72,47 @@ describe('Discover', () => {
     expect(screen.getAllByText('2 spots needed').length).toBeGreaterThan(0);
     expect(screen.getByText('Ann · Intermediate')).toBeTruthy();
     expect(screen.getByText('Ben · Intermediate')).toBeTruthy();
+  });
+
+  describe('collapsing heading', () => {
+    const headingSize = (name: string) => StyleSheet.flatten(screen.getByRole('header', { name }).props.style).fontSize;
+    const scrollTo = (y: number) =>
+      fireEvent.scroll(screen.getByTestId('discover-list'), { nativeEvent: { contentOffset: { y } } });
+
+    it('shows one large heading with the mode subtitle at the top, and no eyebrow line', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: 'Find your kind of game.' })).toBeTruthy());
+      expect(screen.getAllByText('Find your kind of game.')).toHaveLength(1);
+      expect(screen.getByText('Browse player cards by location. No trip required.')).toBeTruthy();
+      expect(screen.queryByText('Explore public players')).toBeNull();
+      expect(headingSize('Find your kind of game.')).toBe(44);
+    });
+
+    it('uses the guest wording for a visitor', async () => {
+      mockState.session = null;
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: 'Find your next game.' })).toBeTruthy());
+      expect(screen.queryByText('Find your kind of game.')).toBeNull();
+    });
+
+    it('shrinks the heading but keeps it on screen once the list scrolls, and grows it back at the top', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByRole('header', { name: 'Find your kind of game.' })).toBeTruthy());
+      await act(async () => {
+        scrollTo(120);
+      });
+      expect(screen.getByRole('header', { name: 'Find your kind of game.' })).toBeTruthy();
+      expect(headingSize('Find your kind of game.')).toBe(24);
+      await act(async () => {
+        scrollTo(0);
+      });
+      expect(headingSize('Find your kind of game.')).toBe(44);
+    });
+
+    it('still has pull to refresh on the list', async () => {
+      await open();
+      await waitFor(() => expect(screen.getByTestId('discover-list').props.refreshControl).toBeTruthy());
+    });
   });
 
   it('has no old wordmark above the heading', async () => {
